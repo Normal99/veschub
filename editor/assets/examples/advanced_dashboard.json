@@ -1,0 +1,458 @@
+{
+  "version": "1.0",
+  "name": "Advanced Multi-Screen Dashboard",
+  "description": "Advanced dashboard with multiple screens, navigation buttons, gauges, and graphs",
+  "author": "VescHub Team",
+  "defaultScreen": "main",
+  "theme": {
+    "name": "Racing Theme",
+    "defaultFontFamily": "Roboto",
+    "defaultFontSize": 16,
+    "defaultColor": "#FFFFFF",
+    "defaultBackgroundColor": "#000000",
+    "accentColor": "#00FFFF",
+    "warningColor": "#FFA500",
+    "dangerColor": "#FF0000"
+  },
+  "navigation": {
+    "swipeEnabled": true,
+    "swipeDirection": "horizontal",
+    "buttonNavigation": true
+  },
+  "screens": [
+    {
+      "id": "main",
+      "name": "Main Speed View",
+      "backgroundColor": "#0A0A0A",
+      "widgets": [
+        {
+          "_comment": "Navigation button to detailed screen",
+          "id": "btn_to_detailed",
+          "type": "button",
+          "x": 320,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/arrow_right.png",
+          "imagePressed": "/assets/icons/arrow_right_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "detailed"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Main speedometer gauge",
+          "id": "speedometer",
+          "type": "speedometer",
+          "x": 50,
+          "y": 150,
+          "width": 300,
+          "height": 300,
+          "dataSource": "speed",
+          "minValue": 0,
+          "maxValue": 80,
+          "units": "km/h",
+          "redZoneStart": 70,
+          "dialColor": "#1A1A1A",
+          "needleColor": "#00FFFF",
+          "redZoneColor": "#FF0000",
+          "showDigitalDisplay": true,
+          "digitalFontSize": 48
+        },
+        {
+          "_comment": "Battery progress bar",
+          "id": "battery_bar",
+          "type": "progressbar",
+          "x": 50,
+          "y": 500,
+          "width": 300,
+          "height": 40,
+          "dataSource": "battery_percent",
+          "orientation": "horizontal",
+          "minValue": 0,
+          "maxValue": 100,
+          "fillColor": "#00FF00",
+          "backgroundColor": "#2A2A2A",
+          "borderRadius": 10,
+          "showValue": true,
+          "valueFontSize": 18,
+          "valueColor": "#FFFFFF",
+          "gradient": {
+            "enabled": true,
+            "type": "linear",
+            "colors": ["#00FF00", "#7FFF00", "#FFFF00"],
+            "angle": 90
+          },
+          "conditionalFormatting": [
+            {
+              "condition": "battery_percent < 20",
+              "properties": {
+                "fillColor": "#FF0000",
+                "gradient": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Battery indicator LED",
+          "id": "low_battery_indicator",
+          "type": "indicator",
+          "x": 360,
+          "y": 510,
+          "width": 20,
+          "height": 20,
+          "dataSource": "battery_percent",
+          "threshold": 20,
+          "onColor": "#FF0000",
+          "offColor": "#2A2A2A",
+          "blinkWhenOn": true,
+          "blinkRate": 500,
+          "showWhen": {
+            "dataSource": "battery_percent",
+            "operator": "<",
+            "value": 20
+          }
+        },
+        {
+          "_comment": "Motor temperature text",
+          "id": "motor_temp_display",
+          "type": "text",
+          "x": 50,
+          "y": 570,
+          "width": 150,
+          "height": 40,
+          "dataSource": "motor_temp",
+          "text": "Motor: {motor_temp}",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#FFFFFF",
+          "suffix": "°C",
+          "decimals": 1,
+          "conditionalFormatting": [
+            {
+              "condition": "motor_temp > 80",
+              "properties": {
+                "color": "#FF0000"
+              }
+            },
+            {
+              "condition": "motor_temp > 60",
+              "properties": {
+                "color": "#FFA500"
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Current display",
+          "id": "motor_current_display",
+          "type": "text",
+          "x": 210,
+          "y": 570,
+          "width": 140,
+          "height": 40,
+          "dataSource": "motor_current",
+          "text": "{motor_current}",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#00FFFF",
+          "suffix": "A",
+          "decimals": 1
+        }
+      ]
+    },
+    {
+      "id": "detailed",
+      "name": "Detailed Stats",
+      "backgroundColor": "#0A0A0A",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_back_main",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/arrow_left.png",
+          "imagePressed": "/assets/icons/arrow_left_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "main"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Button to graphs screen",
+          "id": "btn_to_graphs",
+          "type": "button",
+          "x": 320,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/graph_icon.png",
+          "imagePressed": "/assets/icons/graph_icon_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "graphs"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "detailed_title",
+          "type": "text",
+          "x": 100,
+          "y": 100,
+          "width": 200,
+          "height": 40,
+          "text": "DETAILED STATS",
+          "fontSize": 20,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#00FFFF"
+        },
+        {
+          "_comment": "Battery voltage gauge",
+          "id": "voltage_gauge",
+          "type": "gauge",
+          "x": 50,
+          "y": 170,
+          "width": 150,
+          "height": 150,
+          "dataSource": "battery_voltage",
+          "gaugeType": "circular",
+          "minValue": 40,
+          "maxValue": 60,
+          "units": "V",
+          "needleColor": "#00FFFF",
+          "backgroundColor": "#1A1A1A",
+          "showTicks": true,
+          "tickCount": 5,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 12,
+          "labelColor": "#AAAAAA",
+          "zones": [
+            {
+              "from": 40,
+              "to": 45,
+              "color": "#FF0000",
+              "label": "Low"
+            },
+            {
+              "from": 45,
+              "to": 52,
+              "color": "#FFFF00",
+              "label": "Normal"
+            },
+            {
+              "from": 52,
+              "to": 60,
+              "color": "#00FF00",
+              "label": "Full"
+            }
+          ]
+        },
+        {
+          "_comment": "Motor current gauge",
+          "id": "current_gauge",
+          "type": "gauge",
+          "x": 200,
+          "y": 170,
+          "width": 150,
+          "height": 150,
+          "dataSource": "motor_current",
+          "gaugeType": "circular",
+          "minValue": 0,
+          "maxValue": 100,
+          "units": "A",
+          "needleColor": "#00FFFF",
+          "backgroundColor": "#1A1A1A",
+          "showTicks": true,
+          "tickCount": 6,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 12,
+          "labelColor": "#AAAAAA"
+        },
+        {
+          "_comment": "Duty cycle gauge",
+          "id": "duty_gauge",
+          "type": "gauge",
+          "x": 125,
+          "y": 340,
+          "width": 150,
+          "height": 150,
+          "dataSource": "duty_cycle",
+          "gaugeType": "semicircular",
+          "minValue": 0,
+          "maxValue": 100,
+          "units": "%",
+          "needleColor": "#00FFFF",
+          "backgroundColor": "#1A1A1A",
+          "showTicks": true,
+          "tickCount": 11,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 12,
+          "labelColor": "#AAAAAA"
+        },
+        {
+          "_comment": "Odometer reading",
+          "id": "odometer",
+          "type": "text",
+          "x": 50,
+          "y": 520,
+          "width": 300,
+          "height": 40,
+          "dataSource": "odometer",
+          "text": "TOTAL: {odometer}",
+          "fontSize": 18,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA",
+          "suffix": " km",
+          "decimals": 1
+        },
+        {
+          "_comment": "Amp hours used",
+          "id": "amp_hours",
+          "type": "text",
+          "x": 50,
+          "y": 570,
+          "width": 300,
+          "height": 40,
+          "dataSource": "amp_hours_used",
+          "text": "Ah Used: {amp_hours_used}",
+          "fontSize": 18,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA",
+          "suffix": " Ah",
+          "decimals": 2
+        }
+      ]
+    },
+    {
+      "id": "graphs",
+      "name": "Real-time Graphs",
+      "backgroundColor": "#0A0A0A",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_back_detailed",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/arrow_left.png",
+          "imagePressed": "/assets/icons/arrow_left_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "detailed"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "graphs_title",
+          "type": "text",
+          "x": 100,
+          "y": 100,
+          "width": 200,
+          "height": 40,
+          "text": "LIVE GRAPHS",
+          "fontSize": 20,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#00FFFF"
+        },
+        {
+          "_comment": "Speed graph",
+          "id": "speed_graph",
+          "type": "graph",
+          "x": 30,
+          "y": 160,
+          "width": 340,
+          "height": 160,
+          "graphType": "line",
+          "timeWindow": 30,
+          "backgroundColor": "#1A1A1A",
+          "gridColor": "#2A2A2A",
+          "showGrid": true,
+          "showXAxis": true,
+          "showYAxis": true,
+          "axisColor": "#FFFFFF",
+          "autoScale": true,
+          "dataSeries": [
+            {
+              "dataSource": "speed",
+              "label": "Speed",
+              "color": "#00FFFF",
+              "lineWidth": 2,
+              "lineStyle": "solid"
+            }
+          ]
+        },
+        {
+          "_comment": "Power usage graph",
+          "id": "power_graph",
+          "type": "graph",
+          "x": 30,
+          "y": 350,
+          "width": 340,
+          "height": 160,
+          "graphType": "line",
+          "timeWindow": 30,
+          "backgroundColor": "#1A1A1A",
+          "gridColor": "#2A2A2A",
+          "showGrid": true,
+          "showXAxis": true,
+          "showYAxis": true,
+          "axisColor": "#FFFFFF",
+          "autoScale": false,
+          "minValue": 0,
+          "maxValue": 100,
+          "dataSeries": [
+            {
+              "dataSource": "motor_current",
+              "label": "Current",
+              "color": "#00FF00",
+              "lineWidth": 2,
+              "lineStyle": "solid"
+            },
+            {
+              "dataSource": "duty_cycle",
+              "label": "Duty Cycle",
+              "color": "#FFA500",
+              "lineWidth": 2,
+              "lineStyle": "dashed"
+            }
+          ]
+        },
+        {
+          "_comment": "Temperature text",
+          "id": "temp_reading",
+          "type": "text",
+          "x": 30,
+          "y": 540,
+          "width": 340,
+          "height": 40,
+          "dataSource": "motor_temp",
+          "text": "Motor Temperature: {motor_temp}",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#FFFFFF",
+          "suffix": "°C",
+          "decimals": 1
+        }
+      ]
+    }
+  ]
+}
