@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VescHub Dashboard Editor</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/editor.css">
+    <link rel="stylesheet" href="css/widgets.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>">
+</head>
+<body>
+    <!-- Top Toolbar -->
+    <div id="toolbar">
+        <div class="toolbar-section">
+            <div class="logo">
+                <span class="logo-icon">🎨</span>
+                <span class="logo-text">VescHub Editor</span>
+            </div>
+        </div>
+        
+        <div class="toolbar-section">
+            <div class="menu-group">
+                <button class="toolbar-btn" id="btn-new" title="New Dashboard (Ctrl+N)">
+                    <span class="icon">📄</span> New
+                </button>
+                <button class="toolbar-btn" id="btn-open" title="Open Dashboard (Ctrl+O)">
+                    <span class="icon">📁</span> Open
+                </button>
+                <button class="toolbar-btn" id="btn-save" title="Save Dashboard (Ctrl+S)">
+                    <span class="icon">💾</span> Save
+                </button>
+                <button class="toolbar-btn" id="btn-export" title="Export to JSON">
+                    <span class="icon">📤</span> Export
+                </button>
+            </div>
+            
+            <div class="menu-separator"></div>
+            
+            <div class="menu-group">
+                <button class="toolbar-btn" id="btn-undo" title="Undo (Ctrl+Z)" disabled>
+                    <span class="icon">↶</span>
+                </button>
+                <button class="toolbar-btn" id="btn-redo" title="Redo (Ctrl+Y)" disabled>
+                    <span class="icon">↷</span>
+                </button>
+                <button class="toolbar-btn" id="btn-copy" title="Copy (Ctrl+C)" disabled>
+                    <span class="icon">📋</span>
+                </button>
+                <button class="toolbar-btn" id="btn-paste" title="Paste (Ctrl+V)" disabled>
+                    <span class="icon">📄</span>
+                </button>
+                <button class="toolbar-btn" id="btn-delete" title="Delete (Delete)" disabled>
+                    <span class="icon">🗑️</span>
+                </button>
+            </div>
+            
+            <div class="menu-separator"></div>
+            
+            <div class="menu-group">
+                <button class="toolbar-btn" id="btn-zoom-out" title="Zoom Out">
+                    <span class="icon">🔍-</span>
+                </button>
+                <span class="zoom-display" id="zoom-display">100%</span>
+                <button class="toolbar-btn" id="btn-zoom-in" title="Zoom In">
+                    <span class="icon">🔍+</span>
+                </button>
+                <button class="toolbar-btn" id="btn-zoom-fit" title="Fit to Screen">
+                    <span class="icon">⬚</span>
+                </button>
+            </div>
+            
+            <div class="menu-separator"></div>
+            
+            <div class="menu-group">
+                <button class="toolbar-btn toggle-btn" id="btn-grid" title="Toggle Grid">
+                    <span class="icon">⊞</span> Grid
+                </button>
+                <button class="toolbar-btn" id="btn-preview" title="Preview Mode (P)">
+                    <span class="icon">▶</span> Preview
+                </button>
+            </div>
+        </div>
+        
+        <div class="toolbar-section">
+            <button class="toolbar-btn primary-btn" id="btn-help" title="Help & Shortcuts">
+                <span class="icon">❓</span> Help
+            </button>
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div id="main-container">
+        <!-- Left Sidebar: Widget Library -->
+        <div id="left-sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>Widget Library</h3>
+            </div>
+            <div class="sidebar-content" id="widget-library">
+                <!-- Widget categories -->
+                <div class="widget-category">
+                    <div class="category-header">Display Widgets</div>
+                    <div class="widget-list">
+                        <div class="widget-item" data-widget-type="text" draggable="true">
+                            <div class="widget-icon">📝</div>
+                            <div class="widget-name">Text</div>
+                        </div>
+                        <div class="widget-item" data-widget-type="gauge" draggable="true">
+                            <div class="widget-icon">⏱️</div>
+                            <div class="widget-name">Gauge</div>
+                        </div>
+                        <div class="widget-item" data-widget-type="speedometer" draggable="true">
+                            <div class="widget-icon">🚗</div>
+                            <div class="widget-name">Speedometer</div>
+                        </div>
+                        <div class="widget-item" data-widget-type="progressbar" draggable="true">
+                            <div class="widget-icon">📊</div>
+                            <div class="widget-name">Progress Bar</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget-category">
+                    <div class="category-header">Data Visualization</div>
+                    <div class="widget-list">
+                        <div class="widget-item" data-widget-type="graph" draggable="true">
+                            <div class="widget-icon">📈</div>
+                            <div class="widget-name">Graph</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget-category">
+                    <div class="category-header">Interactive</div>
+                    <div class="widget-list">
+                        <div class="widget-item" data-widget-type="button" draggable="true">
+                            <div class="widget-icon">🔘</div>
+                            <div class="widget-name">Button</div>
+                        </div>
+                        <div class="widget-item" data-widget-type="indicator" draggable="true">
+                            <div class="widget-icon">💡</div>
+                            <div class="widget-name">Indicator</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="widget-category">
+                    <div class="category-header">Visual Elements</div>
+                    <div class="widget-list">
+                        <div class="widget-item" data-widget-type="image" draggable="true">
+                            <div class="widget-icon">🖼️</div>
+                            <div class="widget-name">Image</div>
+                        </div>
+                        <div class="widget-item" data-widget-type="shape" draggable="true">
+                            <div class="widget-icon">⬜</div>
+                            <div class="widget-name">Shape</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Canvas Area -->
+        <div id="canvas-container">
+            <div class="canvas-controls">
+                <div class="canvas-size-selector">
+                    <label>Canvas Size:</label>
+                    <select id="canvas-size">
+                        <option value="400x640">Phone (400x640)</option>
+                        <option value="720x1280">HD Phone (720x1280)</option>
+                        <option value="1080x1920">Full HD Phone (1080x1920)</option>
+                        <option value="640x400">Landscape (640x400)</option>
+                        <option value="800x600">Tablet (800x600)</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="canvas-wrapper">
+                <canvas id="editor-canvas"></canvas>
+            </div>
+            <div class="canvas-info">
+                <span id="cursor-position">X: 0, Y: 0</span>
+                <span id="selection-info"></span>
+            </div>
+        </div>
+        
+        <!-- Right Sidebar: Properties Panel -->
+        <div id="right-sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <h3>Properties</h3>
+            </div>
+            <div class="sidebar-content" id="properties-panel">
+                <div class="no-selection">
+                    <p>Select a widget to edit its properties</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Panel: Screen Manager -->
+    <div id="bottom-panel">
+        <div class="panel-header">
+            <h3>Screens</h3>
+            <button class="btn-icon" id="btn-add-screen" title="Add New Screen">
+                <span class="icon">➕</span>
+            </button>
+        </div>
+        <div class="screen-list" id="screen-list">
+            <div class="screen-item active" data-screen-id="main">
+                <div class="screen-thumbnail">
+                    <canvas class="screen-preview"></canvas>
+                </div>
+                <div class="screen-name">Main Screen</div>
+                <div class="screen-actions">
+                    <button class="btn-icon-small" title="Rename">✏️</button>
+                    <button class="btn-icon-small" title="Duplicate">📄</button>
+                    <button class="btn-icon-small" title="Delete">🗑️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Context Menu (hidden by default) -->
+    <div id="context-menu" class="context-menu" style="display: none;">
+        <div class="context-menu-item" data-action="copy">Copy</div>
+        <div class="context-menu-item" data-action="paste">Paste</div>
+        <div class="context-menu-item" data-action="duplicate">Duplicate</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="bring-front">Bring to Front</div>
+        <div class="context-menu-item" data-action="send-back">Send to Back</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="delete">Delete</div>
+    </div>
+    
+    <!-- Modals -->
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>VescHub Editor - Help & Shortcuts</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>Keyboard Shortcuts</h3>
+                    <table class="shortcuts-table">
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>N</kbd></td><td>New Dashboard</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>O</kbd></td><td>Open Dashboard</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Save Dashboard</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td><td>Redo</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>C</kbd></td><td>Copy Widget</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>V</kbd></td><td>Paste Widget</td></tr>
+                        <tr><td><kbd>Ctrl</kbd> + <kbd>D</kbd></td><td>Duplicate Widget</td></tr>
+                        <tr><td><kbd>Delete</kbd></td><td>Delete Selected Widget</td></tr>
+                        <tr><td><kbd>Arrow Keys</kbd></td><td>Nudge Widget Position</td></tr>
+                        <tr><td><kbd>Shift</kbd> + Click</td><td>Multi-Select Widgets</td></tr>
+                        <tr><td><kbd>P</kbd></td><td>Toggle Preview Mode</td></tr>
+                    </table>
+                </div>
+                <div class="help-section">
+                    <h3>Getting Started</h3>
+                    <ol>
+                        <li>Drag widgets from the left panel onto the canvas</li>
+                        <li>Select a widget to edit its properties in the right panel</li>
+                        <li>Bind widgets to VESC data sources for live updates</li>
+                        <li>Create multiple screens using the bottom panel</li>
+                        <li>Export your dashboard as JSON to use on mobile</li>
+                    </ol>
+                </div>
+                <div class="help-section">
+                    <h3>Documentation</h3>
+                    <p>For detailed documentation, visit: <a href="https://github.com/Normal99/veschub" target="_blank">GitHub Repository</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="modal fullscreen-modal" style="display: none;">
+        <div class="preview-container">
+            <div class="preview-header">
+                <h2>Preview Mode</h2>
+                <button class="btn-exit-preview" id="btn-exit-preview">Exit Preview</button>
+            </div>
+            <div class="preview-canvas-wrapper">
+                <canvas id="preview-canvas"></canvas>
+            </div>
+            <div class="preview-controls">
+                <button class="btn-preview-action" id="btn-prev-screen">← Previous Screen</button>
+                <button class="btn-preview-action" id="btn-next-screen">Next Screen →</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- File Input (hidden) -->
+    <input type="file" id="file-input" accept=".json,.veschub.json" style="display: none;">
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    
+    <!-- Application Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/widgets.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/properties.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+/* VescHub Editor - Main Styles */
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Color palette - Dark theme inspired by SimHub */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #242424;
+    --bg-tertiary: #2e2e2e;
+    --bg-hover: #3a3a3a;
+    --bg-active: #4a4a4a;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #b0b0b0;
+    --text-disabled: #666666;
+    
+    --border-color: #3a3a3a;
+    --border-light: #4a4a4a;
+    
+    --accent-color: #00ff00;
+    --accent-hover: #00dd00;
+    --accent-active: #00bb00;
+    
+    --warning-color: #ffaa00;
+    --danger-color: #ff3333;
+    --info-color: #00aaff;
+    
+    /* Dimensions */
+    --toolbar-height: 60px;
+    --sidebar-width: 280px;
+    --bottom-panel-height: 140px;
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    
+    /* Shadows */
+    --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bg-hover);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bg-active);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
+p {
+    line-height: 1.5;
+}
+
+/* Buttons */
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+}
+
+.toolbar-btn:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+    border-color: var(--border-light);
+}
+
+.toolbar-btn:active:not(:disabled) {
+    background-color: var(--bg-active);
+    transform: translateY(1px);
+}
+
+.toolbar-btn .icon {
+    font-size: 1.1rem;
+}
+
+.toggle-btn.active {
+    background-color: var(--accent-color);
+    color: var(--bg-primary);
+    border-color: var(--accent-color);
+}
+
+.primary-btn {
+    background-color: var(--accent-color);
+    color: var(--bg-primary);
+    font-weight: 600;
+    border-color: var(--accent-color);
+}
+
+.primary-btn:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+}
+
+.btn-icon {
+    padding: 6px 10px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+}
+
+.btn-icon:hover:not(:disabled) {
+    background-color: var(--bg-hover);
+}
+
+.btn-icon-small {
+    padding: 4px 6px;
+    background: none;
+    color: var(--text-secondary);
+    border: none;
+    font-size: 0.85rem;
+}
+
+.btn-icon-small:hover:not(:disabled) {
+    color: var(--text-primary);
+}
+
+/* Inputs */
+input[type="text"],
+input[type="number"],
+input[type="color"],
+select,
+textarea {
+    width: 100%;
+    padding: 8px 10px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: border-color var(--transition-fast);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+input[type="color"] {
+    height: 36px;
+    cursor: pointer;
+    padding: 2px;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Keyboard shortcut display */
+kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+
+.p-1 { padding: 0.5rem; }
+.p-2 { padding: 1rem; }
+.p-3 { padding: 1.5rem; }
+
+/* Dividers */
+.menu-separator {
+    width: 1px;
+    height: 30px;
+    background-color: var(--border-color);
+    margin: 0 8px;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--bg-hover);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Tooltips */
+[title] {
+    position: relative;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    :root {
+        --sidebar-width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 200px;
+        --toolbar-height: 50px;
+    }
+    
+    .toolbar-btn {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+    
+    .toolbar-btn .icon {
+        font-size: 1rem;
+    }
+}
