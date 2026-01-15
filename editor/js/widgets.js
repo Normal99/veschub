@@ -200,6 +200,7 @@ const Widgets = {
             originX: 'center',
             originY: 'center'
         });
+        needle.isGaugeNeedle = true;
         group.addWithUpdate(needle);
 
         // Center dot
@@ -224,6 +225,7 @@ const Widgets = {
                     fontWeight: 'bold'
                 }
             );
+            valueText.isGaugeValue = true;
             group.addWithUpdate(valueText);
         }
 
@@ -609,16 +611,27 @@ const Widgets = {
         
         // Find needle in group (it's typically the second-to-last element)
         const items = fabricObject.getObjects();
-        const needleIndex = items.length - 2; // Before center dot
+        const needleColor = widget.needleColor || '#00FF00';
+        const needle = items.find(item => item.isGaugeNeedle)
+            || items.find(item => item.type === 'line' && item.stroke === needleColor);
         
-        if (items[needleIndex] && items[needleIndex].type === 'line') {
+        if (needle && needle.type === 'line') {
             const radius = Math.min(widget.width, widget.height) / 2 - 25;
             const needleX = Math.cos(needleAngle) * radius;
             const needleY = Math.sin(needleAngle) * radius;
             
-            items[needleIndex].set({
+            needle.set({
                 x2: needleX,
                 y2: needleY
+            });
+        }
+
+        const valueText = items.find(item => item.isGaugeValue);
+        if (valueText && valueText.type === 'text') {
+            const decimals = widget.decimals || 0;
+            const units = widget.units || '';
+            valueText.set({
+                text: `${clampedValue.toFixed(decimals)}${units}`
             });
         }
     },
@@ -685,6 +698,39 @@ const Widgets = {
             } else {
                 fabricObject.set({ opacity: widget.opacity || 1.0 });
             }
+        }
+    },
+
+    /**
+     * Update consumption widget with live data
+     */
+    updateConsumption: (fabricObject, widget, value) => {
+        if (widget.displayMode === 'text') {
+            const decimals = widget.decimals || 1;
+            const formattedValue = typeof value === 'number' ? value.toFixed(decimals) : value;
+            const unit = widget.units || 'Wh/km';
+            const textValue = widget.showUnit !== false ? `${formattedValue} ${unit}` : `${formattedValue}`;
+
+            if (fabricObject.type === 'text' || fabricObject.type === 'i-text') {
+                fabricObject.set({ text: textValue });
+            }
+
+            let color = widget.color || '#FFFFFF';
+            if (widget.efficientThreshold && widget.moderateThreshold) {
+                if (value < widget.efficientThreshold) {
+                    color = widget.efficientColor || '#00FF00';
+                } else if (value < widget.moderateThreshold) {
+                    color = widget.moderateColor || '#FFAA00';
+                } else {
+                    color = widget.inefficientColor || '#FF3333';
+                }
+            }
+
+            if (fabricObject.fill !== undefined) {
+                fabricObject.set({ fill: color });
+            }
+        } else {
+            Widgets.updateGauge(fabricObject, widget, value);
         }
     }
 };

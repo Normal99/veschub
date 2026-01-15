@@ -823,6 +823,12 @@ const App = {
                         updatedCount++;
                     }
                     break;
+                case 'consumption':
+                    if (Widgets.updateConsumption) {
+                        Widgets.updateConsumption(obj, widget, value);
+                        updatedCount++;
+                    }
+                    break;
             }
         });
 

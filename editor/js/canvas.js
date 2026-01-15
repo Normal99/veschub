@@ -80,7 +80,8 @@ const Canvas = {
 
         // Selection events
         Canvas.canvas.on('selection:created', (e) => {
-            console.log('selection:created event', e.selected, e.selected.map(o => ({
+            const selected = Array.isArray(e.selected) ? e.selected : [];
+            console.log('selection:created event', selected, selected.map(o => ({
                 type: o.type,
                 isGrid: o.isGrid,
                 hasWidgetData: !!o.widgetData
@@ -677,8 +678,20 @@ const Canvas = {
     updatePropertiesPanel: () => {
         if (window.Properties && typeof Properties.updatePanel === 'function') {
             const allObjects = Canvas.canvas.getActiveObjects();
+            let activeObjects = allObjects;
+            if (activeObjects.length === 0) {
+                const activeObject = Canvas.canvas.getActiveObject();
+                if (activeObject) {
+                    if (activeObject.type === 'activeSelection' && typeof activeObject.getObjects === 'function') {
+                        activeObjects = activeObject.getObjects();
+                    } else {
+                        activeObjects = [activeObject];
+                    }
+                }
+            }
+
             // Filter out grid lines and objects without widgetData
-            const activeObjects = allObjects.filter(obj => !obj.isGrid && obj.widgetData);
+            activeObjects = activeObjects.filter(obj => !obj.isGrid && obj.widgetData);
             console.log('Updating properties panel for', activeObjects.length, 'widget objects (filtered from', allObjects.length, 'total)');
             Properties.updatePanel(activeObjects);
         }
