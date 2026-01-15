@@ -12,14 +12,34 @@ const Properties = {
      */
     updatePanel: (activeObjects) => {
         const panel = document.getElementById('properties-panel');
-        if (!panel) return;
+        console.log('Properties.updatePanel called', {
+            activeObjectsCount: activeObjects.length,
+            panelExists: !!panel,
+            activeObjects: activeObjects.map(o => ({
+                type: o.type,
+                hasWidgetData: !!o.widgetData,
+                widgetType: o.widgetData?.type
+            }))
+        });
+        
+        if (!panel) {
+            console.error('Properties panel element not found!');
+            return;
+        }
 
         if (activeObjects.length === 0) {
             Properties.showEmptyState(panel);
         } else if (activeObjects.length === 1) {
+            const obj = activeObjects[0];
+            if (!obj.widgetData) {
+                console.warn('Selected object has no widgetData:', obj);
+                Properties.showEmptyState(panel);
+                return;
+            }
             Properties.multipleSelection = false;
-            Properties.currentWidget = activeObjects[0].widgetData;
-            Properties.showSingleWidget(panel, activeObjects[0]);
+            Properties.currentWidget = obj.widgetData;
+            console.log('Showing properties for widget:', Properties.currentWidget);
+            Properties.showSingleWidget(panel, obj);
         } else {
             Properties.multipleSelection = true;
             Properties.showMultipleWidgets(panel, activeObjects);

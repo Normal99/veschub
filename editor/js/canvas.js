@@ -7,7 +7,7 @@ const Canvas = {
     canvas: null,
     gridSize: 10,
     snapToGrid: true,
-    showGrid: true,
+    showGrid: false,
     zoom: 1.0,
     minZoom: 0.1,
     maxZoom: 5.0,
@@ -22,6 +22,11 @@ const Canvas = {
      * Initialize fabric canvas
      */
     init: (canvasElement) => {
+        // Fix fabric.js textBaseline warnings
+        if (fabric.Text) {
+            fabric.Text.prototype.textBaseline = 'alphabetic';
+        }
+        
         Canvas.canvas = new fabric.Canvas(canvasElement, {
             width: 800,
             height: 480,
@@ -75,14 +80,21 @@ const Canvas = {
 
         // Selection events
         Canvas.canvas.on('selection:created', (e) => {
+            console.log('selection:created event', e.selected, e.selected.map(o => ({
+                type: o.type,
+                isGrid: o.isGrid,
+                hasWidgetData: !!o.widgetData
+            })));
             Canvas.updatePropertiesPanel();
         });
 
         Canvas.canvas.on('selection:updated', (e) => {
+            console.log('selection:updated event', e.selected);
             Canvas.updatePropertiesPanel();
         });
 
         Canvas.canvas.on('selection:cleared', (e) => {
+            console.log('selection:cleared event');
             Canvas.updatePropertiesPanel();
         });
 
@@ -663,8 +675,11 @@ const Canvas = {
      * Update properties panel based on selection
      */
     updatePropertiesPanel: () => {
-        if (window.Properties) {
-            const activeObjects = Canvas.canvas.getActiveObjects();
+        if (window.Properties && typeof Properties.updatePanel === 'function') {
+            const allObjects = Canvas.canvas.getActiveObjects();
+            // Filter out grid lines and objects without widgetData
+            const activeObjects = allObjects.filter(obj => !obj.isGrid && obj.widgetData);
+            console.log('Updating properties panel for', activeObjects.length, 'widget objects (filtered from', allObjects.length, 'total)');
             Properties.updatePanel(activeObjects);
         }
     },

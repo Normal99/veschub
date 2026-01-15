@@ -590,5 +590,101 @@ const Widgets = {
         widget.opacity = fabricObject.opacity;
 
         return widget;
+    },
+
+    /**
+     * Update gauge widget with live data
+     */
+    updateGauge: (fabricObject, widget, value) => {
+        const minValue = widget.minValue || 0;
+        const maxValue = widget.maxValue || 100;
+        const clampedValue = Math.max(minValue, Math.min(maxValue, value));
+        
+        // Calculate needle angle (-45° to 225° = 270° range)
+        const startAngle = -Math.PI / 4;
+        const endAngle = Math.PI * 5 / 4;
+        const angleRange = endAngle - startAngle;
+        const valuePercent = (clampedValue - minValue) / (maxValue - minValue);
+        const needleAngle = startAngle + valuePercent * angleRange;
+        
+        // Find needle in group (it's typically the second-to-last element)
+        const items = fabricObject.getObjects();
+        const needleIndex = items.length - 2; // Before center dot
+        
+        if (items[needleIndex] && items[needleIndex].type === 'line') {
+            const radius = Math.min(widget.width, widget.height) / 2 - 25;
+            const needleX = Math.cos(needleAngle) * radius;
+            const needleY = Math.sin(needleAngle) * radius;
+            
+            items[needleIndex].set({
+                x2: needleX,
+                y2: needleY
+            });
+        }
+    },
+
+    /**
+     * Update progress bar widget with live data
+     */
+    updateProgressBar: (fabricObject, widget, value) => {
+        const minValue = widget.minValue || 0;
+        const maxValue = widget.maxValue || 100;
+        const clampedValue = Math.max(minValue, Math.min(maxValue, value));
+        const valuePercent = (clampedValue - minValue) / (maxValue - minValue);
+        
+        // Find fill rect in group (second element)
+        const items = fabricObject.getObjects();
+        if (items[1] && items[1].type === 'rect') {
+            const halfWidth = -widget.width / 2;
+            const halfHeight = -widget.height / 2;
+            
+            if (widget.orientation === 'vertical') {
+                const fillHeight = widget.height * valuePercent;
+                items[1].set({
+                    height: fillHeight,
+                    top: halfHeight + widget.height - fillHeight
+                });
+            } else {
+                items[1].set({
+                    width: widget.width * valuePercent
+                });
+            }
+        }
+    },
+
+    /**
+     * Update text widget with live data
+     */
+    updateText: (fabricObject, widget, value) => {
+        const decimals = widget.decimals || 0;
+        const formattedValue = typeof value === 'number' ? value.toFixed(decimals) : value;
+        const prefix = widget.prefix || '';
+        const suffix = widget.suffix || widget.units || '';
+        const newText = `${prefix}${formattedValue}${suffix}`;
+        
+        if (fabricObject.type === 'text' || fabricObject.type === 'i-text') {
+            fabricObject.set({ text: newText });
+        }
+    },
+
+    /**
+     * Update indicator widget with live data
+     */
+    updateIndicator: (fabricObject, widget, value) => {
+        const threshold = widget.threshold || 0.5;
+        const isOn = value > threshold;
+        const color = isOn ? (widget.onColor || '#00FF00') : (widget.offColor || '#2A2A2A');
+        
+        if (fabricObject.type === 'circle') {
+            fabricObject.set({ fill: color });
+            
+            // Blink effect if enabled
+            if (isOn && widget.blinkWhenOn) {
+                const blinkState = Math.floor(Date.now() / 500) % 2;
+                fabricObject.set({ opacity: blinkState ? 1.0 : 0.3 });
+            } else {
+                fabricObject.set({ opacity: widget.opacity || 1.0 });
+            }
+        }
     }
 };

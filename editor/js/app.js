@@ -567,7 +567,10 @@ const App = {
         App.previewMode = !App.previewMode;
 
         const previewBtn = document.getElementById('btn-preview');
-        const editorPanel = document.querySelector('.editor-container');
+        const leftSidebar = document.getElementById('left-sidebar');
+        const rightSidebar = document.getElementById('right-sidebar');
+        const bottomPanel = document.getElementById('bottom-panel');
+        const toolbar = document.getElementById('toolbar');
 
         if (App.previewMode) {
             // Enter preview mode
@@ -590,10 +593,18 @@ const App = {
             Canvas.canvas.requestRenderAll();
 
             if (previewBtn) previewBtn.classList.add('active');
-            if (editorPanel) editorPanel.classList.add('preview-mode');
+            if (leftSidebar) leftSidebar.style.display = 'none';
+            if (rightSidebar) rightSidebar.style.display = 'none';
+            if (bottomPanel) bottomPanel.style.display = 'none';
+            
+            // Make toolbar translucent for minimal UI
+            if (toolbar) {
+                toolbar.style.opacity = '0.8';
+                toolbar.style.pointerEvents = 'auto';
+            }
 
             App.startMockData();
-            Utils.notify('Preview mode enabled - Buttons are interactive', 'info');
+            Utils.notify('Preview mode enabled - Press P to exit', 'info');
         } else {
             // Exit preview mode
             Canvas.canvas.selection = true;
@@ -612,7 +623,13 @@ const App = {
             Canvas.canvas.requestRenderAll();
 
             if (previewBtn) previewBtn.classList.remove('active');
-            if (editorPanel) editorPanel.classList.remove('preview-mode');
+            if (leftSidebar) leftSidebar.style.display = '';
+            if (rightSidebar) rightSidebar.style.display = '';
+            if (bottomPanel) bottomPanel.style.display = '';
+            if (toolbar) {
+                toolbar.style.opacity = '';
+                toolbar.style.pointerEvents = '';
+            }
 
             App.stopMockData();
             Utils.notify('Preview mode disabled', 'info');
@@ -768,6 +785,7 @@ const App = {
     updateWidgetsWithMockData: () => {
         if (!Canvas.canvas) return;
 
+        let updatedCount = 0;
         Canvas.canvas.getObjects().forEach(obj => {
             if (obj.isGrid || !obj.widgetData) return;
 
@@ -778,28 +796,39 @@ const App = {
 
             const value = App.mockData[dataSource];
 
-            // Update widget based on type
+            // Update widget based on type using Widgets module
             switch (widget.type) {
                 case 'text':
-                    App.updateTextWidget(obj, value, widget);
+                    if (Widgets.updateText) {
+                        Widgets.updateText(obj, widget, value);
+                        updatedCount++;
+                    }
                     break;
                 case 'gauge':
                 case 'speedometer':
-                    App.updateGaugeWidget(obj, value, widget);
+                    if (Widgets.updateGauge) {
+                        Widgets.updateGauge(obj, widget, value);
+                        updatedCount++;
+                    }
                     break;
                 case 'progressbar':
-                    App.updateProgressBarWidget(obj, value, widget);
+                    if (Widgets.updateProgressBar) {
+                        Widgets.updateProgressBar(obj, widget, value);
+                        updatedCount++;
+                    }
                     break;
                 case 'indicator':
-                    App.updateIndicatorWidget(obj, value, widget);
-                    break;
-                case 'consumption':
-                    App.updateConsumptionWidget(obj, value, widget);
+                    if (Widgets.updateIndicator) {
+                        Widgets.updateIndicator(obj, widget, value);
+                        updatedCount++;
+                    }
                     break;
             }
         });
 
-        Canvas.canvas.requestRenderAll();
+        if (updatedCount > 0) {
+            Canvas.canvas.requestRenderAll();
+        }
     },
 
     /**
