@@ -67,7 +67,17 @@ npm install
 
 ### Quick Start Guide
 
-Detailed quick start instructions will be added as components are developed. For now:
+**🎨 Try the Dashboard Editor (Available Now!):**
+
+1. Open `editor/index.html` in your web browser
+2. Drag widgets from the left panel onto the canvas
+3. Configure widget properties in the right panel
+4. Bind widgets to VESC data sources
+5. Export your dashboard as JSON
+
+See the [Editor README](editor/README.md) for complete documentation.
+
+**For other components:**
 
 1. Check the [Roadmap](ROADMAP.md) to see current priorities
 2. Read the [Contributing Guide](CONTRIBUTING.md) to get involved
@@ -77,10 +87,20 @@ Detailed quick start instructions will be added as components are developed. For
 
 ```
 veschub/
-├── mobile/           # Flutter mobile app (iOS/Android)
-├── editor/           # Web-based dashboard editor
+├── mobile/           # Flutter mobile app (iOS/Android) - Coming soon
+├── editor/           # Web-based dashboard editor ✅ READY
+│   ├── index.html    # Main editor interface
+│   ├── css/          # Styling (dark theme)
+│   ├── js/           # Application logic
+│   ├── assets/       # Icons, examples, fonts
+│   └── README.md     # Editor documentation
 ├── docs/             # Additional documentation
+│   ├── JSON_SCHEMA.md      # Dashboard schema docs
+│   ├── WIDGET_TYPES.md     # Widget reference
+│   ├── DATA_SOURCES.md     # VESC data sources
+│   └── PROJECT_STRUCTURE.md
 ├── examples/         # Example dashboard configurations
+├── schema/           # JSON schema definition
 ├── LICENSE           # Project license
 ├── README.md         # This file
 ├── CONTRIBUTING.md   # Contribution guidelines
