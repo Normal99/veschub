@@ -90,8 +90,8 @@ const App = {
         const zoomFitBtn = document.getElementById('btn-zoom-fit');
         if (zoomFitBtn) zoomFitBtn.addEventListener('click', () => Canvas.zoomToFit());
 
-        const gridBtn = document.getElementById('btn-toggle-grid');
-        if (gridBtn) gridBtn.addEventListener('click', () => Canvas.toggleSnapToGrid());
+        const gridBtn = document.getElementById('btn-grid');
+        if (gridBtn) gridBtn.addEventListener('click', () => Canvas.toggleGrid());
 
         const previewBtn = document.getElementById('btn-preview');
         if (previewBtn) previewBtn.addEventListener('click', () => App.togglePreview());
@@ -328,16 +328,67 @@ const App = {
      * Update screen selector dropdown
      */
     updateScreenSelect: () => {
-        const screenSelect = document.getElementById('screen-select');
-        if (!screenSelect) return;
+        const screenList = document.getElementById('screen-list');
+        if (!screenList) return;
 
-        screenSelect.innerHTML = '';
+        // Clear existing screen items
+        screenList.innerHTML = '';
+
+        // Create screen items
         App.dashboard.screens.forEach((screen, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = screen.name;
-            option.selected = index === App.currentScreenIndex;
-            screenSelect.appendChild(option);
+            const screenItem = document.createElement('div');
+            screenItem.className = 'screen-item';
+            screenItem.setAttribute('data-screen-index', index);
+            if (index === App.currentScreenIndex) {
+                screenItem.classList.add('active');
+            }
+
+            screenItem.innerHTML = `
+                <div class="screen-thumbnail">
+                    <canvas class="screen-preview" width="80" height="60"></canvas>
+                </div>
+                <div class="screen-name">${screen.name}</div>
+                <div class="screen-actions">
+                    <button class="btn-icon-small btn-rename-screen" data-screen-index="${index}" title="Rename">✏️</button>
+                    <button class="btn-icon-small btn-duplicate-screen" data-screen-index="${index}" title="Duplicate">📄</button>
+                    <button class="btn-icon-small btn-delete-screen" data-screen-index="${index}" title="Delete">🗑️</button>
+                </div>
+            `;
+
+            // Click on screen item to switch
+            screenItem.addEventListener('click', (e) => {
+                // Don't switch if clicking on action buttons
+                if (!e.target.closest('.screen-actions')) {
+                    App.switchScreen(index);
+                }
+            });
+
+            screenList.appendChild(screenItem);
+        });
+
+        // Setup event listeners for action buttons
+        document.querySelectorAll('.btn-rename-screen').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.getAttribute('data-screen-index'));
+                App.renameScreen(index);
+            });
+        });
+
+        document.querySelectorAll('.btn-duplicate-screen').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.getAttribute('data-screen-index'));
+                App.duplicateScreen(index);
+            });
+        });
+
+        document.querySelectorAll('.btn-delete-screen').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const index = parseInt(btn.getAttribute('data-screen-index'));
+                App.deleteScreenByIndex(index);
+            });
         });
     },
 
@@ -372,17 +423,78 @@ const App = {
     },
 
     /**
-     * Delete current screen
+     * Rename screen
      */
-    deleteScreen: () => {
+    renameScreen: (index) => {
+        if (index < 0 || index >= App.dashboard.screens.length) return;
+
+        const screen = App.dashboard.screens[index];
+        const newName = Utils.prompt('Enter new screen name:', screen.name);
+        
+        if (newName && newName !== screen.name) {
+            screen.name = newName;
+            App.markDirty();
+            App.updateScreenSelect();
+            Utils.notify(`Screen renamed to "${newName}"`, 'success');
+        }
+    },
+
+    /**
+     * Duplicate screen
+     */
+    duplicateScreen: (index) => {
+        if (index < 0 || index >= App.dashboard.screens.length) return;
+
+        const screen = App.dashboard.screens[index];
+        const newScreen = {
+            id: Utils.generateId('screen'),
+            name: `${screen.name} (Copy)`,
+            backgroundColor: screen.backgroundColor,
+            widgets: Utils.deepClone(screen.widgets || [])
+        };
+
+        // Update widget IDs in the duplicated screen
+        newScreen.widgets.forEach(widget => {
+            widget.id = Utils.generateId('widget');
+        });
+
+        App.dashboard.screens.push(newScreen);
+        App.markDirty();
+        App.updateScreenSelect();
+
+        Utils.notify(`Screen "${newScreen.name}" created`, 'success');
+    },
+
+    /**
+     * Delete screen by index
+     */
+    deleteScreenByIndex: (index) => {
+        if (index < 0 || index >= App.dashboard.screens.length) return;
+
         if (App.dashboard.screens.length <= 1) {
             Utils.notify('Cannot delete the last screen', 'error');
             return;
         }
 
-        if (Utils.confirm(`Delete screen "${App.currentScreen.name}"?`)) {
-            App.dashboard.screens.splice(App.currentScreenIndex, 1);
-            App.currentScreenIndex = Math.max(0, App.currentScreenIndex - 1);
+        const screen = App.dashboard.screens[index];
+        const hasWidgets = screen.widgets && screen.widgets.length > 0;
+        const confirmMessage = hasWidgets 
+            ? `Delete screen "${screen.name}" and its ${screen.widgets.length} widget(s)?`
+            : `Delete screen "${screen.name}"?`;
+
+        if (Utils.confirm(confirmMessage)) {
+            App.dashboard.screens.splice(index, 1);
+            
+            // Adjust current screen index if needed
+            if (App.currentScreenIndex >= App.dashboard.screens.length) {
+                App.currentScreenIndex = App.dashboard.screens.length - 1;
+            }
+            if (App.currentScreenIndex === index) {
+                App.currentScreenIndex = Math.max(0, index - 1);
+            } else if (App.currentScreenIndex > index) {
+                App.currentScreenIndex--;
+            }
+            
             App.currentScreen = App.dashboard.screens[App.currentScreenIndex];
             
             App.markDirty();
@@ -394,10 +506,18 @@ const App = {
     },
 
     /**
+     * Delete current screen
+     */
+    deleteScreen: () => {
+        App.deleteScreenByIndex(App.currentScreenIndex);
+    },
+
+    /**
      * Switch to different screen
      */
     switchScreen: (index) => {
         if (index < 0 || index >= App.dashboard.screens.length) return;
+        if (index === App.currentScreenIndex) return; // Already on this screen
 
         // Save current screen state
         App.updateCurrentScreenFromCanvas();
@@ -408,6 +528,9 @@ const App = {
 
         // Load new screen
         App.loadCurrentScreen();
+
+        // Update UI to show active screen
+        App.updateScreenSelect();
 
         Utils.notify(`Switched to "${App.currentScreen.name}"`, 'info');
     },
@@ -452,6 +575,17 @@ const App = {
             Canvas.canvas.forEachObject(obj => {
                 obj.selectable = false;
                 obj.evented = false;
+                
+                // Enable button interactivity
+                if (obj.widgetData && obj.widgetData.type === 'button') {
+                    obj.evented = true;
+                    obj.hoverCursor = 'pointer';
+                    
+                    // Add click handler for buttons
+                    obj.on('mousedown', (e) => {
+                        App.handleButtonClick(obj.widgetData);
+                    });
+                }
             });
             Canvas.canvas.requestRenderAll();
 
@@ -459,7 +593,7 @@ const App = {
             if (editorPanel) editorPanel.classList.add('preview-mode');
 
             App.startMockData();
-            Utils.notify('Preview mode enabled', 'info');
+            Utils.notify('Preview mode enabled - Buttons are interactive', 'info');
         } else {
             // Exit preview mode
             Canvas.canvas.selection = true;
@@ -467,6 +601,12 @@ const App = {
                 if (!obj.isGrid) {
                     obj.selectable = true;
                     obj.evented = true;
+                    obj.hoverCursor = 'move';
+                    
+                    // Remove button click handlers
+                    if (obj.widgetData && obj.widgetData.type === 'button') {
+                        obj.off('mousedown');
+                    }
                 }
             });
             Canvas.canvas.requestRenderAll();
@@ -480,37 +620,276 @@ const App = {
     },
 
     /**
+     * Handle button click in preview mode
+     */
+    handleButtonClick: (buttonWidget) => {
+        if (!buttonWidget.action) return;
+
+        const action = buttonWidget.action;
+        
+        switch (action.type) {
+            case 'switchScreen':
+                // Find screen by ID or name
+                const targetScreenIndex = App.dashboard.screens.findIndex(
+                    screen => screen.id === action.target || screen.name === action.target
+                );
+                
+                if (targetScreenIndex >= 0) {
+                    App.switchScreen(targetScreenIndex);
+                    Utils.notify(`Switched to screen: ${App.dashboard.screens[targetScreenIndex].name}`, 'success');
+                } else {
+                    Utils.notify(`Screen not found: ${action.target}`, 'error');
+                }
+                break;
+                
+            case 'toggleValue':
+                // Toggle a boolean value (placeholder implementation)
+                Utils.notify(`Toggle action: ${action.target}`, 'info');
+                break;
+                
+            case 'sendCommand':
+                // Send command (placeholder implementation)
+                Utils.notify(`Command: ${action.target}`, 'info');
+                break;
+                
+            default:
+                console.warn('Unknown button action:', action.type);
+        }
+        
+        // Visual feedback for button press (optional enhancement)
+        // Could add a brief highlight or animation here
+    },
+
+    /**
      * Start mock data simulator for preview
      */
     startMockData: () => {
+        // Initialize mock data with realistic starting values
+        const startTime = Date.now();
+        
         App.mockData = {
             speed: 0,
             battery_percent: 100,
-            battery_voltage: 42.0,
+            battery_voltage: 54.0, // Fully charged 13S battery
             battery_current: 0,
             motor_current: 0,
             motor_temp: 25,
-            controller_temp: 25,
+            controller_temp: 30,
             duty_cycle: 0,
             rpm: 0,
+            amp_hours_used: 0,
+            amp_hours_charged: 0,
+            watt_hours_used: 0,
+            watt_hours_charged: 0,
+            odometer: 1234.5,
             trip_distance: 0,
-            odometer: 1234.5
+            fault_code: '',
+            // Internal state for animation
+            _time: 0,
+            _speedTarget: 30,
+            _speedPhase: 0,
+            _tripStartTime: startTime
         };
 
+        // Update mock data at 100ms intervals for smooth animation
         App.mockDataInterval = setInterval(() => {
-            // Simulate changing data
-            App.mockData.speed = 20 + Math.sin(Date.now() / 1000) * 15;
-            App.mockData.battery_percent = 100 - (Date.now() % 100000) / 1000;
-            App.mockData.battery_current = 5 + Math.sin(Date.now() / 1000) * 5;
-            App.mockData.motor_current = 10 + Math.sin(Date.now() / 500) * 8;
-            App.mockData.motor_temp = 30 + Math.random() * 10;
-            App.mockData.rpm = App.mockData.speed * 100;
-            App.mockData.duty_cycle = App.mockData.speed / 80 * 100;
+            const deltaTime = 0.1; // 100ms in seconds
+            App.mockData._time += deltaTime;
 
-            // Update widgets with mock data (simplified)
-            // In a real implementation, this would update the visual representation
-            console.log('Mock data update:', App.mockData);
+            // Speed: varies between 0-60 km/h with smooth transitions
+            App.mockData._speedPhase += deltaTime * 0.5;
+            const speedBase = 30 + Math.sin(App.mockData._speedPhase) * 20;
+            const speedNoise = Math.sin(App.mockData._time * 3) * 3;
+            App.mockData.speed = Math.max(0, Math.min(60, speedBase + speedNoise));
+
+            // RPM: proportional to speed (roughly 70 rpm per km/h for typical e-board)
+            App.mockData.rpm = App.mockData.speed * 70;
+
+            // Duty cycle: 0-100% proportional to speed
+            App.mockData.duty_cycle = (App.mockData.speed / 60) * 100;
+
+            // Battery percent: slowly decreases (loses ~0.1% per second of riding)
+            if (App.mockData.speed > 5) {
+                App.mockData.battery_percent -= 0.01 * deltaTime;
+                App.mockData.battery_percent = Math.max(0, App.mockData.battery_percent);
+            }
+
+            // Battery voltage: 48V-54V based on battery percent (13S LiPo/Li-ion)
+            App.mockData.battery_voltage = 48.0 + (App.mockData.battery_percent / 100) * 6.0;
+
+            // Battery current: 0-30A varying with speed and acceleration
+            const currentTarget = (App.mockData.speed / 60) * 25 + Math.sin(App.mockData._time * 2) * 5;
+            App.mockData.battery_current = Math.max(0, Math.min(30, currentTarget));
+
+            // Motor current: 0-50A with variation
+            App.mockData.motor_current = App.mockData.battery_current * 1.5 + Math.sin(App.mockData._time * 1.5) * 10;
+            App.mockData.motor_current = Math.max(0, Math.min(50, App.mockData.motor_current));
+
+            // Motor temperature: 25-60°C, slowly increases with use
+            if (App.mockData.speed > 10) {
+                App.mockData.motor_temp += 0.02 * deltaTime;
+            } else {
+                App.mockData.motor_temp -= 0.01 * deltaTime; // Cooling down
+            }
+            App.mockData.motor_temp = Math.max(25, Math.min(60, App.mockData.motor_temp));
+
+            // Controller temperature: 30-55°C
+            if (App.mockData.speed > 10) {
+                App.mockData.controller_temp += 0.015 * deltaTime;
+            } else {
+                App.mockData.controller_temp -= 0.01 * deltaTime;
+            }
+            App.mockData.controller_temp = Math.max(30, Math.min(55, App.mockData.controller_temp));
+
+            // Odometer and trip distance: increment based on speed
+            const distanceIncrement = (App.mockData.speed / 3600) * deltaTime; // km
+            App.mockData.trip_distance += distanceIncrement;
+            App.mockData.odometer += distanceIncrement;
+
+            // Energy consumption
+            const powerUsed = App.mockData.battery_voltage * App.mockData.battery_current; // Watts
+            App.mockData.watt_hours_used += (powerUsed / 3600) * deltaTime;
+            
+            // Consumption in Wh/km: calculate from energy used and distance traveled
+            if (App.mockData.trip_distance > 0.1) {
+                App.mockData.consumption_wh_per_km = App.mockData.watt_hours_used / App.mockData.trip_distance;
+            } else {
+                App.mockData.consumption_wh_per_km = 20; // Default
+            }
+
+            // Update widgets with new mock data
+            App.updateWidgetsWithMockData();
         }, 100);
+    },
+
+    /**
+     * Update widgets with mock data values
+     */
+    updateWidgetsWithMockData: () => {
+        if (!Canvas.canvas) return;
+
+        Canvas.canvas.getObjects().forEach(obj => {
+            if (obj.isGrid || !obj.widgetData) return;
+
+            const widget = obj.widgetData;
+            const dataSource = widget.dataSource;
+
+            if (!dataSource || !App.mockData.hasOwnProperty(dataSource)) return;
+
+            const value = App.mockData[dataSource];
+
+            // Update widget based on type
+            switch (widget.type) {
+                case 'text':
+                    App.updateTextWidget(obj, value, widget);
+                    break;
+                case 'gauge':
+                case 'speedometer':
+                    App.updateGaugeWidget(obj, value, widget);
+                    break;
+                case 'progressbar':
+                    App.updateProgressBarWidget(obj, value, widget);
+                    break;
+                case 'indicator':
+                    App.updateIndicatorWidget(obj, value, widget);
+                    break;
+                case 'consumption':
+                    App.updateConsumptionWidget(obj, value, widget);
+                    break;
+            }
+        });
+
+        Canvas.canvas.requestRenderAll();
+    },
+
+    /**
+     * Update text widget with data value
+     */
+    updateTextWidget: (fabricObject, value, widget) => {
+        if (fabricObject.type !== 'text') return;
+
+        // Format value
+        let formattedValue = value;
+        
+        if (typeof value === 'number') {
+            const decimals = widget.decimals || 0;
+            formattedValue = value.toFixed(decimals);
+        }
+
+        // Apply prefix and suffix
+        const prefix = widget.prefix || '';
+        const suffix = widget.suffix || '';
+        const displayText = `${prefix}${formattedValue}${suffix}`;
+
+        fabricObject.set({ text: displayText });
+    },
+
+    /**
+     * Update gauge widget with data value
+     */
+    updateGaugeWidget: (fabricObject, value, widget) => {
+        // For now, we'll just update the widget data
+        // Full gauge animation will be implemented in the gauge rendering enhancement
+        widget.currentValue = value;
+    },
+
+    /**
+     * Update progress bar widget with data value
+     */
+    updateProgressBarWidget: (fabricObject, value, widget) => {
+        // Calculate percentage based on min/max
+        const min = widget.minValue || 0;
+        const max = widget.maxValue || 100;
+        const percentage = Math.max(0, Math.min(1, (value - min) / (max - min)));
+
+        // Update progress bar fill
+        // This is a simplified update - full implementation would redraw the progress bar
+        widget.currentValue = value;
+        widget.currentPercentage = percentage;
+    },
+
+    /**
+     * Update indicator widget with data value
+     */
+    updateIndicatorWidget: (fabricObject, value, widget) => {
+        const threshold = widget.threshold || 0.5;
+        const isOn = value > threshold;
+        
+        // Update color based on on/off state
+        const color = isOn ? (widget.onColor || '#00FF00') : (widget.offColor || '#2A2A2A');
+        
+        if (fabricObject.type === 'circle') {
+            fabricObject.set({ fill: color });
+        }
+    },
+
+    /**
+     * Update consumption widget with data value
+     */
+    updateConsumptionWidget: (fabricObject, value, widget) => {
+        if (widget.displayMode === 'text') {
+            // Update text widget
+            App.updateTextWidget(fabricObject, value, widget);
+            
+            // Update color based on efficiency
+            let color = widget.color || '#FFFFFF';
+            if (widget.efficientThreshold && widget.moderateThreshold) {
+                if (value < widget.efficientThreshold) {
+                    color = widget.efficientColor || '#00FF00';
+                } else if (value < widget.moderateThreshold) {
+                    color = widget.moderateColor || '#FFAA00';
+                } else {
+                    color = widget.inefficientColor || '#FF3333';
+                }
+            }
+            
+            if (fabricObject.type === 'text') {
+                fabricObject.set({ fill: color });
+            }
+        } else {
+            // Update gauge widget
+            App.updateGaugeWidget(fabricObject, value, widget);
+        }
     },
 
     /**

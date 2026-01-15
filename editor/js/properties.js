@@ -90,10 +90,13 @@ const Properties = {
             case 'speedometer':
                 html += Properties.renderSpeedometerProperties(widget);
                 break;
+            case 'consumption':
+                html += Properties.renderConsumptionProperties(widget);
+                break;
         }
 
         // Data source
-        if (['text', 'gauge', 'progressbar', 'indicator', 'speedometer', 'graph'].includes(widget.type)) {
+        if (['text', 'gauge', 'progressbar', 'indicator', 'speedometer', 'graph', 'consumption'].includes(widget.type)) {
             html += Properties.renderDataSourceSection(widget);
         }
 
@@ -293,6 +296,28 @@ const Properties = {
             Properties.renderNumberInput('threshold', 'Threshold', widget.threshold || 0.5, 0, 1, 0.1),
             Properties.renderCheckbox('blinkWhenOn', 'Blink When ON', widget.blinkWhenOn || false),
             Properties.renderNumberInput('blinkRate', 'Blink Rate (ms)', widget.blinkRate || 500, 100, 5000)
+        ]);
+    },
+
+    /**
+     * Render consumption meter properties
+     */
+    renderConsumptionProperties: (widget) => {
+        return Properties.renderSection('Consumption Meter Properties', [
+            Properties.renderSelect('displayMode', 'Display Mode', widget.displayMode || 'gauge', [
+                { value: 'text', label: 'Text Display' },
+                { value: 'gauge', label: 'Gauge Display' }
+            ]),
+            Properties.renderTextInput('units', 'Units', widget.units || 'Wh/km'),
+            Properties.renderNumberInput('minValue', 'Min Value', widget.minValue || 0, 0, 100),
+            Properties.renderNumberInput('maxValue', 'Max Value', widget.maxValue || 50, 0, 200),
+            Properties.renderNumberInput('decimals', 'Decimals', widget.decimals || 1, 0, 3),
+            Properties.renderCheckbox('showUnit', 'Show Unit', widget.showUnit !== false),
+            Properties.renderNumberInput('efficientThreshold', 'Efficient Threshold', widget.efficientThreshold || 15, 0, 100),
+            Properties.renderNumberInput('moderateThreshold', 'Moderate Threshold', widget.moderateThreshold || 25, 0, 100),
+            Properties.renderColorPicker('efficientColor', 'Efficient Color', widget.efficientColor || '#00FF00'),
+            Properties.renderColorPicker('moderateColor', 'Moderate Color', widget.moderateColor || '#FFAA00'),
+            Properties.renderColorPicker('inefficientColor', 'Inefficient Color', widget.inefficientColor || '#FF3333')
         ]);
     },
 
@@ -514,6 +539,37 @@ const Properties = {
      * Apply property to fabric object
      */
     applyPropertyToFabricObject: (fabricObject, property, value) => {
+        // For complex widgets, we need to re-render them completely
+        const needsRerender = ['gaugeType', 'minValue', 'maxValue', 'showTicks', 'tickCount', 
+                                'orientation', 'fillColor', 'backgroundColor', 'needleColor',
+                                'shapeType', 'strokeColor', 'strokeWidth', 'borderRadius',
+                                'fontFamily', 'fontWeight', 'textAlign', 'dataSource'];
+
+        if (needsRerender.includes(property)) {
+            // For properties that affect the widget structure, re-render the entire widget
+            const widget = fabricObject.widgetData;
+            const index = Canvas.canvas.getObjects().indexOf(fabricObject);
+            
+            // Remove old object
+            Canvas.canvas.remove(fabricObject);
+            
+            // Create new object with updated properties
+            const newFabricObject = Widgets.renderWidget(widget, Canvas.canvas);
+            
+            // Restore z-index by moving to original position
+            if (newFabricObject && index >= 0) {
+                Canvas.canvas.moveTo(newFabricObject, index);
+            }
+            
+            // Set as active object
+            if (newFabricObject) {
+                Canvas.canvas.setActiveObject(newFabricObject);
+            }
+            
+            return;
+        }
+
+        // Handle simple properties that can be updated directly
         switch (property) {
             case 'x':
                 fabricObject.set({ left: value });
@@ -548,7 +604,6 @@ const Properties = {
                     fabricObject.set({ fill: value });
                 }
                 break;
-            // Add more property mappings as needed
         }
         
         fabricObject.setCoords();

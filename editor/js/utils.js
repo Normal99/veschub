@@ -220,6 +220,7 @@ const Utils = {
             { value: 'watt_hours_charged', label: 'Watt Hours Charged (Wh)', type: 'float', units: 'Wh' },
             { value: 'odometer', label: 'Odometer (km)', type: 'float', units: 'km' },
             { value: 'trip_distance', label: 'Trip Distance (km)', type: 'float', units: 'km' },
+            { value: 'consumption_wh_per_km', label: 'Consumption (Wh/km)', type: 'float', units: 'Wh/km' },
             { value: 'fault_code', label: 'Fault Code', type: 'string', units: '' }
         ];
     },
@@ -341,6 +342,29 @@ const Utils = {
                 needleColor: '#00FFFF',
                 showDigitalDisplay: true,
                 digitalFontSize: 48
+            },
+            consumption: {
+                ...common,
+                width: 180,
+                height: 100,
+                minValue: 0,
+                maxValue: 50,
+                units: 'Wh/km',
+                dataSource: 'consumption_wh_per_km',
+                displayMode: 'gauge', // 'text' or 'gauge'
+                fontSize: 32,
+                fontFamily: 'Roboto',
+                color: '#FFFFFF',
+                backgroundColor: 'transparent',
+                showUnit: true,
+                decimals: 1,
+                // Color coding thresholds
+                efficientThreshold: 15, // Green below this
+                moderateThreshold: 25,  // Yellow between
+                // Red above moderate
+                efficientColor: '#00FF00',
+                moderateColor: '#FFAA00',
+                inefficientColor: '#FF3333'
             }
         };
 
@@ -377,7 +401,8 @@ const Utils = {
             image: '🖼️',
             shape: '⬜',
             indicator: '💡',
-            speedometer: '🚗'
+            speedometer: '🚗',
+            consumption: '⚡'
         };
         return icons[type] || '❓';
     }
