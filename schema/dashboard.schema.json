@@ -1,0 +1,972 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://veschub.com/schemas/dashboard.schema.json",
+  "title": "VescHub Dashboard Schema",
+  "description": "JSON Schema for VescHub dashboard configurations",
+  "type": "object",
+  "required": ["version", "name", "screens"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version (format: major.minor)",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": ["1.0", "2.0"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Dashboard name",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "description": {
+      "type": "string",
+      "description": "Dashboard description",
+      "maxLength": 500
+    },
+    "author": {
+      "type": "string",
+      "description": "Dashboard author"
+    },
+    "defaultScreen": {
+      "type": "string",
+      "description": "ID of the default screen to display"
+    },
+    "theme": {
+      "$ref": "#/definitions/theme"
+    },
+    "navigation": {
+      "$ref": "#/definitions/navigation"
+    },
+    "screens": {
+      "type": "array",
+      "description": "Dashboard screens",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/screen"
+      }
+    },
+    "dataSources": {
+      "type": "object",
+      "description": "Custom data source definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/dataSourceDefinition"
+      }
+    }
+  },
+  "definitions": {
+    "theme": {
+      "type": "object",
+      "description": "Global theme settings",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Theme name"
+        },
+        "defaultFontFamily": {
+          "type": "string",
+          "default": "Roboto"
+        },
+        "defaultFontSize": {
+          "type": "number",
+          "default": 16,
+          "minimum": 8,
+          "maximum": 200
+        },
+        "defaultColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#FFFFFF"
+        },
+        "defaultBackgroundColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#000000"
+        },
+        "accentColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+        },
+        "warningColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#FFFF00"
+        },
+        "dangerColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#FF0000"
+        }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "description": "Navigation settings",
+      "properties": {
+        "swipeEnabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "swipeDirection": {
+          "type": "string",
+          "enum": ["horizontal", "vertical"],
+          "default": "horizontal"
+        },
+        "buttonNavigation": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "screen": {
+      "type": "object",
+      "required": ["id", "name", "widgets"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique screen identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Screen display name"
+        },
+        "backgroundColor": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#000000"
+        },
+        "backgroundImage": {
+          "type": "string",
+          "description": "Path to background image"
+        },
+        "widgets": {
+          "type": "array",
+          "description": "Widgets on this screen",
+          "items": {
+            "$ref": "#/definitions/widget"
+          }
+        },
+        "_comment": {
+          "type": "string",
+          "description": "Optional comment about this screen"
+        }
+      }
+    },
+    "widget": {
+      "type": "object",
+      "required": ["id", "type", "x", "y", "width", "height"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique widget identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "button", "gauge", "graph", "progressbar", "image", "shape", "indicator", "speedometer"],
+          "description": "Widget type. NOTE: This list is the canonical source for supported widget types. Keep synchronized with implementation code and documentation."
+        },
+        "x": {
+          "type": "number",
+          "description": "X position in pixels"
+        },
+        "y": {
+          "type": "number",
+          "description": "Y position in pixels"
+        },
+        "width": {
+          "type": "number",
+          "description": "Width in pixels",
+          "minimum": 0
+        },
+        "height": {
+          "type": "number",
+          "description": "Height in pixels",
+          "minimum": 0
+        },
+        "rotation": {
+          "type": "number",
+          "description": "Rotation in degrees",
+          "default": 0
+        },
+        "opacity": {
+          "type": "number",
+          "description": "Opacity",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1.0
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "Visibility flag",
+          "default": true
+        },
+        "zIndex": {
+          "type": "integer",
+          "description": "Z-index for layering",
+          "default": 0
+        },
+        "dataSource": {
+          "type": "string",
+          "description": "Data source identifier"
+        },
+        "showWhen": {
+          "$ref": "#/definitions/condition"
+        },
+        "animation": {
+          "$ref": "#/definitions/animation"
+        },
+        "conditionalFormatting": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/conditionalFormat"
+          }
+        },
+        "_comment": {
+          "type": "string",
+          "description": "Optional comment about this widget"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "text"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Static text or template"
+              },
+              "fontFamily": {
+                "type": "string",
+                "default": "Roboto"
+              },
+              "fontSize": {
+                "type": "number",
+                "minimum": 8,
+                "maximum": 200
+              },
+              "fontWeight": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "enum": ["normal", "bold"]
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 100,
+                    "maximum": 900,
+                    "multipleOf": 100
+                  }
+                ]
+              },
+              "fontStyle": {
+                "type": "string",
+                "enum": ["normal", "italic"]
+              },
+              "textAlign": {
+                "type": "string",
+                "enum": ["left", "center", "right"]
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "borderWidth": {
+                "type": "number",
+                "minimum": 0
+              },
+              "borderColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "borderRadius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "shadow": {
+                "$ref": "#/definitions/shadow"
+              },
+              "prefix": {
+                "type": "string",
+                "description": "Prefix for data values"
+              },
+              "suffix": {
+                "type": "string",
+                "description": "Suffix for data values (e.g., units)"
+              },
+              "decimals": {
+                "type": "integer",
+                "description": "Number of decimal places",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "button"
+              }
+            }
+          },
+          "then": {
+            "required": ["imageUnpressed", "action"],
+            "properties": {
+              "imageUnpressed": {
+                "type": "string",
+                "description": "Image path for unpressed state"
+              },
+              "imagePressed": {
+                "type": "string",
+                "description": "Image path for pressed state"
+              },
+              "imageDisabled": {
+                "type": "string",
+                "description": "Image path for disabled state"
+              },
+              "action": {
+                "$ref": "#/definitions/buttonAction"
+              },
+              "hapticFeedback": {
+                "type": "boolean",
+                "default": true
+              },
+              "soundOnPress": {
+                "type": "string",
+                "description": "Sound file path"
+              },
+              "enabled": {
+                "type": "boolean",
+                "default": true
+              },
+              "longPressDelay": {
+                "type": "integer",
+                "description": "Long press delay in milliseconds",
+                "minimum": 0,
+                "default": 500
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "gauge"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "gaugeType": {
+                "type": "string",
+                "enum": ["circular", "semicircular"],
+                "default": "circular"
+              },
+              "minValue": {
+                "type": "number",
+                "default": 0
+              },
+              "maxValue": {
+                "type": "number",
+                "default": 100
+              },
+              "units": {
+                "type": "string"
+              },
+              "needleColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "backgroundImage": {
+                "type": "string",
+                "description": "Background image path"
+              },
+              "showTicks": {
+                "type": "boolean",
+                "default": true
+              },
+              "tickCount": {
+                "type": "integer",
+                "minimum": 2
+              },
+              "tickColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "showLabels": {
+                "type": "boolean",
+                "default": true
+              },
+              "labelFontSize": {
+                "type": "number",
+                "minimum": 8
+              },
+              "labelColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "zones": {
+                "type": "array",
+                "description": "Warning/danger zones",
+                "items": {
+                  "$ref": "#/definitions/gaugeZone"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "graph"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "graphType": {
+                "type": "string",
+                "enum": ["line", "bar"],
+                "default": "line"
+              },
+              "dataSeries": {
+                "type": "array",
+                "description": "Data series to plot",
+                "items": {
+                  "$ref": "#/definitions/dataSeries"
+                }
+              },
+              "timeWindow": {
+                "type": "integer",
+                "description": "Time window in seconds",
+                "minimum": 1
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "gridColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "showGrid": {
+                "type": "boolean",
+                "default": true
+              },
+              "showXAxis": {
+                "type": "boolean",
+                "default": true
+              },
+              "showYAxis": {
+                "type": "boolean",
+                "default": true
+              },
+              "axisColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "autoScale": {
+                "type": "boolean",
+                "default": true
+              },
+              "minValue": {
+                "type": "number"
+              },
+              "maxValue": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "progressbar"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "orientation": {
+                "type": "string",
+                "enum": ["horizontal", "vertical"],
+                "default": "horizontal"
+              },
+              "minValue": {
+                "type": "number",
+                "default": 0
+              },
+              "maxValue": {
+                "type": "number",
+                "default": 100
+              },
+              "fillColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "backgroundColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "gradient": {
+                "$ref": "#/definitions/gradient"
+              },
+              "borderRadius": {
+                "type": "number",
+                "minimum": 0
+              },
+              "showValue": {
+                "type": "boolean",
+                "default": false
+              },
+              "valueFontSize": {
+                "type": "number",
+                "minimum": 8
+              },
+              "valueColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "image"
+              }
+            }
+          },
+          "then": {
+            "required": ["imagePath"],
+            "properties": {
+              "imagePath": {
+                "type": "string",
+                "description": "Path to image file"
+              },
+              "fitMode": {
+                "type": "string",
+                "enum": ["fill", "contain", "cover", "stretch", "none"],
+                "default": "contain"
+              },
+              "tintColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+                "description": "Optional tint color"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "shape"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "shapeType": {
+                "type": "string",
+                "enum": ["rectangle", "circle", "line", "polygon"],
+                "default": "rectangle"
+              },
+              "fillColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "strokeColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "strokeWidth": {
+                "type": "number",
+                "minimum": 0
+              },
+              "points": {
+                "type": "array",
+                "description": "For polygon shapes",
+                "items": {
+                  "type": "object",
+                  "required": ["x", "y"],
+                  "properties": {
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "indicator"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "onColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "offColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "imageOn": {
+                "type": "string",
+                "description": "Image path for ON state"
+              },
+              "imageOff": {
+                "type": "string",
+                "description": "Image path for OFF state"
+              },
+              "blinkWhenOn": {
+                "type": "boolean",
+                "default": false
+              },
+              "blinkRate": {
+                "type": "integer",
+                "description": "Blink rate in milliseconds",
+                "minimum": 100
+              },
+              "threshold": {
+                "type": "number",
+                "description": "Threshold value for boolean conversion"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "speedometer"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "minValue": {
+                "type": "number",
+                "default": 0
+              },
+              "maxValue": {
+                "type": "number",
+                "default": 120
+              },
+              "units": {
+                "type": "string",
+                "default": "km/h"
+              },
+              "redZoneStart": {
+                "type": "number",
+                "description": "Start of red zone"
+              },
+              "dialColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "needleColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+              },
+              "redZoneColor": {
+                "type": "string",
+                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+                "default": "#FF0000"
+              },
+              "showDigitalDisplay": {
+                "type": "boolean",
+                "default": true
+              },
+              "digitalFontSize": {
+                "type": "number",
+                "minimum": 8
+              }
+            }
+          }
+        }
+      ]
+    },
+    "condition": {
+      "type": "object",
+      "description": "Conditional visibility/formatting",
+      "properties": {
+        "dataSource": {
+          "type": "string",
+          "description": "Data source to evaluate"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [">", ">=", "<", "<=", "==", "!="],
+          "description": "Comparison operator"
+        },
+        "value": {
+          "description": "Value to compare against",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "condition": {
+          "type": "string",
+          "description": "Full condition string (alternative to operator/value)"
+        }
+      }
+    },
+    "animation": {
+      "type": "object",
+      "description": "Animation settings",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["fade", "slide", "scale", "rotate", "blink"],
+          "description": "Animation type"
+        },
+        "duration": {
+          "type": "integer",
+          "description": "Duration in milliseconds",
+          "minimum": 0,
+          "default": 300
+        },
+        "easing": {
+          "type": "string",
+          "enum": ["linear", "ease-in", "ease-out", "ease-in-out"],
+          "default": "ease-in-out"
+        },
+        "repeat": {
+          "type": "boolean",
+          "default": false
+        },
+        "repeatCount": {
+          "type": "integer",
+          "description": "Number of times to repeat (-1 for infinite)",
+          "default": 1
+        }
+      }
+    },
+    "conditionalFormat": {
+      "type": "object",
+      "description": "Conditional formatting rule",
+      "required": ["condition", "properties"],
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Condition expression (e.g., 'battery_percent < 20')"
+        },
+        "properties": {
+          "type": "object",
+          "description": "Properties to apply when condition is true",
+          "additionalProperties": true
+        }
+      }
+    },
+    "buttonAction": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["switchScreen", "toggleValue", "sendCommand", "function"],
+          "description": "Action type"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target screen ID or data source"
+        },
+        "params": {
+          "type": "object",
+          "description": "Additional action parameters",
+          "additionalProperties": true
+        }
+      }
+    },
+    "shadow": {
+      "type": "object",
+      "description": "Shadow effect",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "default": "#000000"
+        },
+        "blur": {
+          "type": "number",
+          "minimum": 0,
+          "default": 5
+        },
+        "offsetX": {
+          "type": "number",
+          "default": 0
+        },
+        "offsetY": {
+          "type": "number",
+          "default": 2
+        }
+      }
+    },
+    "gradient": {
+      "type": "object",
+      "description": "Gradient definition",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "type": {
+          "type": "string",
+          "enum": ["linear", "radial"],
+          "default": "linear"
+        },
+        "colors": {
+          "type": "array",
+          "description": "Gradient color stops",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
+          }
+        },
+        "angle": {
+          "type": "number",
+          "description": "Gradient angle in degrees (for linear gradients)",
+          "minimum": 0,
+          "maximum": 360
+        }
+      }
+    },
+    "gaugeZone": {
+      "type": "object",
+      "description": "Gauge warning/danger zone",
+      "required": ["from", "to", "color"],
+      "properties": {
+        "from": {
+          "type": "number",
+          "description": "Zone start value"
+        },
+        "to": {
+          "type": "number",
+          "description": "Zone end value"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "description": "Zone color"
+        },
+        "label": {
+          "type": "string",
+          "description": "Optional zone label"
+        }
+      }
+    },
+    "dataSeries": {
+      "type": "object",
+      "description": "Graph data series",
+      "required": ["dataSource"],
+      "properties": {
+        "dataSource": {
+          "type": "string",
+          "description": "Data source identifier"
+        },
+        "label": {
+          "type": "string",
+          "description": "Series label"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$",
+          "description": "Line/bar color"
+        },
+        "lineWidth": {
+          "type": "number",
+          "minimum": 0,
+          "default": 2
+        },
+        "lineStyle": {
+          "type": "string",
+          "enum": ["solid", "dashed", "dotted"],
+          "default": "solid"
+        }
+      }
+    },
+    "dataSourceDefinition": {
+      "type": "object",
+      "description": "Custom data source definition",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["float", "integer", "string", "boolean"],
+          "description": "Data type"
+        },
+        "units": {
+          "type": "string",
+          "description": "Unit of measurement"
+        },
+        "description": {
+          "type": "string",
+          "description": "Data source description"
+        },
+        "minValue": {
+          "type": "number",
+          "description": "Minimum expected value"
+        },
+        "maxValue": {
+          "type": "number",
+          "description": "Maximum expected value"
+        },
+        "defaultValue": {
+          "description": "Default value",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

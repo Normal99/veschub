@@ -1,0 +1,142 @@
+{
+  "version": "1.0",
+  "name": "Simple Speed & Battery Dashboard",
+  "description": "A basic dashboard showing speed and battery percentage",
+  "author": "VescHub Team",
+  "defaultScreen": "main",
+  "theme": {
+    "name": "Dark Mode",
+    "defaultFontFamily": "Roboto",
+    "defaultFontSize": 16,
+    "defaultColor": "#FFFFFF",
+    "defaultBackgroundColor": "#000000",
+    "accentColor": "#00FF00",
+    "warningColor": "#FFFF00",
+    "dangerColor": "#FF0000"
+  },
+  "screens": [
+    {
+      "id": "main",
+      "name": "Main Screen",
+      "backgroundColor": "#000000",
+      "widgets": [
+        {
+          "_comment": "Speed display - large text at top",
+          "id": "speed_display",
+          "type": "text",
+          "x": 40,
+          "y": 100,
+          "width": 320,
+          "height": 120,
+          "dataSource": "speed",
+          "text": "{speed}",
+          "fontSize": 72,
+          "fontWeight": "bold",
+          "fontFamily": "Roboto",
+          "textAlign": "center",
+          "color": "#00FF00",
+          "suffix": " km/h",
+          "decimals": 1
+        },
+        {
+          "_comment": "Speed label",
+          "id": "speed_label",
+          "type": "text",
+          "x": 100,
+          "y": 220,
+          "width": 200,
+          "height": 30,
+          "text": "CURRENT SPEED",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Battery percentage display",
+          "id": "battery_percent",
+          "type": "text",
+          "x": 40,
+          "y": 320,
+          "width": 320,
+          "height": 80,
+          "dataSource": "battery_percent",
+          "text": "{battery_percent}",
+          "fontSize": 48,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#FFFFFF",
+          "suffix": "%",
+          "decimals": 0,
+          "conditionalFormatting": [
+            {
+              "condition": "battery_percent < 20",
+              "properties": {
+                "color": "#FF0000",
+                "animation": {
+                  "type": "blink",
+                  "duration": 500,
+                  "repeat": true
+                }
+              }
+            },
+            {
+              "condition": "battery_percent < 50",
+              "properties": {
+                "color": "#FFFF00"
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Battery label",
+          "id": "battery_label",
+          "type": "text",
+          "x": 100,
+          "y": 400,
+          "width": 200,
+          "height": 30,
+          "text": "BATTERY",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Battery voltage display",
+          "id": "battery_voltage",
+          "type": "text",
+          "x": 100,
+          "y": 480,
+          "width": 200,
+          "height": 40,
+          "dataSource": "battery_voltage",
+          "text": "{battery_voltage}",
+          "fontSize": 24,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#FFFFFF",
+          "suffix": "V",
+          "decimals": 1
+        },
+        {
+          "_comment": "Trip distance",
+          "id": "trip_distance",
+          "type": "text",
+          "x": 100,
+          "y": 560,
+          "width": 200,
+          "height": 40,
+          "dataSource": "trip_distance",
+          "text": "Trip: {trip_distance}",
+          "fontSize": 18,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA",
+          "suffix": " km",
+          "decimals": 2
+        }
+      ]
+    }
+  ]
+}

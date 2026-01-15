@@ -1,0 +1,1172 @@
+{
+  "version": "1.0",
+  "name": "SimHub-Style Feature Showcase",
+  "description": "Comprehensive dashboard demonstrating all VescHub features including conditional formatting, animations, multiple widget types, and advanced layouts",
+  "author": "VescHub Team",
+  "defaultScreen": "home",
+  "theme": {
+    "name": "Premium Dark",
+    "defaultFontFamily": "Roboto",
+    "defaultFontSize": 14,
+    "defaultColor": "#E0E0E0",
+    "defaultBackgroundColor": "#121212",
+    "accentColor": "#1E88E5",
+    "warningColor": "#FFC107",
+    "dangerColor": "#F44336"
+  },
+  "navigation": {
+    "swipeEnabled": true,
+    "swipeDirection": "horizontal",
+    "buttonNavigation": true
+  },
+  "screens": [
+    {
+      "id": "home",
+      "name": "Home Dashboard",
+      "backgroundColor": "#121212",
+      "backgroundImage": "/assets/backgrounds/carbon_fiber.png",
+      "widgets": [
+        {
+          "_comment": "Header bar",
+          "id": "header_bar",
+          "type": "shape",
+          "x": 0,
+          "y": 0,
+          "width": 400,
+          "height": 80,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#1E88E5",
+          "strokeWidth": 2
+        },
+        {
+          "_comment": "Dashboard title",
+          "id": "title",
+          "type": "text",
+          "x": 20,
+          "y": 20,
+          "width": 300,
+          "height": 40,
+          "text": "VESCHUB PRO",
+          "fontSize": 28,
+          "fontWeight": "bold",
+          "color": "#1E88E5",
+          "shadow": {
+            "enabled": true,
+            "color": "#000000",
+            "blur": 10,
+            "offsetX": 2,
+            "offsetY": 2
+          }
+        },
+        {
+          "_comment": "Settings button",
+          "id": "btn_settings",
+          "type": "button",
+          "x": 320,
+          "y": 15,
+          "width": 60,
+          "height": 50,
+          "imageUnpressed": "/assets/icons/settings.png",
+          "imagePressed": "/assets/icons/settings_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "settings"
+          },
+          "hapticFeedback": true,
+          "soundOnPress": "/assets/sounds/click.wav"
+        },
+        {
+          "_comment": "Main speedometer - center of screen",
+          "id": "main_speedometer",
+          "type": "speedometer",
+          "x": 75,
+          "y": 120,
+          "width": 250,
+          "height": 250,
+          "dataSource": "speed",
+          "minValue": 0,
+          "maxValue": 100,
+          "units": "km/h",
+          "redZoneStart": 85,
+          "dialColor": "#1E1E1E",
+          "needleColor": "#1E88E5",
+          "redZoneColor": "#F44336",
+          "showDigitalDisplay": true,
+          "digitalFontSize": 52,
+          "rotation": 0,
+          "shadow": {
+            "enabled": true,
+            "color": "#000000",
+            "blur": 20,
+            "offsetX": 0,
+            "offsetY": 5
+          }
+        },
+        {
+          "_comment": "Speed mode indicator",
+          "id": "speed_warning",
+          "type": "text",
+          "x": 100,
+          "y": 380,
+          "width": 200,
+          "height": 30,
+          "text": "SPEED LIMIT!",
+          "fontSize": 18,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#F44336",
+          "visible": false,
+          "showWhen": {
+            "dataSource": "speed",
+            "operator": ">",
+            "value": 80
+          },
+          "animation": {
+            "type": "blink",
+            "duration": 500,
+            "repeat": true
+          }
+        },
+        {
+          "_comment": "Battery status panel background",
+          "id": "battery_panel_bg",
+          "type": "shape",
+          "x": 20,
+          "y": 430,
+          "width": 360,
+          "height": 100,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1,
+          "borderRadius": 10
+        },
+        {
+          "_comment": "Battery icon",
+          "id": "battery_icon",
+          "type": "image",
+          "x": 30,
+          "y": 445,
+          "width": 50,
+          "height": 70,
+          "imagePath": "/assets/icons/battery.png",
+          "fitMode": "contain",
+          "conditionalFormatting": [
+            {
+              "condition": "battery_percent < 20",
+              "properties": {
+                "tintColor": "#F44336"
+              }
+            },
+            {
+              "condition": "battery_percent >= 20 && battery_percent < 50",
+              "properties": {
+                "tintColor": "#FFC107"
+              }
+            },
+            {
+              "condition": "battery_percent >= 50",
+              "properties": {
+                "tintColor": "#4CAF50"
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Battery percentage large",
+          "id": "battery_percent_large",
+          "type": "text",
+          "x": 90,
+          "y": 445,
+          "width": 120,
+          "height": 50,
+          "dataSource": "battery_percent",
+          "text": "{battery_percent}",
+          "fontSize": 42,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#4CAF50",
+          "suffix": "%",
+          "decimals": 0,
+          "conditionalFormatting": [
+            {
+              "condition": "battery_percent < 20",
+              "properties": {
+                "color": "#F44336",
+                "fontSize": 48
+              }
+            },
+            {
+              "condition": "battery_percent < 50",
+              "properties": {
+                "color": "#FFC107"
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Battery voltage small",
+          "id": "battery_voltage_small",
+          "type": "text",
+          "x": 90,
+          "y": 495,
+          "width": 120,
+          "height": 25,
+          "dataSource": "battery_voltage",
+          "text": "{battery_voltage}V",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA",
+          "decimals": 1
+        },
+        {
+          "_comment": "Vertical battery bar",
+          "id": "battery_visual_bar",
+          "type": "progressbar",
+          "x": 220,
+          "y": 445,
+          "width": 40,
+          "height": 70,
+          "dataSource": "battery_percent",
+          "orientation": "vertical",
+          "minValue": 0,
+          "maxValue": 100,
+          "fillColor": "#4CAF50",
+          "backgroundColor": "#2A2A2A",
+          "borderRadius": 5,
+          "showValue": false,
+          "gradient": {
+            "enabled": true,
+            "type": "linear",
+            "colors": ["#4CAF50", "#8BC34A", "#CDDC39"],
+            "angle": 0
+          },
+          "conditionalFormatting": [
+            {
+              "condition": "battery_percent < 20",
+              "properties": {
+                "fillColor": "#F44336",
+                "gradient": {
+                  "enabled": false
+                }
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "Range estimate",
+          "id": "range_estimate",
+          "type": "text",
+          "x": 270,
+          "y": 455,
+          "width": 100,
+          "height": 50,
+          "text": "Est. Range\n24 km",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Critical warning indicator",
+          "id": "critical_warning_led",
+          "type": "indicator",
+          "x": 350,
+          "y": 450,
+          "width": 20,
+          "height": 20,
+          "dataSource": "battery_percent",
+          "threshold": 10,
+          "onColor": "#F44336",
+          "offColor": "#2A2A2A",
+          "blinkWhenOn": true,
+          "blinkRate": 300,
+          "showWhen": {
+            "dataSource": "battery_percent",
+            "operator": "<",
+            "value": 10
+          }
+        },
+        {
+          "_comment": "Navigation buttons bar",
+          "id": "nav_bar",
+          "type": "shape",
+          "x": 0,
+          "y": 560,
+          "width": 400,
+          "height": 80,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1
+        },
+        {
+          "_comment": "Metrics button",
+          "id": "btn_metrics",
+          "type": "button",
+          "x": 20,
+          "y": 570,
+          "width": 80,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/metrics.png",
+          "imagePressed": "/assets/icons/metrics_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "metrics"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Graphs button",
+          "id": "btn_graphs",
+          "type": "button",
+          "x": 110,
+          "y": 570,
+          "width": 80,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/chart.png",
+          "imagePressed": "/assets/icons/chart_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "analytics"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Diagnostics button",
+          "id": "btn_diagnostics",
+          "type": "button",
+          "x": 210,
+          "y": 570,
+          "width": 80,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/diagnostic.png",
+          "imagePressed": "/assets/icons/diagnostic_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "diagnostics"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Info button",
+          "id": "btn_info",
+          "type": "button",
+          "x": 300,
+          "y": 570,
+          "width": 80,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/info.png",
+          "imagePressed": "/assets/icons/info_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "info"
+          },
+          "hapticFeedback": true
+        }
+      ]
+    },
+    {
+      "id": "metrics",
+      "name": "Live Metrics",
+      "backgroundColor": "#121212",
+      "widgets": [
+        {
+          "_comment": "Back to home button",
+          "id": "btn_home",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/home.png",
+          "imagePressed": "/assets/icons/home_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "home"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Page title",
+          "id": "metrics_title",
+          "type": "text",
+          "x": 100,
+          "y": 30,
+          "width": 200,
+          "height": 40,
+          "text": "LIVE METRICS",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#1E88E5"
+        },
+        {
+          "_comment": "Motor current gauge",
+          "id": "motor_current_gauge",
+          "type": "gauge",
+          "x": 40,
+          "y": 100,
+          "width": 150,
+          "height": 150,
+          "dataSource": "motor_current",
+          "gaugeType": "circular",
+          "minValue": -50,
+          "maxValue": 100,
+          "units": "A",
+          "needleColor": "#1E88E5",
+          "backgroundColor": "#1E1E1E",
+          "showTicks": true,
+          "tickCount": 7,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 10,
+          "labelColor": "#AAAAAA",
+          "zones": [
+            {
+              "from": -50,
+              "to": 0,
+              "color": "#4CAF50",
+              "label": "Regen"
+            },
+            {
+              "from": 0,
+              "to": 60,
+              "color": "#1E88E5",
+              "label": "Normal"
+            },
+            {
+              "from": 60,
+              "to": 100,
+              "color": "#F44336",
+              "label": "High"
+            }
+          ]
+        },
+        {
+          "_comment": "Motor temp gauge",
+          "id": "motor_temp_gauge",
+          "type": "gauge",
+          "x": 210,
+          "y": 100,
+          "width": 150,
+          "height": 150,
+          "dataSource": "motor_temp",
+          "gaugeType": "circular",
+          "minValue": 20,
+          "maxValue": 120,
+          "units": "°C",
+          "needleColor": "#FFC107",
+          "backgroundColor": "#1E1E1E",
+          "showTicks": true,
+          "tickCount": 6,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 10,
+          "labelColor": "#AAAAAA",
+          "zones": [
+            {
+              "from": 20,
+              "to": 60,
+              "color": "#4CAF50",
+              "label": "Cool"
+            },
+            {
+              "from": 60,
+              "to": 80,
+              "color": "#FFC107",
+              "label": "Warm"
+            },
+            {
+              "from": 80,
+              "to": 120,
+              "color": "#F44336",
+              "label": "Hot"
+            }
+          ]
+        },
+        {
+          "_comment": "Duty cycle semicircular gauge",
+          "id": "duty_cycle_gauge",
+          "type": "gauge",
+          "x": 125,
+          "y": 270,
+          "width": 150,
+          "height": 120,
+          "dataSource": "duty_cycle",
+          "gaugeType": "semicircular",
+          "minValue": 0,
+          "maxValue": 100,
+          "units": "%",
+          "needleColor": "#00E676",
+          "backgroundColor": "#1E1E1E",
+          "showTicks": true,
+          "tickCount": 11,
+          "tickColor": "#FFFFFF",
+          "showLabels": true,
+          "labelFontSize": 10,
+          "labelColor": "#AAAAAA"
+        },
+        {
+          "_comment": "Stats panel",
+          "id": "stats_panel",
+          "type": "shape",
+          "x": 20,
+          "y": 410,
+          "width": 360,
+          "height": 150,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1,
+          "borderRadius": 8
+        },
+        {
+          "_comment": "Trip distance",
+          "id": "trip_stat",
+          "type": "text",
+          "x": 40,
+          "y": 425,
+          "width": 160,
+          "height": 30,
+          "dataSource": "trip_distance",
+          "text": "Trip",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Trip distance value",
+          "id": "trip_value",
+          "type": "text",
+          "x": 40,
+          "y": 450,
+          "width": 160,
+          "height": 40,
+          "dataSource": "trip_distance",
+          "text": "{trip_distance}",
+          "fontSize": 28,
+          "fontWeight": "bold",
+          "color": "#1E88E5",
+          "suffix": " km",
+          "decimals": 2
+        },
+        {
+          "_comment": "Odometer",
+          "id": "odo_stat",
+          "type": "text",
+          "x": 200,
+          "y": 425,
+          "width": 160,
+          "height": 30,
+          "dataSource": "odometer",
+          "text": "Odometer",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Odometer value",
+          "id": "odo_value",
+          "type": "text",
+          "x": 200,
+          "y": 450,
+          "width": 160,
+          "height": 40,
+          "dataSource": "odometer",
+          "text": "{odometer}",
+          "fontSize": 28,
+          "fontWeight": "bold",
+          "color": "#1E88E5",
+          "suffix": " km",
+          "decimals": 1
+        },
+        {
+          "_comment": "Amp hours consumed",
+          "id": "ah_stat",
+          "type": "text",
+          "x": 40,
+          "y": 505,
+          "width": 320,
+          "height": 40,
+          "dataSource": "amp_hours_used",
+          "text": "Energy Used: {amp_hours_used}",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA",
+          "suffix": " Ah",
+          "decimals": 2
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics & Graphs",
+      "backgroundColor": "#121212",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_back",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/home.png",
+          "imagePressed": "/assets/icons/home_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "home"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "analytics_title",
+          "type": "text",
+          "x": 100,
+          "y": 30,
+          "width": 200,
+          "height": 40,
+          "text": "ANALYTICS",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#1E88E5"
+        },
+        {
+          "_comment": "Speed history graph",
+          "id": "speed_history",
+          "type": "graph",
+          "x": 20,
+          "y": 100,
+          "width": 360,
+          "height": 140,
+          "graphType": "line",
+          "timeWindow": 60,
+          "backgroundColor": "#1E1E1E",
+          "gridColor": "#2A2A2A",
+          "showGrid": true,
+          "showXAxis": true,
+          "showYAxis": true,
+          "axisColor": "#FFFFFF",
+          "autoScale": true,
+          "dataSeries": [
+            {
+              "dataSource": "speed",
+              "label": "Speed (km/h)",
+              "color": "#1E88E5",
+              "lineWidth": 3,
+              "lineStyle": "solid"
+            }
+          ]
+        },
+        {
+          "_comment": "Power usage graph",
+          "id": "power_history",
+          "type": "graph",
+          "x": 20,
+          "y": 260,
+          "width": 360,
+          "height": 140,
+          "graphType": "line",
+          "timeWindow": 60,
+          "backgroundColor": "#1E1E1E",
+          "gridColor": "#2A2A2A",
+          "showGrid": true,
+          "showXAxis": true,
+          "showYAxis": true,
+          "axisColor": "#FFFFFF",
+          "autoScale": false,
+          "minValue": -20,
+          "maxValue": 100,
+          "dataSeries": [
+            {
+              "dataSource": "motor_current",
+              "label": "Current (A)",
+              "color": "#00E676",
+              "lineWidth": 2,
+              "lineStyle": "solid"
+            },
+            {
+              "dataSource": "duty_cycle",
+              "label": "Duty (%)",
+              "color": "#FFC107",
+              "lineWidth": 2,
+              "lineStyle": "dashed"
+            }
+          ]
+        },
+        {
+          "_comment": "Temperature bar chart",
+          "id": "temp_bar",
+          "type": "graph",
+          "x": 20,
+          "y": 420,
+          "width": 360,
+          "height": 140,
+          "graphType": "bar",
+          "timeWindow": 30,
+          "backgroundColor": "#1E1E1E",
+          "gridColor": "#2A2A2A",
+          "showGrid": true,
+          "showXAxis": true,
+          "showYAxis": true,
+          "axisColor": "#FFFFFF",
+          "autoScale": true,
+          "dataSeries": [
+            {
+              "dataSource": "motor_temp",
+              "label": "Motor Temp (°C)",
+              "color": "#FF5722",
+              "lineWidth": 2,
+              "lineStyle": "solid"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diagnostics",
+      "name": "System Diagnostics",
+      "backgroundColor": "#121212",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_home_diag",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/home.png",
+          "imagePressed": "/assets/icons/home_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "home"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "diag_title",
+          "type": "text",
+          "x": 100,
+          "y": 30,
+          "width": 200,
+          "height": 40,
+          "text": "DIAGNOSTICS",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#1E88E5"
+        },
+        {
+          "_comment": "Status indicators panel",
+          "id": "status_panel",
+          "type": "shape",
+          "x": 20,
+          "y": 100,
+          "width": 360,
+          "height": 200,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1,
+          "borderRadius": 8
+        },
+        {
+          "_comment": "Connection status",
+          "id": "connection_label",
+          "type": "text",
+          "x": 40,
+          "y": 120,
+          "width": 200,
+          "height": 30,
+          "text": "Connection",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Connection indicator",
+          "id": "connection_led",
+          "type": "indicator",
+          "x": 340,
+          "y": 125,
+          "width": 20,
+          "height": 20,
+          "onColor": "#4CAF50",
+          "offColor": "#F44336",
+          "imageOn": "/assets/icons/check.png",
+          "imageOff": "/assets/icons/cross.png"
+        },
+        {
+          "_comment": "Motor status",
+          "id": "motor_label",
+          "type": "text",
+          "x": 40,
+          "y": 160,
+          "width": 200,
+          "height": 30,
+          "text": "Motor Status",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Motor status indicator",
+          "id": "motor_led",
+          "type": "indicator",
+          "x": 340,
+          "y": 165,
+          "width": 20,
+          "height": 20,
+          "onColor": "#4CAF50",
+          "offColor": "#F44336"
+        },
+        {
+          "_comment": "Battery health",
+          "id": "battery_health_label",
+          "type": "text",
+          "x": 40,
+          "y": 200,
+          "width": 200,
+          "height": 30,
+          "text": "Battery Health",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Battery health indicator",
+          "id": "battery_health_led",
+          "type": "indicator",
+          "x": 340,
+          "y": 205,
+          "width": 20,
+          "height": 20,
+          "dataSource": "battery_percent",
+          "threshold": 30,
+          "onColor": "#4CAF50",
+          "offColor": "#FFC107"
+        },
+        {
+          "_comment": "Temperature warning",
+          "id": "temp_warning_label",
+          "type": "text",
+          "x": 40,
+          "y": 240,
+          "width": 200,
+          "height": 30,
+          "text": "Temperature OK",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Temperature warning indicator",
+          "id": "temp_warning_led",
+          "type": "indicator",
+          "x": 340,
+          "y": 245,
+          "width": 20,
+          "height": 20,
+          "dataSource": "motor_temp",
+          "threshold": 80,
+          "onColor": "#F44336",
+          "offColor": "#4CAF50",
+          "blinkWhenOn": true,
+          "blinkRate": 500
+        },
+        {
+          "_comment": "Fault code display",
+          "id": "fault_panel",
+          "type": "shape",
+          "x": 20,
+          "y": 320,
+          "width": 360,
+          "height": 100,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1,
+          "borderRadius": 8
+        },
+        {
+          "_comment": "Fault code label",
+          "id": "fault_label",
+          "type": "text",
+          "x": 40,
+          "y": 335,
+          "width": 320,
+          "height": 30,
+          "text": "Active Faults",
+          "fontSize": 16,
+          "fontWeight": "bold",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Fault code value",
+          "id": "fault_code",
+          "type": "text",
+          "x": 40,
+          "y": 365,
+          "width": 320,
+          "height": 40,
+          "dataSource": "fault_code",
+          "text": "{fault_code}",
+          "fontSize": 18,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#4CAF50",
+          "conditionalFormatting": [
+            {
+              "condition": "fault_code != 'NONE'",
+              "properties": {
+                "color": "#F44336",
+                "fontSize": 24,
+                "fontWeight": "bold"
+              }
+            }
+          ]
+        },
+        {
+          "_comment": "System info",
+          "id": "system_info",
+          "type": "text",
+          "x": 20,
+          "y": 440,
+          "width": 360,
+          "height": 80,
+          "text": "VESC Firmware: 6.02\nDashboard Version: 1.0\nLast Update: January 2026",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#777777"
+        }
+      ]
+    },
+    {
+      "id": "info",
+      "name": "Information",
+      "backgroundColor": "#121212",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_home_info",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/home.png",
+          "imagePressed": "/assets/icons/home_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "home"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "info_title",
+          "type": "text",
+          "x": 100,
+          "y": 30,
+          "width": 200,
+          "height": 40,
+          "text": "INFORMATION",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#1E88E5"
+        },
+        {
+          "_comment": "Logo image",
+          "id": "logo",
+          "type": "image",
+          "x": 125,
+          "y": 100,
+          "width": 150,
+          "height": 150,
+          "imagePath": "/assets/logos/veschub_logo.png",
+          "fitMode": "contain"
+        },
+        {
+          "_comment": "App info text",
+          "id": "app_info",
+          "type": "text",
+          "x": 40,
+          "y": 270,
+          "width": 320,
+          "height": 200,
+          "text": "VescHub Pro Dashboard\n\nVersion: 1.0.0\n\nA SimHub-inspired dashboard\nfor VESC controllers\n\nOpen Source • MIT License\n\nGitHub: Normal99/veschub",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA"
+        },
+        {
+          "_comment": "Decorative line 1",
+          "id": "deco_line_1",
+          "type": "shape",
+          "x": 50,
+          "y": 480,
+          "width": 300,
+          "height": 2,
+          "shapeType": "rectangle",
+          "fillColor": "#1E88E5"
+        },
+        {
+          "_comment": "Animated indicator",
+          "id": "pulse_indicator",
+          "type": "indicator",
+          "x": 190,
+          "y": 500,
+          "width": 20,
+          "height": 20,
+          "onColor": "#1E88E5",
+          "offColor": "#1E88E5",
+          "blinkWhenOn": true,
+          "blinkRate": 1000,
+          "opacity": 0.6,
+          "animation": {
+            "type": "scale",
+            "duration": 1000,
+            "easing": "ease-in-out",
+            "repeat": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "backgroundColor": "#121212",
+      "widgets": [
+        {
+          "_comment": "Back button",
+          "id": "btn_home_settings",
+          "type": "button",
+          "x": 20,
+          "y": 20,
+          "width": 60,
+          "height": 60,
+          "imageUnpressed": "/assets/icons/home.png",
+          "imagePressed": "/assets/icons/home_pressed.png",
+          "action": {
+            "type": "switchScreen",
+            "target": "home"
+          },
+          "hapticFeedback": true
+        },
+        {
+          "_comment": "Title",
+          "id": "settings_title",
+          "type": "text",
+          "x": 100,
+          "y": 30,
+          "width": 200,
+          "height": 40,
+          "text": "SETTINGS",
+          "fontSize": 24,
+          "fontWeight": "bold",
+          "textAlign": "center",
+          "color": "#1E88E5"
+        },
+        {
+          "_comment": "Settings panel",
+          "id": "settings_panel",
+          "type": "shape",
+          "x": 20,
+          "y": 100,
+          "width": 360,
+          "height": 400,
+          "shapeType": "rectangle",
+          "fillColor": "#1E1E1E",
+          "strokeColor": "#2A2A2A",
+          "strokeWidth": 1,
+          "borderRadius": 8
+        },
+        {
+          "_comment": "Settings content placeholder",
+          "id": "settings_text",
+          "type": "text",
+          "x": 40,
+          "y": 200,
+          "width": 320,
+          "height": 200,
+          "text": "Settings Screen\n\nConfigure your dashboard,\nunits, themes, and more.\n\n(Implementation pending)",
+          "fontSize": 16,
+          "fontWeight": "normal",
+          "textAlign": "center",
+          "color": "#AAAAAA"
+        }
+      ]
+    }
+  ],
+  "dataSources": {
+    "speed": {
+      "type": "float",
+      "units": "km/h",
+      "description": "Current speed",
+      "minValue": 0,
+      "maxValue": 100
+    },
+    "battery_percent": {
+      "type": "float",
+      "units": "%",
+      "description": "Battery percentage remaining",
+      "minValue": 0,
+      "maxValue": 100
+    },
+    "battery_voltage": {
+      "type": "float",
+      "units": "V",
+      "description": "Battery voltage",
+      "minValue": 0,
+      "maxValue": 60
+    },
+    "motor_current": {
+      "type": "float",
+      "units": "A",
+      "description": "Motor current (negative for regenerative braking)"
+    },
+    "motor_temp": {
+      "type": "float",
+      "units": "°C",
+      "description": "Motor temperature"
+    },
+    "duty_cycle": {
+      "type": "float",
+      "units": "%",
+      "description": "Motor duty cycle percentage",
+      "minValue": 0,
+      "maxValue": 100
+    },
+    "amp_hours_used": {
+      "type": "float",
+      "units": "Ah",
+      "description": "Amp hours consumed"
+    },
+    "odometer": {
+      "type": "float",
+      "units": "km",
+      "description": "Total distance traveled"
+    },
+    "trip_distance": {
+      "type": "float",
+      "units": "km",
+      "description": "Trip distance"
+    },
+    "fault_code": {
+      "type": "string",
+      "description": "Active fault code (NONE if no faults)",
+      "defaultValue": "NONE"
+    }
+  }
+}
