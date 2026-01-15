@@ -8,9 +8,9 @@
   "properties": {
     "version": {
       "type": "string",
-      "description": "Schema version",
-      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
-      "examples": ["1.0", "1.0.0"]
+      "description": "Schema version (format: major.minor)",
+      "pattern": "^\\d+\\.\\d+$",
+      "examples": ["1.0", "2.0"]
     },
     "name": {
       "type": "string",
@@ -162,7 +162,7 @@
         "type": {
           "type": "string",
           "enum": ["text", "button", "gauge", "graph", "progressbar", "image", "shape", "indicator", "speedometer"],
-          "description": "Widget type"
+          "description": "Widget type. NOTE: This list is the canonical source for supported widget types. Keep synchronized with implementation code and documentation."
         },
         "x": {
           "type": "number",
