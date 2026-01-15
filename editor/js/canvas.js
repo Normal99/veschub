@@ -653,6 +653,15 @@ const Canvas = {
      * Set canvas background color
      */
     setBackgroundColor: (color) => {
+        if (!color) {
+            console.warn('Invalid background color provided');
+            return;
+        }
+        // Validate color format
+        if (!Utils.isValidColor(color) && color !== 'transparent') {
+            console.warn('Invalid color format:', color);
+            return;
+        }
         Canvas.canvas.backgroundColor = color;
         Canvas.canvas.requestRenderAll();
     }

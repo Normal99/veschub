@@ -422,12 +422,14 @@ const Properties = {
      * Render color picker
      */
     renderColorPicker: (name, label, value) => {
-        const colorValue = value === 'transparent' ? '#000000' : (value || '#FFFFFF');
+        // For transparent backgrounds, show a default color in the picker
+        // but preserve 'transparent' as the actual value
+        const displayValue = value === 'transparent' ? '#000000' : (value || '#FFFFFF');
         return `
             <div class="property-field">
                 <label>${label}</label>
                 <div class="color-picker-wrapper">
-                    <input type="color" data-property="${name}" value="${colorValue}" />
+                    <input type="color" data-property="${name}" value="${displayValue}" />
                     <input type="text" data-property="${name}-text" value="${value || '#FFFFFF'}" 
                            placeholder="#FFFFFF" />
                 </div>

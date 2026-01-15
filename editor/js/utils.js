@@ -8,7 +8,7 @@ const Utils = {
      * Generate a unique ID for widgets and screens
      */
     generateId: (prefix = 'widget') => {
-        return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     },
 
     /**
