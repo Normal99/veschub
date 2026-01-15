@@ -38,6 +38,9 @@ const Widgets = {
             case 'shape':
                 fabricObject = Widgets.renderShape(widget);
                 break;
+            case 'consumption':
+                fabricObject = Widgets.renderConsumption(widget);
+                break;
             default:
                 console.warn('Unknown widget type:', widget.type);
                 fabricObject = Widgets.renderPlaceholder(widget);
@@ -82,6 +85,15 @@ const Widgets = {
      * Render gauge widget (circular/semicircular)
      */
     renderGauge: (widget) => {
+        const centerX = widget.width / 2;
+        const centerY = widget.height / 2;
+        const radius = Math.min(widget.width, widget.height) / 2 - 30;
+        
+        const gaugeType = widget.gaugeType || 'circular';
+        const startAngle = gaugeType === 'semicircular' ? -Math.PI : -Math.PI * 0.75;
+        const endAngle = gaugeType === 'semicircular' ? 0 : Math.PI * 0.75;
+        const angleRange = endAngle - startAngle;
+
         const group = new fabric.Group([], {
             left: widget.x,
             top: widget.y,
@@ -91,50 +103,129 @@ const Widgets = {
             opacity: widget.opacity || 1.0
         });
 
-        // Background circle
-        const bg = new fabric.Circle({
-            radius: Math.min(widget.width, widget.height) / 2,
+        // Background arc
+        const bgArc = new fabric.Circle({
+            radius: radius,
             fill: widget.backgroundColor || 'transparent',
             stroke: '#3A3A3A',
-            strokeWidth: 2
+            strokeWidth: 3,
+            startAngle: startAngle * 180 / Math.PI,
+            endAngle: endAngle * 180 / Math.PI,
+            originX: 'center',
+            originY: 'center'
         });
-        group.addWithUpdate(bg);
+        group.addWithUpdate(bgArc);
 
-        // Add tick marks
-        if (widget.showTicks) {
+        // Draw color zones if defined
+        if (widget.zones && widget.zones.length > 0) {
+            widget.zones.forEach(zone => {
+                const minValue = widget.minValue || 0;
+                const maxValue = widget.maxValue || 100;
+                const zoneStartAngle = startAngle + (zone.min - minValue) / (maxValue - minValue) * angleRange;
+                const zoneEndAngle = startAngle + (zone.max - minValue) / (maxValue - minValue) * angleRange;
+                
+                // Draw zone arc (simplified - in full implementation would use proper arc)
+                const zonePath = new fabric.Path(`M 0 0 L ${Math.cos(zoneStartAngle) * radius} ${Math.sin(zoneStartAngle) * radius}`, {
+                    stroke: zone.color || '#FFAA00',
+                    strokeWidth: 6,
+                    fill: '',
+                    originX: 'center',
+                    originY: 'center'
+                });
+                group.addWithUpdate(zonePath);
+            });
+        }
+
+        // Draw tick marks
+        if (widget.showTicks !== false) {
+            const minValue = widget.minValue || 0;
+            const maxValue = widget.maxValue || 100;
             const tickCount = widget.tickCount || 10;
-            const radius = Math.min(widget.width, widget.height) / 2;
+            const majorTickInterval = (maxValue - minValue) / tickCount;
+            const minorTickInterval = majorTickInterval / 2;
             
-            for (let i = 0; i <= tickCount; i++) {
-                const angle = (i / tickCount) * Math.PI * 2;
-                const tickLength = 10;
+            // Draw major and minor ticks
+            for (let value = minValue; value <= maxValue; value += minorTickInterval) {
+                const isMajorTick = Math.abs((value - minValue) % majorTickInterval) < 0.001;
+                const angle = startAngle + ((value - minValue) / (maxValue - minValue)) * angleRange;
+                
+                const tickLength = isMajorTick ? 12 : 6;
+                const tickWidth = isMajorTick ? 2 : 1;
+                
                 const x1 = Math.cos(angle) * (radius - tickLength);
                 const y1 = Math.sin(angle) * (radius - tickLength);
                 const x2 = Math.cos(angle) * radius;
                 const y2 = Math.sin(angle) * radius;
                 
                 const tick = new fabric.Line([x1, y1, x2, y2], {
-                    stroke: widget.tickColor || '#FFFFFF',
-                    strokeWidth: 2
+                    stroke: widget.tickColor || '#AAAAAA',
+                    strokeWidth: tickWidth,
+                    originX: 'center',
+                    originY: 'center'
                 });
                 group.addWithUpdate(tick);
+                
+                // Draw labels for major ticks
+                if (isMajorTick && widget.showLabels !== false) {
+                    const labelRadius = radius - tickLength - 15;
+                    const labelX = Math.cos(angle) * labelRadius;
+                    const labelY = Math.sin(angle) * labelRadius;
+                    
+                    const label = new fabric.Text(value.toString(), {
+                        left: labelX,
+                        top: labelY,
+                        fontSize: 10,
+                        fill: widget.tickColor || '#AAAAAA',
+                        originX: 'center',
+                        originY: 'center'
+                    });
+                    group.addWithUpdate(label);
+                }
             }
         }
 
         // Needle (pointing up as placeholder)
-        const needleLength = Math.min(widget.width, widget.height) / 2 - 20;
-        const needle = new fabric.Line([0, 0, 0, -needleLength], {
+        const currentValue = widget.currentValue || widget.minValue || 0;
+        const minValue = widget.minValue || 0;
+        const maxValue = widget.maxValue || 100;
+        const needleAngle = startAngle + ((currentValue - minValue) / (maxValue - minValue)) * angleRange;
+        
+        const needleLength = radius - 10;
+        const needleX = Math.cos(needleAngle) * needleLength;
+        const needleY = Math.sin(needleAngle) * needleLength;
+        
+        const needle = new fabric.Line([0, 0, needleX, needleY], {
             stroke: widget.needleColor || '#00FF00',
-            strokeWidth: 3
+            strokeWidth: 3,
+            originX: 'center',
+            originY: 'center'
         });
         group.addWithUpdate(needle);
 
         // Center dot
         const center = new fabric.Circle({
-            radius: 5,
-            fill: widget.needleColor || '#00FF00'
+            radius: 6,
+            fill: widget.needleColor || '#00FF00',
+            originX: 'center',
+            originY: 'center'
         });
         group.addWithUpdate(center);
+
+        // Value display text
+        if (widget.showValue !== false) {
+            const valueText = new fabric.Text(
+                `${currentValue.toFixed(widget.decimals || 0)}${widget.units || ''}`,
+                {
+                    top: gaugeType === 'semicircular' ? -20 : 20,
+                    fontSize: 16,
+                    fill: '#FFFFFF',
+                    originX: 'center',
+                    originY: 'center',
+                    fontWeight: 'bold'
+                }
+            );
+            group.addWithUpdate(valueText);
+        }
 
         return group;
     },
@@ -423,6 +514,65 @@ const Widgets = {
         });
 
         return group;
+    },
+
+    /**
+     * Render consumption meter widget
+     */
+    renderConsumption: (widget) => {
+        const displayMode = widget.displayMode || 'gauge';
+        
+        if (displayMode === 'text') {
+            // Simple text display
+            const value = widget.currentValue || 20; // Default value
+            const decimals = widget.decimals || 1;
+            const unit = widget.units || 'Wh/km';
+            
+            // Determine color based on efficiency thresholds
+            let color = widget.color || '#FFFFFF';
+            if (widget.efficientThreshold && widget.moderateThreshold) {
+                if (value < widget.efficientThreshold) {
+                    color = widget.efficientColor || '#00FF00';
+                } else if (value < widget.moderateThreshold) {
+                    color = widget.moderateColor || '#FFAA00';
+                } else {
+                    color = widget.inefficientColor || '#FF3333';
+                }
+            }
+            
+            const displayText = widget.showUnit !== false 
+                ? `${value.toFixed(decimals)} ${unit}` 
+                : value.toFixed(decimals);
+            
+            const text = new fabric.Text(displayText, {
+                left: widget.x,
+                top: widget.y,
+                fontSize: widget.fontSize || 32,
+                fontFamily: widget.fontFamily || 'Roboto',
+                fontWeight: 'bold',
+                fill: color,
+                backgroundColor: widget.backgroundColor || 'transparent',
+                angle: widget.rotation || 0,
+                opacity: widget.opacity || 1.0
+            });
+            
+            return text;
+        } else {
+            // Gauge-style display
+            return Widgets.renderGauge({
+                ...widget,
+                gaugeType: 'semicircular',
+                showTicks: true,
+                showLabels: true,
+                tickCount: 5,
+                showValue: true,
+                zones: [
+                    { min: widget.minValue || 0, max: widget.efficientThreshold || 15, color: widget.efficientColor || '#00FF00' },
+                    { min: widget.efficientThreshold || 15, max: widget.moderateThreshold || 25, color: widget.moderateColor || '#FFAA00' },
+                    { min: widget.moderateThreshold || 25, max: widget.maxValue || 50, color: widget.inefficientColor || '#FF3333' }
+                ]
+            });
+        }
     },
 
     /**

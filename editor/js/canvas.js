@@ -7,6 +7,7 @@ const Canvas = {
     canvas: null,
     gridSize: 10,
     snapToGrid: true,
+    showGrid: true,
     zoom: 1.0,
     minZoom: 0.1,
     maxZoom: 5.0,
@@ -151,19 +152,25 @@ const Canvas = {
     drawGrid: () => {
         if (!Canvas.canvas) return;
 
-        const grid = Canvas.gridSize;
-        const width = Canvas.canvas.width / Canvas.zoom;
-        const height = Canvas.canvas.height / Canvas.zoom;
-
-        // Remove old grid
+        // Remove old grid first
         Canvas.canvas.getObjects().forEach(obj => {
             if (obj.isGrid) {
                 Canvas.canvas.remove(obj);
             }
         });
 
-        // Draw new grid
-        for (let i = 0; i < width / grid; i++) {
+        // Only draw if grid is enabled
+        if (!Canvas.showGrid) {
+            Canvas.canvas.requestRenderAll();
+            return;
+        }
+
+        const grid = Canvas.gridSize;
+        const width = Canvas.canvas.width;
+        const height = Canvas.canvas.height;
+
+        // Draw vertical grid lines
+        for (let i = 0; i <= width / grid; i++) {
             const line = new fabric.Line(
                 [i * grid, 0, i * grid, height],
                 {
@@ -178,7 +185,8 @@ const Canvas = {
             Canvas.canvas.sendToBack(line);
         }
 
-        for (let i = 0; i < height / grid; i++) {
+        // Draw horizontal grid lines
+        for (let i = 0; i <= height / grid; i++) {
             const line = new fabric.Line(
                 [0, i * grid, width, i * grid],
                 {
@@ -192,6 +200,28 @@ const Canvas = {
             Canvas.canvas.add(line);
             Canvas.canvas.sendToBack(line);
         }
+
+        Canvas.canvas.requestRenderAll();
+    },
+
+    /**
+     * Toggle grid visibility
+     */
+    toggleGrid: () => {
+        Canvas.showGrid = !Canvas.showGrid;
+        Canvas.drawGrid();
+        
+        // Update button state
+        const gridBtn = document.getElementById('btn-grid');
+        if (gridBtn) {
+            if (Canvas.showGrid) {
+                gridBtn.classList.add('active');
+            } else {
+                gridBtn.classList.remove('active');
+            }
+        }
+        
+        Utils.notify(`Grid ${Canvas.showGrid ? 'enabled' : 'disabled'}`, 'info');
     },
 
     /**
