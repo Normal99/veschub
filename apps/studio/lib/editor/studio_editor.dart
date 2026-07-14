@@ -327,6 +327,22 @@ class _CanvasArea extends ConsumerWidget {
           'value': const Binding.telemetry(key: 'v_in'),
           'label': const Binding.literal(value: 'Value'),
         },
+      'status' => {
+          'fault': const Binding.telemetry(key: 'fault'),
+        },
+      'chart' => {
+          'value': const Binding.telemetry(key: 'erpm'),
+          'min': const Binding.literal(value: 0),
+          'max': const Binding.literal(value: 30000),
+          'label': const Binding.literal(value: 'RPM'),
+        },
+      'image' => {
+          'src': const Binding.literal(value: 'assets/images/placeholder.png'),
+        },
+      'web' => {
+          'url': const Binding.literal(value: 'https://example.com'),
+          'title': const Binding.literal(value: 'Live page'),
+        },
       _ => <String, Binding>{},
     };
   }

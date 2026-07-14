@@ -10,8 +10,15 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
 import 'widgets/bar_widget.dart';
+import 'widgets/chart_widget.dart';
 import 'widgets/gauge_widget.dart';
+import 'widgets/image_widget.dart';
+import 'widgets/status_widget.dart';
 import 'widgets/text_widget.dart';
+import 'widgets/web_widget.dart';
+
+export 'src/format.dart';
+export 'src/theme.dart';
 
 /// Metadata for a built-in widget kind.
 class WidgetKind {
@@ -42,6 +49,26 @@ final Map<String, WidgetKind> builtInWidgets = {
     id: 'gauge',
     level: CapabilityLevel.basic,
     render: (p) => GaugeWidget(properties: p),
+  ),
+  'status': WidgetKind(
+    id: 'status',
+    level: CapabilityLevel.basic,
+    render: (p) => StatusWidget(properties: p),
+  ),
+  'chart': WidgetKind(
+    id: 'chart',
+    level: CapabilityLevel.advanced,
+    render: (p) => ChartWidget(properties: p),
+  ),
+  'image': WidgetKind(
+    id: 'image',
+    level: CapabilityLevel.basic,
+    render: (p) => ImageWidget(properties: p),
+  ),
+  'web': WidgetKind(
+    id: 'web',
+    level: CapabilityLevel.advanced,
+    render: (p) => WebWidget(properties: p),
   ),
 };
 
