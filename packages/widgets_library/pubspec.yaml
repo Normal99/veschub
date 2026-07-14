@@ -1,0 +1,22 @@
+name: widgets_library
+description: Built-in dashboard widgets (gauge, bar, text, chart, map, status, web…) shared by studio and runtime.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  dashboard_model:
+    path: ../dashboard_model
+  dashboard_runtime:
+    path: ../dashboard_runtime
+  vesc_telemetry:
+    path: ../vesc_telemetry
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

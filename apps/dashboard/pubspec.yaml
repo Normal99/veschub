@@ -1,0 +1,33 @@
+name: dashboard
+description: Veschub Dashboard — the runtime app that renders dashboards live (phone, Pi, desktop).
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  flutter_blue_plus: ^1.32.12
+  dashboard_model:
+    path: ../../packages/dashboard_model
+  dashboard_runtime:
+    path: ../../packages/dashboard_runtime
+  widgets_library:
+    path: ../../packages/widgets_library
+  vesc_proto:
+    path: ../../packages/vesc_proto
+  vesc_transport:
+    path: ../../packages/vesc_transport
+  vesc_telemetry:
+    path: ../../packages/vesc_telemetry
+  vesc_sim:
+    path: ../../tools/vesc_sim
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

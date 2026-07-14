@@ -1,0 +1,16 @@
+name: navigation
+description: GPS, routes, GPX, offline maps and trip recording (future Max-G3 features).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

@@ -1,0 +1,15 @@
+name: vesc_transport
+description: Connection abstraction over VESC transports (BLE, USB-serial, virtual).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  vesc_proto:
+    path: ../vesc_proto
+
+dev_dependencies:
+  test: ^1.25.0
+  flutter_lints: ^4.0.0

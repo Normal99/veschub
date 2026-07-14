@@ -1,0 +1,49 @@
+name: veschub
+
+repository: https://github.com/Normal99/veschub
+
+packages:
+  - packages/**
+  - apps/*
+  - tools/*
+
+command:
+  bootstrap:
+    runPubGetInParallel: true
+  clean:
+    flutter: pub clean
+
+scripts:
+  analyze:
+    exec: flutter analyze .
+  format:
+    exec: dart format --set-exit-if-changed .
+  test:
+    exec: flutter test
+    packageFilters:
+      dirExists:
+        - test
+  test:unit:
+    exec: flutter test
+    packageFilters:
+      dirExists:
+        - test
+      ignore:
+        - apps/studio
+        - apps/dashboard
+  build_runner:
+    name: build_runner
+    exec: dart run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      dependsOn:
+        - build_runner
+  build_runner:watch:
+    name: build_runner:watch
+    exec: dart run build_runner watch --delete-conflicting-outputs
+    packageFilters:
+      dependsOn:
+        - build_runner
+
+ide:
+  intellij:
+    enabled: false

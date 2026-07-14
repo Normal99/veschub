@@ -1,0 +1,16 @@
+name: vesc_sim
+description: Mock VESC simulator speaking the vesc_proto protocol over a virtual transport for hardware-free development.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  vesc_proto:
+    path: ../../packages/vesc_proto
+  vesc_transport:
+    path: ../../packages/vesc_transport
+
+dev_dependencies:
+  flutter_lints: ^4.0.0

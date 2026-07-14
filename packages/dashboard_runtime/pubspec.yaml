@@ -1,0 +1,17 @@
+name: dashboard_runtime
+description: Evaluates a dashboard model against telemetry streams and marks dirty widgets for repaint.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+
+dependencies:
+  dashboard_model:
+    path: ../dashboard_model
+  vesc_telemetry:
+    path: ../vesc_telemetry
+
+dev_dependencies:
+  test: ^1.25.0
+  flutter_lints: ^4.0.0

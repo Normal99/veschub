@@ -1,0 +1,28 @@
+name: studio
+description: Veschub Studio — the dashboard editor app (desktop + tablet).
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  dashboard_model:
+    path: ../../packages/dashboard_model
+  dashboard_runtime:
+    path: ../../packages/dashboard_runtime
+  widgets_library:
+    path: ../../packages/widgets_library
+  editor_canvas:
+    path: ../../packages/editor_canvas
+  vesc_telemetry:
+    path: ../../packages/vesc_telemetry
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

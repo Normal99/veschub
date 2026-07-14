@@ -1,0 +1,6 @@
+# melos_managed_dependency_overrides: vesc_proto,vesc_transport
+dependency_overrides:
+  vesc_proto:
+    path: ../../packages/vesc_proto
+  vesc_transport:
+    path: ../../packages/vesc_transport

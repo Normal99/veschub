@@ -1,0 +1,11 @@
+name: vesc_proto
+description: VESC COMM frame codec — encode/decode typed packets per the VESC bldc serial protocol.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+
+dev_dependencies:
+  test: ^1.25.0
+  flutter_lints: ^4.0.0
