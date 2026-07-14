@@ -65,6 +65,11 @@ class StudioEditor extends ConsumerWidget {
             onPressed: () => _save(context, ref),
             tooltip: 'Save',
           ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).pushNamed('/settings'),
+            tooltip: 'Settings',
+          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),

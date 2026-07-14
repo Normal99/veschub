@@ -1,28 +1,61 @@
 /// Veschub Studio — the dashboard editor app.
 ///
-/// Phase 3: Canvas mode is live (drag-drop, move/snap, undo/redo, save/load
-/// to drift). Template mode (Phase 5) and Flow mode (Phase 6) are stubbed.
+/// Boots the persisted [SettingsService], shows first-run onboarding when
+/// needed, applies the chosen theme, and lands on the editor. The toolbar's
+/// mode/level selectors remain the in-session controls; the settings screen
+/// holds the persisted defaults.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:settings/settings.dart';
 
 import 'editor/studio_editor.dart';
+import 'onboarding/studio_onboarding.dart';
+import 'providers/settings_provider.dart';
+import 'settings/studio_settings_screen.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: StudioApp()));
 }
 
-class StudioApp extends StatelessWidget {
+class StudioApp extends ConsumerWidget {
   const StudioApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Veschub Studio',
-      theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
-      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
-      home: const StudioEditor(),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(settingsServiceProvider);
+
+    return settingsAsync.when(
+      loading: () => const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
+      error: (e, _) => MaterialApp(
+        home: Scaffold(body: Center(child: Text('Settings init failed: $e'))),
+      ),
+      data: (settings) {
+        final themeMode = switch (settings.themeMode) {
+          ThemePreference.system => ThemeMode.system,
+          ThemePreference.light => ThemeMode.light,
+          ThemePreference.dark => ThemeMode.dark,
+        };
+        return MaterialApp(
+          title: 'Veschub Studio',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(useMaterial3: true, brightness: Brightness.light),
+          darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark),
+          themeMode: themeMode,
+          home: settings.onboardingDone
+              ? const StudioEditor()
+              : StudioOnboarding(
+                  onDone: () => settings.markOnboardingDone(),
+                ),
+          routes: {
+            '/settings': (_) => const StudioSettingsScreen(),
+          },
+        );
+      },
     );
   }
 }

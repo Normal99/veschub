@@ -1,9 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:studio/main.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      'settings.onboardingDone': true,
+      'settings.capabilityLevel': 'advanced',
+    });
+  });
+
   testWidgets('studio editor boots in Canvas mode', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: StudioApp()));
     await tester.pumpAndSettle();

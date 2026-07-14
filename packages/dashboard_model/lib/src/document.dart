@@ -16,9 +16,9 @@ part 'document.g.dart';
 
 /// Schema version for the dashboard document.
 ///
-/// Increment and add a migration in [DashboardMigrator] whenever the on-disk
-/// shape changes. Documents carry the version they were authored with.
-const int kCurrentDocumentVersion = 1;
+/// Increment and add a migration step in [DashboardMigrator] whenever the
+/// on-disk shape changes. Documents carry the version they were authored with.
+const int kCurrentDocumentVersion = 2;
 
 /// A single widget instance on the canvas.
 @Freezed()
@@ -74,6 +74,9 @@ class DashboardDocument with _$DashboardDocument {
     /// Schema version this document was authored with.
     @JsonKey(name: 'version') @Default(kCurrentDocumentVersion) int version,
     @JsonKey(name: 'name') @Default('Untitled') String name,
+
+    /// Human-readable description (added in schema v2; migrated to '' for v1).
+    @JsonKey(name: 'description') @Default('') String description,
     @JsonKey(name: 'canvas') required CanvasSize canvas,
     @JsonKey(name: 'widgets')
     @Default(<WidgetInstance>[])

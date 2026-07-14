@@ -1,9 +1,10 @@
-/// Veschub Dashboard — bare Phase 2 viewer.
+/// Veschub Dashboard — the runtime app.
 ///
 /// In dev/debug this viewer is wired to a [VescSim] over an in-memory
 /// [VirtualTransportPair], so the full decode → bind → render pipeline runs
 /// with no hardware. Swap in a BLE transport (flutter_blue_plus) to validate
-/// against a real VESC — the runtime + widget layer is identical.
+/// against a real VESC — the runtime + widget layer is identical. First-run
+/// onboarding and persisted settings gate the experience.
 library;
 
 import 'dart:async';
@@ -16,24 +17,61 @@ import 'package:vesc_transport/vesc_transport.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:settings/settings.dart';
 
-void main() {
-  runApp(const DashboardApp());
+import 'onboarding/dashboard_onboarding.dart';
+import 'providers/settings_provider.dart';
+import 'settings/dashboard_settings_screen.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const ProviderScope(child: DashboardApp()));
 }
 
-class DashboardApp extends StatelessWidget {
+class DashboardApp extends ConsumerWidget {
   const DashboardApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Veschub Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.black,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(settingsServiceProvider);
+
+    return settingsAsync.when(
+      loading: () => const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
-      home: const ViewerScreen(),
+      error: (e, _) => MaterialApp(
+        home: Scaffold(body: Center(child: Text('Settings init failed: $e'))),
+      ),
+      data: (settings) {
+        final themeMode = switch (settings.themeMode) {
+          ThemePreference.system => ThemeMode.system,
+          ThemePreference.light => ThemeMode.light,
+          ThemePreference.dark => ThemeMode.dark,
+        };
+        return MaterialApp(
+          title: 'Veschub Dashboard',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            useMaterial3: true,
+            scaffoldBackgroundColor: Colors.black,
+          ),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: Colors.black,
+          ),
+          themeMode: themeMode,
+          home: settings.onboardingDone
+              ? const ViewerScreen()
+              : DashboardOnboarding(
+                  onDone: () => settings.markOnboardingDone(),
+                ),
+          routes: {
+            '/settings': (_) => const DashboardSettingsScreen(),
+          },
+        );
+      },
     );
   }
 }
@@ -184,6 +222,11 @@ class _ViewerScreenState extends State<ViewerScreen> {
             child: Center(
               child: _LinkBadge(state: _linkState),
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white70),
+            onPressed: () => Navigator.of(context).pushNamed('/settings'),
+            tooltip: 'Settings',
           ),
         ],
       ),

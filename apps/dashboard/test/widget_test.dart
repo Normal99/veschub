@@ -1,12 +1,24 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dashboard/main.dart';
 
 void main() {
-  testWidgets('dashboard app boots and renders the sim viewer', (tester) async {
-    await tester.pumpWidget(const DashboardApp());
+  setUp(() {
+    SharedPreferences.setMockInitialValues({
+      'settings.onboardingDone': true,
+    });
+  });
 
-    // App chrome renders on the first frame.
+  testWidgets('dashboard app boots and renders the sim viewer', (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: DashboardApp()));
+
+    // Let the async SettingsService resolve before the viewer mounts.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // App chrome renders once the viewer is up.
     expect(find.text('Veschub · Sim viewer'), findsOneWidget);
 
     // The runtime's first dirty emit (with literal bindings resolved) lands on

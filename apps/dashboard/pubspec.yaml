@@ -16,6 +16,10 @@ dependencies:
     path: ../../packages/dashboard_model
   dashboard_runtime:
     path: ../../packages/dashboard_runtime
+  dashboard_storage:
+    path: ../../packages/dashboard_storage
+  settings:
+    path: ../../packages/settings
   widgets_library:
     path: ../../packages/widgets_library
   vesc_proto:
@@ -31,3 +35,4 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  shared_preferences: ^2.2.3

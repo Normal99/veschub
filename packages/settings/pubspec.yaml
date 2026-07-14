@@ -1,0 +1,20 @@
+name: settings
+description: Persisted user settings (capability level, theme, connection transport) shared by studio and dashboard.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_preferences: ^2.2.3
+  dashboard_model:
+    path: ../dashboard_model
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

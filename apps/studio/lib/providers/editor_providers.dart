@@ -10,6 +10,8 @@ import 'package:dashboard_storage/dashboard_storage.dart';
 import 'package:editor_canvas/editor_canvas.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'settings_provider.dart';
+
 /// Singleton drift database (opened lazily).
 final dashboardDatabaseProvider = Provider<DashboardDatabase>((ref) {
   final db = DashboardDatabase();
@@ -49,8 +51,12 @@ final editorModeProvider = StateProvider<EditorMode>((ref) {
 });
 
 /// The active capability level (gates which props/handles are visible).
+///
+/// Seeded from the persisted [SettingsService] default on launch; the toolbar
+/// selector overrides it for the session without persisting.
 final capabilityLevelProvider = StateProvider<CapabilityLevel>((ref) {
-  return CapabilityLevel.advanced;
+  final settings = ref.watch(settingsServiceProvider).valueOrNull;
+  return settings?.capabilityLevel ?? CapabilityLevel.advanced;
 });
 
 /// Whether the current document has unsaved changes.

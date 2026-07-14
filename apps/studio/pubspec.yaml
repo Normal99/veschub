@@ -27,6 +27,8 @@ dependencies:
     path: ../../packages/node_graph_editor
   paint_dsl:
     path: ../../packages/paint_dsl
+  settings:
+    path: ../../packages/settings
   templates:
     path: ../../packages/templates
   vesc_telemetry:
@@ -36,3 +38,4 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  shared_preferences: ^2.2.3

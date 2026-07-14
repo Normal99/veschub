@@ -1,0 +1,98 @@
+/// Settings screen for the studio: theme, default capability level.
+///
+/// Backed by the shared [SettingsService]; changes persist immediately and
+/// notify listeners (the app reacts to theme/level changes live).
+library;
+
+import 'package:dashboard_model/dashboard_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:settings/settings.dart';
+
+import '../providers/settings_provider.dart';
+
+class StudioSettingsScreen extends ConsumerWidget {
+  const StudioSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsServiceProvider).valueOrNull;
+    if (settings == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: ListView(
+        children: [
+          const _SectionHeader('Appearance'),
+          ListTile(
+            leading: const Icon(Icons.palette),
+            title: const Text('Theme'),
+            trailing: DropdownButton<ThemePreference>(
+              value: settings.themeMode,
+              items: const [
+                DropdownMenuItem(
+                    value: ThemePreference.system, child: Text('System')),
+                DropdownMenuItem(
+                    value: ThemePreference.light, child: Text('Light')),
+                DropdownMenuItem(
+                    value: ThemePreference.dark, child: Text('Dark')),
+              ],
+              onChanged: (v) => v == null ? null : settings.setThemeMode(v),
+            ),
+          ),
+          const _SectionHeader('Editor'),
+          ListTile(
+            leading: const Icon(Icons.speed),
+            title: const Text('Default capability level'),
+            subtitle: const Text(
+              'Applied on the next studio launch.',
+            ),
+            trailing: DropdownButton<CapabilityLevel>(
+              value: settings.capabilityLevel,
+              items: CapabilityLevel.values
+                  .map((l) => DropdownMenuItem(
+                        value: l,
+                        child: Text(_capitalize(l.name)),
+                      ))
+                  .toList(),
+              onChanged: (v) =>
+                  v == null ? null : settings.setCapabilityLevel(v),
+            ),
+          ),
+          const Divider(),
+          const ListTile(
+            leading: Icon(Icons.info_outline),
+            title: Text('Studio v0.1.0 · document schema '
+                '$kCurrentDocumentVersion'),
+            enabled: false,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String text;
+  const _SectionHeader(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.w600,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+}
+
+String _capitalize(String s) =>
+    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';

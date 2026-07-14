@@ -54,6 +54,43 @@ void main() {
     });
   });
 
+  group('DashboardMigrator', () {
+    test('v1 document without description is upgraded to v2 with empty string',
+        () {
+      final v1 = <String, dynamic>{
+        'version': 1,
+        'name': 'Legacy board',
+        'canvas': {'width': 800.0, 'height': 600.0},
+      };
+      final migrated = migrate(v1);
+      expect(migrated['version'], 2);
+      expect(migrated['description'], '');
+      // Decoding the migrated map succeeds and yields the field.
+      final doc = DashboardDocument.fromJson(migrated);
+      expect(doc.description, '');
+      expect(doc.name, 'Legacy board');
+    });
+
+    test('v2 document passes through unchanged aside from version stamping',
+        () {
+      final v2 = <String, dynamic>{
+        'version': 2,
+        'name': 'Modern',
+        'description': 'A real description',
+        'canvas': {'width': 100.0, 'height': 100.0},
+      };
+      final migrated = migrate(v2);
+      expect(migrated['version'], 2);
+      expect(migrated['description'], 'A real description');
+    });
+
+    test('unversioned document is treated as v1 and migrated', () {
+      final migrated = migrate({'name': 'no version field'});
+      expect(migrated['version'], kCurrentDocumentVersion);
+      expect(migrated['description'], '');
+    });
+  });
+
   group('CapabilityLevel', () {
     test('includes respects ordering', () {
       expect(CapabilityLevel.expert.includes(CapabilityLevel.basic), isTrue);
