@@ -53,11 +53,9 @@ class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
   }
 
   Future<void> _finish() async {
-    final settings = ref.read(settingsServiceProvider).valueOrNull;
-    if (settings != null) {
-      await settings.setTransport(_transport);
-      await settings.markOnboardingDone();
-    }
+    final settings = ref.read(settingsServiceProvider);
+    await settings.setTransport(_transport);
+    await settings.markOnboardingDone();
     widget.onDone();
   }
 

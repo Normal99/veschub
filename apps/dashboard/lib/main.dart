@@ -34,43 +34,33 @@ class DashboardApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsAsync = ref.watch(settingsServiceProvider);
+    final settings = ref.watch(settingsServiceProvider);
 
-    return settingsAsync.when(
-      loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+    final themeMode = switch (settings.themeMode) {
+      ThemePreference.system => ThemeMode.system,
+      ThemePreference.light => ThemeMode.light,
+      ThemePreference.dark => ThemeMode.dark,
+    };
+    return MaterialApp(
+      title: 'Veschub Dashboard',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: Colors.black,
       ),
-      error: (e, _) => MaterialApp(
-        home: Scaffold(body: Center(child: Text('Settings init failed: $e'))),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
       ),
-      data: (settings) {
-        final themeMode = switch (settings.themeMode) {
-          ThemePreference.system => ThemeMode.system,
-          ThemePreference.light => ThemeMode.light,
-          ThemePreference.dark => ThemeMode.dark,
-        };
-        return MaterialApp(
-          title: 'Veschub Dashboard',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            useMaterial3: true,
-            scaffoldBackgroundColor: Colors.black,
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: Colors.black,
-          ),
-          themeMode: themeMode,
-          home: settings.onboardingDone
-              ? const ViewerScreen()
-              : DashboardOnboarding(
-                  onDone: () => settings.markOnboardingDone(),
-                ),
-          routes: {
-            '/settings': (_) => const DashboardSettingsScreen(),
-          },
-        );
+      themeMode: themeMode,
+      home: settings.onboardingDone
+          ? const ViewerScreen()
+          : DashboardOnboarding(
+              onDone: () => settings.markOnboardingDone(),
+            ),
+      routes: {
+        '/settings': (_) => const DashboardSettingsScreen(),
       },
     );
   }

@@ -16,11 +16,7 @@ class StudioSettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsServiceProvider).valueOrNull;
-    if (settings == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
+    final settings = ref.watch(settingsServiceProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(

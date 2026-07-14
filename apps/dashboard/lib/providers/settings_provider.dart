@@ -4,6 +4,10 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
-/// Asynchronously-created [SettingsService].
-final settingsServiceProvider =
-    FutureProvider<SettingsService>((ref) => createSettingsService());
+/// Reactively-observed [SettingsService]. Loads from `shared_preferences` on
+/// first read; consumers rebuild when any setter notifies.
+final settingsServiceProvider = ChangeNotifierProvider<SettingsService>((ref) {
+  final service = SettingsService();
+  service.load();
+  return service;
+});

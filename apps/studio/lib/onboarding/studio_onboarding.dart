@@ -51,10 +51,8 @@ class _StudioOnboardingState extends ConsumerState<StudioOnboarding> {
   }
 
   Future<void> _finish() async {
-    final settings = ref.read(settingsServiceProvider).valueOrNull;
-    if (settings != null) {
-      await settings.markOnboardingDone();
-    }
+    final settings = ref.read(settingsServiceProvider);
+    await settings.markOnboardingDone();
     widget.onDone();
   }
 

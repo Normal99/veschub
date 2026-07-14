@@ -20,14 +20,14 @@ enum ThemePreference { system, light, dark }
 
 /// Persisted, observable user settings.
 class SettingsService extends ChangeNotifier {
-  SettingsService._(this._prefs);
+  SettingsService();
 
   static const _keyCapability = 'settings.capabilityLevel';
   static const _keyTheme = 'settings.themeMode';
   static const _keyTransport = 'settings.transport';
   static const _keyOnboardingDone = 'settings.onboardingDone';
 
-  final SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
   CapabilityLevel _capability = CapabilityLevel.basic;
   ThemePreference _theme = ThemePreference.system;
@@ -46,36 +46,39 @@ class SettingsService extends ChangeNotifier {
   /// Whether first-run onboarding has been completed.
   bool get onboardingDone => _onboardingDone;
 
-  /// Loads persisted values. Call once at startup, before reading any field.
+  /// Loads persisted values from `shared_preferences`. Safe to call from a
+  /// provider's create function: returns a [Future] that resolves after the
+  /// values are read, then notifies listeners so dependents rebuild.
   Future<void> load() async {
-    _capability = _decodeCapability(_prefs.getString(_keyCapability));
-    _theme = _decodeTheme(_prefs.getString(_keyTheme));
-    _transport = _decodeTransport(_prefs.getString(_keyTransport));
-    _onboardingDone = _prefs.getBool(_keyOnboardingDone) ?? false;
+    _prefs = await SharedPreferences.getInstance();
+    _capability = _decodeCapability(_prefs!.getString(_keyCapability));
+    _theme = _decodeTheme(_prefs!.getString(_keyTheme));
+    _transport = _decodeTransport(_prefs!.getString(_keyTransport));
+    _onboardingDone = _prefs!.getBool(_keyOnboardingDone) ?? false;
     notifyListeners();
   }
 
   Future<void> setCapabilityLevel(CapabilityLevel level) async {
     _capability = level;
-    await _prefs.setString(_keyCapability, level.name);
+    await _prefs?.setString(_keyCapability, level.name);
     notifyListeners();
   }
 
   Future<void> setThemeMode(ThemePreference mode) async {
     _theme = mode;
-    await _prefs.setString(_keyTheme, mode.name);
+    await _prefs?.setString(_keyTheme, mode.name);
     notifyListeners();
   }
 
   Future<void> setTransport(TransportPreference t) async {
     _transport = t;
-    await _prefs.setString(_keyTransport, t.name);
+    await _prefs?.setString(_keyTransport, t.name);
     notifyListeners();
   }
 
   Future<void> markOnboardingDone() async {
     _onboardingDone = true;
-    await _prefs.setBool(_keyOnboardingDone, true);
+    await _prefs?.setBool(_keyOnboardingDone, true);
     notifyListeners();
   }
 
@@ -104,10 +107,9 @@ class SettingsService extends ChangeNotifier {
   }
 }
 
-/// Constructs a [SettingsService] bound to the shared preferences instance.
+/// Constructs a [SettingsService], loads it, and returns the ready instance.
 Future<SettingsService> createSettingsService() async {
-  final prefs = await SharedPreferences.getInstance();
-  final service = SettingsService._(prefs);
+  final service = SettingsService();
   await service.load();
   return service;
 }

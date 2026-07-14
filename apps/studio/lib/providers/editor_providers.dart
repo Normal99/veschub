@@ -52,11 +52,11 @@ final editorModeProvider = StateProvider<EditorMode>((ref) {
 
 /// The active capability level (gates which props/handles are visible).
 ///
-/// Seeded from the persisted [SettingsService] default on launch; the toolbar
-/// selector overrides it for the session without persisting.
+/// Seeded from the persisted [SettingsService] default on launch and rebuilds
+/// reactively when the persisted level changes; the toolbar selector overrides
+/// it for the session without persisting.
 final capabilityLevelProvider = StateProvider<CapabilityLevel>((ref) {
-  final settings = ref.watch(settingsServiceProvider).valueOrNull;
-  return settings?.capabilityLevel ?? CapabilityLevel.advanced;
+  return ref.watch(settingsServiceProvider).capabilityLevel;
 });
 
 /// Whether the current document has unsaved changes.
