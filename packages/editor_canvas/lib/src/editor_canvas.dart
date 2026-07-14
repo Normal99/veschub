@@ -1,0 +1,371 @@
+/// The interactive editor canvas widget.
+///
+/// Renders the [SceneModel] with each node transformed, layers interactive
+/// handles (move/scale/rotate) over the current selection, supports
+/// rubber-band selection, and routes pointer gestures through the command
+/// stack + snapping. Designed to be embedded inside the studio; the node
+/// payload rendering is delegated to [nodeBuilder].
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+
+import 'command_stack.dart';
+import 'hit_test.dart';
+import 'scene_model.dart';
+import 'selection_model.dart';
+import 'snapping.dart';
+
+/// Builds a widget for a node's payload (called per-frame during paint).
+typedef NodeBuilder = Widget Function(CanvasNode node);
+
+class EditorCanvas extends StatefulWidget {
+  final SceneModel scene;
+  final SelectionModel selection;
+  final CommandStack commands;
+  final NodeBuilder nodeBuilder;
+  final double Function(CanvasNode) nodeWidth;
+  final double Function(CanvasNode) nodeHeight;
+  final SnapConfig snapConfig;
+  final ValueChanged<List<GuideLine>>? onGuidesChanged;
+
+  const EditorCanvas({
+    required this.scene,
+    required this.selection,
+    required this.commands,
+    required this.nodeBuilder,
+    required this.nodeWidth,
+    required this.nodeHeight,
+    this.snapConfig = const SnapConfig(),
+    this.onGuidesChanged,
+    super.key,
+  });
+
+  @override
+  State<EditorCanvas> createState() => _EditorCanvasState();
+}
+
+class _EditorCanvasState extends State<EditorCanvas> {
+  // Marquee (rubber-band) selection state, in canvas coordinates.
+  Offset? _marqueeStart;
+  Offset? _marqueeCurrent;
+
+  // Active drag state for the current gesture.
+  _DragSession? _drag;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.scene.addListener(_onSceneChanged);
+    widget.selection.addListener(_onSelectionChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant EditorCanvas oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scene != widget.scene) {
+      oldWidget.scene.removeListener(_onSceneChanged);
+      widget.scene.addListener(_onSceneChanged);
+    }
+    if (oldWidget.selection != widget.selection) {
+      oldWidget.selection.removeListener(_onSelectionChanged);
+      widget.selection.addListener(_onSelectionChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.scene.removeListener(_onSceneChanged);
+    widget.selection.removeListener(_onSelectionChanged);
+    super.dispose();
+  }
+
+  void _onSceneChanged() => setState(() {});
+  void _onSelectionChanged() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanStart: _onPanStart,
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: _onPanEnd,
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              // Nodes (back to front).
+              for (final node in widget.scene.nodes)
+                Transform(
+                  transform: node.transform,
+                  child: SizedBox(
+                    width: widget.nodeWidth(node),
+                    height: widget.nodeHeight(node),
+                    child: widget.nodeBuilder(node),
+                  ),
+                ),
+              // Selection handles + marquee overlay.
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _OverlayPainter(
+                    scene: widget.scene,
+                    selection: widget.selection.ids,
+                    nodeWidth: widget.nodeWidth,
+                    nodeHeight: widget.nodeHeight,
+                    marquee: _marqueeRect(),
+                    guides: _drag?.guides ?? const [],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Rect? _marqueeRect() {
+    if (_marqueeStart == null || _marqueeCurrent == null) return null;
+    return Rect.fromPoints(_marqueeStart!, _marqueeCurrent!);
+  }
+
+  void _onPanStart(DragStartDetails details) {
+    final p = details.localPosition;
+    final hit = hitTestNode(p);
+    if (hit != null) {
+      if (!widget.selection.isSelected(hit)) {
+        if (!widget.selection.isMultiple) {
+          widget.selection.set(hit);
+        } else {
+          widget.selection.add(hit);
+        }
+      }
+      _drag = _DragSession.move(
+        origin: p,
+        startTransforms: {
+          for (final id in widget.selection.ids)
+            id: widget.scene[id]!.transform.clone(),
+        },
+      );
+    } else {
+      // Clicked empty space: start marquee, clear selection unless modifier.
+      widget.selection.clear();
+      _marqueeStart = p;
+      _marqueeCurrent = p;
+    }
+    setState(() {});
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    final p = details.localPosition;
+    if (_drag != null) {
+      _applyMove(p);
+    } else if (_marqueeStart != null) {
+      _marqueeCurrent = p;
+      final rect = Rect.fromPoints(_marqueeStart!, p);
+      final hits = hitTestRectAll(rect);
+      widget.selection.setAll(hits);
+      setState(() {});
+    }
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    if (_drag != null) {
+      // Commit the transform as a single undoable command.
+      final changes = <String, (Matrix4, Matrix4)>{};
+      for (final entry in _drag!.startTransforms.entries) {
+        final current = widget.scene[entry.key]?.transform;
+        if (current != null && !_matrixEq(current, entry.value)) {
+          changes[entry.key] = (entry.value.clone(), current.clone());
+        }
+      }
+      if (changes.isNotEmpty) {
+        widget.commands.execute(TransformNodesCommand(changes));
+      }
+      widget.onGuidesChanged?.call(const []);
+      _drag = null;
+    }
+    _marqueeStart = null;
+    _marqueeCurrent = null;
+    setState(() {});
+  }
+
+  void _applyMove(Offset p) {
+    final drag = _drag;
+    if (drag == null) return;
+    final delta = p - drag.origin;
+
+    // Compute moving bounds (union) for guide snapping.
+    final movingBounds = <Rect>[];
+    for (final id in drag.startTransforms.keys) {
+      final node = widget.scene[id];
+      if (node != null) {
+        movingBounds.add(
+          transformedBounds(
+            node,
+            widget.nodeWidth(node),
+            widget.nodeHeight(node),
+          ),
+        );
+      }
+    }
+    final otherBounds = widget.scene.nodes
+        .where((n) => !drag.startTransforms.containsKey(n.id))
+        .map(
+          (n) =>
+              transformedBounds(n, widget.nodeWidth(n), widget.nodeHeight(n)),
+        )
+        .toList();
+
+    final union = movingBounds.fold<Rect>(
+      Rect.zero,
+      (a, b) => a.isEmpty ? b : a.expandToInclude(b),
+    );
+    final snap = snapTranslation(
+      origin: Offset.zero,
+      rawDelta: delta,
+      movingBounds: union.translate(-union.left, -union.top),
+      otherBounds: otherBounds,
+      config: widget.snapConfig,
+    );
+
+    // Apply the snapped delta directly to the scene (live preview; committed on end).
+    for (final entry in drag.startTransforms.entries) {
+      final node = widget.scene[entry.key];
+      if (node != null) {
+        final snapped = snap.adjustedOffset;
+        // ignore: deprecated_member_use
+        final t = entry.value.clone()..translate(snapped.dx, snapped.dy);
+        widget.scene.upsert(node.copyWith(transform: t));
+      }
+    }
+    drag.guides = snap.guides;
+    widget.onGuidesChanged?.call(snap.guides);
+  }
+
+  String? hitTestNode(Offset p) => hitTest(
+        widget.scene.nodes,
+        p,
+        widget.nodeWidth,
+        widget.nodeHeight,
+      );
+
+  Set<String> hitTestRectAll(Rect rect) => hitTestRect(
+        widget.scene.nodes,
+        rect,
+        widget.nodeWidth,
+        widget.nodeHeight,
+      );
+
+  bool _matrixEq(Matrix4 a, Matrix4 b) {
+    final sa = a.storage, sb = b.storage;
+    for (var i = 0; i < 16; i++) {
+      if ((sa[i] - sb[i]).abs() > 1e-9) return false;
+    }
+    return true;
+  }
+}
+
+class _DragSession {
+  final Offset origin;
+  final Map<String, Matrix4> startTransforms;
+  List<GuideLine> guides;
+
+  _DragSession({
+    required this.origin,
+    required this.startTransforms,
+  }) : guides = const [];
+
+  factory _DragSession.move({
+    required Offset origin,
+    required Map<String, Matrix4> startTransforms,
+  }) =>
+      _DragSession(origin: origin, startTransforms: startTransforms);
+}
+
+class _OverlayPainter extends CustomPainter {
+  final SceneModel scene;
+  final Set<String> selection;
+  final double Function(CanvasNode) nodeWidth;
+  final double Function(CanvasNode) nodeHeight;
+  final Rect? marquee;
+  final List<GuideLine> guides;
+
+  _OverlayPainter({
+    required this.scene,
+    required this.selection,
+    required this.nodeWidth,
+    required this.nodeHeight,
+    required this.marquee,
+    required this.guides,
+  });
+
+  static final _selectPaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.5
+    ..color = const Color(0xFF4FC3F7);
+  static final _handlePaint = Paint()..color = const Color(0xFFFFFFFF);
+  static final _handleStroke = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1
+    ..color = const Color(0xFF1565C0);
+  static final _marqueePaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1
+    ..color = const Color(0x884FC3F7);
+  static final _marqueeFill = Paint()..color = const Color(0x224FC3F7);
+  static final _guidePaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1
+    ..color = const Color(0xFFFF4081);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Selection outlines + handles.
+    for (final id in selection) {
+      final node = scene[id];
+      if (node == null) continue;
+      final bounds = transformedBounds(node, nodeWidth(node), nodeHeight(node));
+      canvas.drawRect(bounds.inflate(2), _selectPaint);
+      for (final corner in [
+        bounds.topLeft,
+        bounds.topRight,
+        bounds.bottomLeft,
+        bounds.bottomRight,
+      ]) {
+        canvas.drawCircle(corner, 5, _handlePaint);
+        canvas.drawCircle(corner, 5, _handleStroke);
+      }
+    }
+
+    // Marquee.
+    if (marquee != null) {
+      canvas.drawRect(marquee!, _marqueeFill);
+      canvas.drawRect(marquee!, _marqueePaint);
+    }
+
+    // Alignment guides.
+    for (final g in guides) {
+      if (g.horizontal) {
+        canvas.drawLine(
+          Offset(0, g.position),
+          Offset(size.width, g.position),
+          _guidePaint,
+        );
+      } else {
+        canvas.drawLine(
+          Offset(g.position, 0),
+          Offset(g.position, size.height),
+          _guidePaint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _OverlayPainter old) =>
+      old.marquee != marquee ||
+      old.guides != guides ||
+      old.selection != selection;
+}
