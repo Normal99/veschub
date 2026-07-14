@@ -5,16 +5,31 @@
 /// edit bound properties in the inspector, and save/load to drift.
 library;
 
+import 'dart:convert';
+
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:editor_canvas/editor_canvas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:paint_dsl/paint_dsl.dart';
 import 'package:widgets_library/widgets_library.dart';
 
 import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
 import 'flow_mode.dart';
 import 'template_mode.dart';
+
+/// A starter paint program for newly dropped `paint` widgets: a fixed track
+/// circle with a filled circle whose radius is driven by the `$r` variable.
+const PaintProgram _samplePaintProgram = PaintProgram(ops: [
+  ClearOp(color: 0xFF101010),
+  BrushOp(color: 0xFF444444, style: PaintFill.stroke, strokeWidth: 2),
+  CircleOp(cx: 100, cy: 100, r: 90),
+  BrushOp(color: 0xFF4CAF50, style: PaintFill.fill),
+  CircleOp(cx: 100, cy: 100, r: '\$r'),
+  BrushOp(color: 0xFFFFFFFF, style: PaintFill.stroke, strokeWidth: 1),
+  LineOp(x1: 100, y1: 100, x2: 100, y2: 10),
+]);
 
 class StudioEditor extends ConsumerWidget {
   const StudioEditor({super.key});
@@ -347,6 +362,10 @@ class _CanvasArea extends ConsumerWidget {
           'url': const Binding.literal(value: 'https://example.com'),
           'title': const Binding.literal(value: 'Live page'),
         },
+      'paint' => {
+          'program': Binding.literal(value: _samplePaintProgram.toJson()),
+          'r': const Binding.telemetry(key: 'temp.mosfet'),
+        },
       _ => <String, Binding>{},
     };
   }
@@ -405,13 +424,28 @@ class _PropertiesInspector extends ConsumerWidget {
                 ),
               ),
             const Divider(),
-            for (final entry in widget.properties.entries)
-              if (visibleProperties(widget.kind, level)
-                  .any((m) => m.key == entry.key))
-                _BindingField(
-                  name: entry.key,
-                  binding: entry.value,
+            if (widget.kind == 'paint') ...[
+              if (level.includes(CapabilityLevel.expert))
+                _PaintProgramEditor(node: node, widget: widget)
+              else
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 4),
+                  child: Text(
+                    'Switch to Expert to edit the paint program.',
+                    style: TextStyle(fontSize: 11, color: Colors.orange),
+                  ),
                 ),
+              for (final entry in widget.properties.entries)
+                if (entry.key != 'program')
+                  _BindingField(name: entry.key, binding: entry.value),
+            ] else
+              for (final entry in widget.properties.entries)
+                if (visibleProperties(widget.kind, level)
+                    .any((m) => m.key == entry.key))
+                  _BindingField(
+                    name: entry.key,
+                    binding: entry.value,
+                  ),
           ],
         ],
       ),
@@ -462,6 +496,136 @@ class _BindingField extends StatelessWidget {
           Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
           Text(desc,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+        ],
+      ),
+    );
+  }
+}
+
+/// A JSON editor for a `paint` widget's program. Edits are committed through
+/// an [UpdateNodeDataCommand] so they participate in undo/redo.
+class _PaintProgramEditor extends ConsumerStatefulWidget {
+  final CanvasNode node;
+  final WidgetInstance widget;
+  const _PaintProgramEditor({required this.node, required this.widget});
+
+  @override
+  ConsumerState<_PaintProgramEditor> createState() =>
+      _PaintProgramEditorState();
+}
+
+class _PaintProgramEditorState extends ConsumerState<_PaintProgramEditor> {
+  late final TextEditingController _controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: _encodedProgram());
+  }
+
+  String _encodedProgram() {
+    final binding = widget.widget.properties['program'];
+    final value = binding?.mapOrNull(literal: (b) => b.value);
+    if (value is Map) {
+      try {
+        return const JsonEncoder.withIndent('  ').convert(value);
+      } catch (_) {
+        return value.toString();
+      }
+    }
+    return const JsonEncoder.withIndent('  ')
+        .convert(const <String, dynamic>{'ops': <dynamic>[]});
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _commit() {
+    final text = _controller.text;
+    try {
+      final decoded = jsonDecode(text);
+      if (decoded is! Map) {
+        setState(() => _error = 'Program must be a JSON object.');
+        return;
+      }
+      // Validate it round-trips through PaintProgram.
+      PaintProgram.fromJson(Map<String, dynamic>.from(decoded));
+      final newWidget = widget.widget.copyWith(
+        properties: {
+          ...widget.widget.properties,
+          'program': Binding.literal(value: decoded),
+        },
+      );
+      ref.read(commandStackProvider).execute(
+            UpdateNodeDataCommand(
+              id: widget.node.id,
+              oldData: widget.node.data,
+              newData: newWidget,
+            ),
+          );
+      ref.read(isDirtyProvider.notifier).state = true;
+      setState(() => _error = null);
+    } catch (e) {
+      setState(() => _error = '$e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Paint program',
+              style: TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          TextField(
+            controller: _controller,
+            minLines: 8,
+            maxLines: 16,
+            style: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 11,
+            ),
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              isDense: true,
+              errorText: _error,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              TextButton.icon(
+                onPressed: _commit,
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Apply'),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () {
+                  _controller.text = const JsonEncoder.withIndent('  ')
+                      .convert(_samplePaintProgram.toJson());
+                  setState(() => _error = null);
+                },
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text('Sample'),
+              ),
+            ],
+          ),
+          const Padding(
+            padding: EdgeInsets.only(top: 4),
+            child: Text(
+              'Coords may be numbers or "\$var" refs; every non-program '
+              'property is a variable.',
+              style: TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ),
         ],
       ),
     );

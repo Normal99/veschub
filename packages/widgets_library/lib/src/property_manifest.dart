@@ -239,6 +239,14 @@ const List<PropertyMeta> _web = [
   ),
 ];
 
+const List<PropertyMeta> _paint = [
+  PropertyMeta(
+    key: 'program',
+    minLevel: CapabilityLevel.expert,
+    label: 'Paint program (DSL)',
+  ),
+];
+
 /// The per-widget-kind property manifest.
 const Map<String, List<PropertyMeta>> propertyManifest = {
   'gauge': _gauge,
@@ -248,6 +256,7 @@ const Map<String, List<PropertyMeta>> propertyManifest = {
   'chart': _chart,
   'image': _image,
   'web': _web,
+  'paint': _paint,
 };
 
 /// Returns the properties of [widgetKind] visible at [level].

@@ -13,6 +13,7 @@ import 'widgets/bar_widget.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/gauge_widget.dart';
 import 'widgets/image_widget.dart';
+import 'widgets/paint_widget.dart';
 import 'widgets/status_widget.dart';
 import 'widgets/text_widget.dart';
 import 'widgets/web_widget.dart';
@@ -70,6 +71,11 @@ final Map<String, WidgetKind> builtInWidgets = {
     id: 'web',
     level: CapabilityLevel.advanced,
     render: (p) => WebWidget(properties: p),
+  ),
+  'paint': WidgetKind(
+    id: 'paint',
+    level: CapabilityLevel.expert,
+    render: (p) => PaintWidget(properties: p),
   ),
 };
 

@@ -113,6 +113,27 @@ void main() {
       stack.execute(AddNodeCommand(_node('widget_1')));
       expect(stack.undoLabel, contains('widget_1'));
     });
+
+    test('UpdateNodeDataCommand swaps payload and restores on undo', () {
+      final node = CanvasNode(
+        id: 'w',
+        transform: NodeTransforms.compose(translation: Offset.zero),
+        data: const {'v': 1},
+      );
+      scene.add(node);
+      stack.execute(
+        UpdateNodeDataCommand(
+          id: 'w',
+          oldData: {'v': 1},
+          newData: {'v': 2},
+        ),
+      );
+      expect(scene['w']!.data, {'v': 2});
+      // Transform and z are preserved across the data swap.
+      expect(scene['w']!.z, 0);
+      stack.undo();
+      expect(scene['w']!.data, {'v': 1});
+    });
   });
 
   group('hitTest', () {

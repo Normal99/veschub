@@ -1,4 +1,4 @@
-# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,vesc_telemetry,node_graph
+# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,vesc_telemetry,node_graph,paint_dsl
 dependency_overrides:
   dashboard_model:
     path: ../dashboard_model
@@ -6,5 +6,7 @@ dependency_overrides:
     path: ../dashboard_runtime
   node_graph:
     path: ../node_graph
+  paint_dsl:
+    path: ../paint_dsl
   vesc_telemetry:
     path: ../vesc_telemetry

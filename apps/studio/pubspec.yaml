@@ -25,6 +25,8 @@ dependencies:
     path: ../../packages/node_graph
   node_graph_editor:
     path: ../../packages/node_graph_editor
+  paint_dsl:
+    path: ../../packages/paint_dsl
   templates:
     path: ../../packages/templates
   vesc_telemetry:

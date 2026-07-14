@@ -116,6 +116,37 @@ class ReorderCommand extends EditorCommand {
   String get label => 'Reorder $id';
 }
 
+/// Replaces a node's opaque [CanvasNode.data] payload (e.g. a `WidgetInstance`
+/// whose bound properties changed in the inspector). Keeps the transform and
+/// z-order intact; only the payload is swapped, so the editor never needs to
+/// understand the payload's structure.
+class UpdateNodeDataCommand extends EditorCommand {
+  final String id;
+  final Object? oldData;
+  final Object? newData;
+
+  UpdateNodeDataCommand({
+    required this.id,
+    required this.oldData,
+    required this.newData,
+  });
+
+  @override
+  void apply(SceneModel scene) {
+    final node = scene[id];
+    if (node != null) scene.upsert(node.copyWith(data: newData));
+  }
+
+  @override
+  void undo(SceneModel scene) {
+    final node = scene[id];
+    if (node != null) scene.upsert(node.copyWith(data: oldData));
+  }
+
+  @override
+  String get label => 'Edit $id';
+}
+
 /// An undo/redo history stack bound to a [SceneModel].
 class CommandStack extends ChangeNotifier {
   CommandStack(this._scene);
