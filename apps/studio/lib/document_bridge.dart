@@ -54,11 +54,13 @@ const double kDefaultNodeHeight = 220;
 DashboardDocument documentFromScene({
   required SceneModel scene,
   required String name,
+  String description = '',
   double canvasWidth = 1280,
   double canvasHeight = 720,
 }) {
   return DashboardDocument(
     name: name,
+    description: description,
     canvas: CanvasSize(width: canvasWidth, height: canvasHeight),
     widgets: scene.nodes.map(widgetFromNode).toList(),
   );

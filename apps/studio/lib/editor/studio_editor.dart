@@ -126,25 +126,42 @@ class StudioEditor extends ConsumerWidget {
 
   Future<void> _save(BuildContext context, WidgetRef ref) async {
     final scene = ref.read(sceneModelProvider);
-    final name = ref.read(dashboardNameProvider);
     final db = ref.read(dashboardDatabaseProvider);
     final existingId = ref.read(dashboardIdProvider);
 
-    final doc = documentFromScene(scene: scene, name: name);
+    final name = ref.read(dashboardNameProvider);
+    final description = ref.read(dashboardDescriptionProvider);
+    if (!context.mounted) return;
+
+    final (saveName, saveDesc) = await _showSaveDialog(
+      context,
+      initialName: name,
+      initialDescription: description,
+      existing: existingId != null,
+    );
+    if (saveName == null) return;
+
+    final doc = documentFromScene(
+      scene: scene,
+      name: saveName,
+      description: saveDesc,
+    );
     try {
       int id;
       if (existingId != null) {
         await db.updateDocument(existingId, doc);
         id = existingId;
       } else {
-        id = await db.saveDashboard(name, doc);
+        id = await db.saveDashboard(saveName, doc);
       }
+      ref.read(dashboardNameProvider.notifier).state = saveName;
+      ref.read(dashboardDescriptionProvider.notifier).state = saveDesc;
       ref.read(dashboardIdProvider.notifier).state = id;
       ref.read(isDirtyProvider.notifier).state = false;
       ref.invalidate(recentDashboardsProvider);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Saved "$name"')),
+          SnackBar(content: Text('Saved "$saveName"')),
         );
       }
     } catch (e) {
@@ -154,6 +171,67 @@ class StudioEditor extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<(String?, String)> _showSaveDialog(
+    BuildContext context, {
+    required String initialName,
+    required String initialDescription,
+    required bool existing,
+  }) async {
+    final nameController = TextEditingController(text: initialName);
+    final descController = TextEditingController(text: initialDescription);
+
+    final result = await showDialog<(String, String)>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(existing ? 'Update dashboard' : 'Save dashboard'),
+          content: SizedBox(
+            width: 360,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Name',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    hintText: 'Optional notes about this dashboard',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final n = nameController.text.trim();
+                if (n.isEmpty) return;
+                Navigator.of(context).pop((n, descController.text.trim()));
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == null) return (null, '');
+    return result;
   }
 
   Future<void> _showOpenDialog(BuildContext context, WidgetRef ref) async {
@@ -175,16 +253,24 @@ class StudioEditor extends ConsumerWidget {
                     itemCount: entries.length,
                     itemBuilder: (context, i) {
                       final e = entries[i];
+                      final doc = db.decodeDocument(e);
                       return ListTile(
                         leading: const Icon(Icons.dashboard),
                         title: Text(e.name),
-                        subtitle: Text('Updated ${e.updatedAt.toLocal()}'),
+                        subtitle: Text(
+                          doc.description.isNotEmpty
+                              ? '${doc.description}\nUpdated ${e.updatedAt.toLocal()}'
+                              : 'Updated ${e.updatedAt.toLocal()}',
+                        ),
                         onTap: () {
                           final doc = db.decodeDocument(e);
                           final scene = ref.read(sceneModelProvider);
                           sceneFromDocument(scene, doc);
                           ref.read(dashboardNameProvider.notifier).state =
                               e.name;
+                          ref
+                              .read(dashboardDescriptionProvider.notifier)
+                              .state = doc.description;
                           ref.read(dashboardIdProvider.notifier).state = e.id;
                           ref.read(commandStackProvider).clear();
                           ref.read(isDirtyProvider.notifier).state = false;

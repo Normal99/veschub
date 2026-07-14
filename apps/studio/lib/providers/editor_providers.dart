@@ -9,8 +9,7 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_storage/dashboard_storage.dart';
 import 'package:editor_canvas/editor_canvas.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'settings_provider.dart';
+import 'package:settings/settings.dart';
 
 /// Singleton drift database (opened lazily).
 final dashboardDatabaseProvider = Provider<DashboardDatabase>((ref) {
@@ -67,6 +66,11 @@ final isDirtyProvider = StateProvider<bool>((ref) {
 /// The name of the dashboard being edited (for save).
 final dashboardNameProvider = StateProvider<String>((ref) {
   return 'Untitled';
+});
+
+/// The description of the dashboard being edited (for save).
+final dashboardDescriptionProvider = StateProvider<String>((ref) {
+  return '';
 });
 
 /// The database row id of the dashboard being edited (null = unsaved).

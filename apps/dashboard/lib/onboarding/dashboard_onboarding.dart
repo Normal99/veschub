@@ -8,8 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
-import '../providers/settings_provider.dart';
-
 class DashboardOnboarding extends ConsumerStatefulWidget {
   final VoidCallback onDone;
   const DashboardOnboarding({required this.onDone, super.key});

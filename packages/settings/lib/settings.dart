@@ -7,6 +7,7 @@
 library;
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:dashboard_model/dashboard_model.dart';
@@ -113,3 +114,15 @@ Future<SettingsService> createSettingsService() async {
   await service.load();
   return service;
 }
+
+/// Reactively-observed [SettingsService]. Loads from `shared_preferences` on
+/// first read; consumers rebuild when any setter notifies.
+///
+/// Shared by the studio and dashboard apps so both observe a single
+/// definition; adding `autoDispose`/`keepAlive` semantics here applies to
+/// both.
+final settingsServiceProvider = ChangeNotifierProvider<SettingsService>((ref) {
+  final service = SettingsService();
+  service.load();
+  return service;
+});

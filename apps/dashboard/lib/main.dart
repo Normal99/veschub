@@ -21,7 +21,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
 import 'onboarding/dashboard_onboarding.dart';
-import 'providers/settings_provider.dart';
 import 'settings/dashboard_settings_screen.dart';
 
 Future<void> main() async {

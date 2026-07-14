@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
-import '../providers/settings_provider.dart';
-
 class DashboardSettingsScreen extends ConsumerWidget {
   const DashboardSettingsScreen({super.key});
 

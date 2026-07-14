@@ -9,8 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
-import '../providers/settings_provider.dart';
-
 class StudioSettingsScreen extends ConsumerWidget {
   const StudioSettingsScreen({super.key});
 

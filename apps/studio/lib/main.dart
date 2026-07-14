@@ -12,7 +12,6 @@ import 'package:settings/settings.dart';
 
 import 'editor/studio_editor.dart';
 import 'onboarding/studio_onboarding.dart';
-import 'providers/settings_provider.dart';
 import 'settings/studio_settings_screen.dart';
 
 Future<void> main() async {
