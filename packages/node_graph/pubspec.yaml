@@ -5,12 +5,11 @@ publish_to: none
 
 environment:
   sdk: ^3.4.0
-  flutter: ">=3.22.0"
 
 dependencies:
-  flutter:
-    sdk: flutter
+  dashboard_model:
+    path: ../dashboard_model
 
 dev_dependencies:
-  flutter_test:
-    sdk: flutter
+  test: ^1.25.0
+  flutter_lints: ^4.0.0

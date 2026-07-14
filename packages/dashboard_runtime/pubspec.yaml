@@ -9,6 +9,8 @@ environment:
 dependencies:
   dashboard_model:
     path: ../dashboard_model
+  node_graph:
+    path: ../node_graph
   vesc_telemetry:
     path: ../vesc_telemetry
 

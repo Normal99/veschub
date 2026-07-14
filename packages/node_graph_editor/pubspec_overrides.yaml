@@ -1,0 +1,6 @@
+# melos_managed_dependency_overrides: dashboard_model,node_graph
+dependency_overrides:
+  dashboard_model:
+    path: ../dashboard_model
+  node_graph:
+    path: ../node_graph

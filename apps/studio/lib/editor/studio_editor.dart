@@ -13,6 +13,7 @@ import 'package:widgets_library/widgets_library.dart';
 
 import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
+import 'flow_mode.dart';
 import 'template_mode.dart';
 
 class StudioEditor extends ConsumerWidget {
@@ -86,18 +87,20 @@ class StudioEditor extends ConsumerWidget {
           ),
         ),
       ),
-      body: mode == EditorMode.template
-          ? const TemplateMode()
-          : Row(
-              children: [
-                const _WidgetPalette(),
-                Expanded(child: _CanvasArea()),
-                const SizedBox(
-                  width: 280,
-                  child: _PropertiesInspector(),
-                ),
-              ],
-            ),
+      body: switch (mode) {
+        EditorMode.template => const TemplateMode(),
+        EditorMode.canvas => Row(
+            children: [
+              const _WidgetPalette(),
+              Expanded(child: _CanvasArea()),
+              const SizedBox(
+                width: 280,
+                child: _PropertiesInspector(),
+              ),
+            ],
+          ),
+        EditorMode.flow => const FlowMode(),
+      },
     );
   }
 

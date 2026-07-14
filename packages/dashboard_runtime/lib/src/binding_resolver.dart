@@ -2,6 +2,7 @@
 library;
 
 import 'package:dashboard_model/dashboard_model.dart';
+import 'package:node_graph/node_graph.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 
 /// Result of resolving a binding.
@@ -15,16 +16,73 @@ class ResolvedValue {
         isResolved = false;
 }
 
-/// Resolves [binding] against [store]. Literal bindings return their baked
-/// value; telemetry bindings read the store (or unresolved if unset); graph
-/// bindings are unresolved at Phase 2 (wired in Phase 6).
-ResolvedValue resolveBinding(Binding binding, TelemetryStore store) {
+/// Optional graph registry: maps a graph id → deserialized [FlowGraph] + node
+/// properties. The runtime builds this from the document's `graphs` field.
+class GraphRegistry {
+  final Map<String, FlowGraph> graphs;
+  final Map<String, Map<String, Map<String, dynamic>>> properties;
+
+  const GraphRegistry({
+    this.graphs = const {},
+    this.properties = const {},
+  });
+
+  static const empty = GraphRegistry();
+
+  static GraphRegistry fromDocument(DashboardDocument doc) {
+    final graphs = <String, FlowGraph>{};
+    final props = <String, Map<String, Map<String, dynamic>>>{};
+    for (final entry in doc.graphs.entries) {
+      try {
+        final g = FlowGraph.fromJson(
+          Map<String, dynamic>.from(entry.value as Map),
+        );
+        graphs[entry.key] = g;
+        // Extract per-node properties if present under 'properties'.
+        final rawProps = (entry.value as Map)['properties'];
+        if (rawProps is Map) {
+          props[entry.key] = rawProps.map(
+            (k, v) => MapEntry(
+              k.toString(),
+              Map<String, dynamic>.from(v as Map),
+            ),
+          );
+        }
+      } catch (_) {
+        // Skip malformed graphs.
+      }
+    }
+    return GraphRegistry(graphs: graphs, properties: props);
+  }
+}
+
+/// Resolves [binding] against [store] and optional [graphs].
+ResolvedValue resolveBinding(
+  Binding binding,
+  TelemetryStore store, {
+  GraphRegistry graphs = GraphRegistry.empty,
+}) {
   return binding.map(
     literal: (b) => ResolvedValue(b.value),
     telemetry: (b) {
       if (!store.contains(b.key)) return const ResolvedValue.unresolved();
       return ResolvedValue(store.value(b.key));
     },
-    graph: (_) => const ResolvedValue.unresolved(),
+    graph: (b) {
+      final graph = graphs.graphs[b.graphId];
+      if (graph == null) return const ResolvedValue.unresolved();
+      try {
+        final result = evaluateGraph(
+          graph,
+          telemetry: (key) => store.value(key),
+          properties: graphs.properties[b.graphId] ?? const {},
+        );
+        final v = result[b.output];
+        if (v == null) return const ResolvedValue.unresolved();
+        return ResolvedValue(v);
+      } catch (_) {
+        return const ResolvedValue.unresolved();
+      }
+    },
   );
 }

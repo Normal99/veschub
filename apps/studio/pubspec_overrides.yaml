@@ -1,4 +1,4 @@
-# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,editor_canvas,vesc_telemetry,widgets_library,dashboard_storage,templates
+# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,editor_canvas,vesc_telemetry,widgets_library,dashboard_storage,templates,node_graph,node_graph_editor
 dependency_overrides:
   dashboard_model:
     path: ../../packages/dashboard_model
@@ -8,6 +8,10 @@ dependency_overrides:
     path: ../../packages/dashboard_storage
   editor_canvas:
     path: ../../packages/editor_canvas
+  node_graph:
+    path: ../../packages/node_graph
+  node_graph_editor:
+    path: ../../packages/node_graph_editor
   templates:
     path: ../../packages/templates
   vesc_telemetry:

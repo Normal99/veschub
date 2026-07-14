@@ -19,6 +19,7 @@ typedef ResolvedProperties = Map<String, dynamic>;
 class DashboardRuntime {
   DashboardDocument _document;
   final TelemetryStore _store;
+  GraphRegistry _graphs = GraphRegistry.empty;
   final Map<String, ResolvedProperties> _lastValues = {};
   final StreamController<Map<String, ResolvedProperties>> _dirtyController =
       StreamController<Map<String, ResolvedProperties>>.broadcast(sync: true);
@@ -42,6 +43,7 @@ class DashboardRuntime {
   /// Replaces the active document and re-evaluates everything.
   void setDocument(DashboardDocument doc) {
     _document = doc;
+    _graphs = GraphRegistry.fromDocument(doc);
     _lastValues.clear();
     _syncWatchedKeys();
     // Defer so listeners attached synchronously after setDocument receive it.
@@ -50,6 +52,7 @@ class DashboardRuntime {
 
   /// Begins evaluating bindings whenever watched telemetry keys change.
   void start() {
+    _graphs = GraphRegistry.fromDocument(_document);
     _syncWatchedKeys();
     // Defer the initial emission so listeners attached synchronously after
     // start() receive the first dirty set (broadcast streams drop events with
@@ -135,7 +138,7 @@ class DashboardRuntime {
   ResolvedProperties _resolveWidget(WidgetInstance w) {
     final out = <String, dynamic>{};
     for (final entry in w.properties.entries) {
-      final r = resolveBinding(entry.value, _store);
+      final r = resolveBinding(entry.value, _store, graphs: _graphs);
       if (r.isResolved) out[entry.key] = r.value;
     }
     return out;

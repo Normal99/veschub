@@ -1,0 +1,19 @@
+name: node_graph_editor
+description: Interactive dataflow graph editor widget (Flutter) for the node_graph package.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.4.0
+  flutter: ">=3.22.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  node_graph:
+    path: ../node_graph
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0

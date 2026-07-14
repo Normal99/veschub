@@ -1,9 +1,11 @@
-# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,vesc_proto,vesc_telemetry,vesc_transport,widgets_library,vesc_sim
+# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,vesc_proto,vesc_telemetry,vesc_transport,widgets_library,vesc_sim,node_graph
 dependency_overrides:
   dashboard_model:
     path: ../../packages/dashboard_model
   dashboard_runtime:
     path: ../../packages/dashboard_runtime
+  node_graph:
+    path: ../../packages/node_graph
   vesc_proto:
     path: ../../packages/vesc_proto
   vesc_sim:

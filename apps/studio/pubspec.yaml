@@ -21,6 +21,10 @@ dependencies:
     path: ../../packages/widgets_library
   editor_canvas:
     path: ../../packages/editor_canvas
+  node_graph:
+    path: ../../packages/node_graph
+  node_graph_editor:
+    path: ../../packages/node_graph_editor
   templates:
     path: ../../packages/templates
   vesc_telemetry:

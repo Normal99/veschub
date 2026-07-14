@@ -1,0 +1,4 @@
+# melos_managed_dependency_overrides: dashboard_model
+dependency_overrides:
+  dashboard_model:
+    path: ../dashboard_model
