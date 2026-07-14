@@ -21,6 +21,8 @@ dependencies:
     path: ../../packages/widgets_library
   editor_canvas:
     path: ../../packages/editor_canvas
+  templates:
+    path: ../../packages/templates
   vesc_telemetry:
     path: ../../packages/vesc_telemetry
 

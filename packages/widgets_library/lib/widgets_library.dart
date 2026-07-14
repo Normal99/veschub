@@ -18,6 +18,7 @@ import 'widgets/text_widget.dart';
 import 'widgets/web_widget.dart';
 
 export 'src/format.dart';
+export 'src/property_manifest.dart';
 export 'src/theme.dart';
 
 /// Metadata for a built-in widget kind.

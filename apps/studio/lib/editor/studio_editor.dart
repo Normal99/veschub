@@ -13,6 +13,7 @@ import 'package:widgets_library/widgets_library.dart';
 
 import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
+import 'template_mode.dart';
 
 class StudioEditor extends ConsumerWidget {
   const StudioEditor({super.key});
@@ -86,7 +87,7 @@ class StudioEditor extends ConsumerWidget {
         ),
       ),
       body: mode == EditorMode.template
-          ? const _TemplateModePlaceholder()
+          ? const TemplateMode()
           : Row(
               children: [
                 const _WidgetPalette(),
@@ -356,6 +357,7 @@ class _PropertiesInspector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final scene = ref.watch(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
+    final level = ref.watch(capabilityLevelProvider);
 
     if (selection.isEmpty) {
       return Container(
@@ -391,12 +393,22 @@ class _PropertiesInspector extends ConsumerWidget {
           if (widget != null) ...[
             _Field(label: 'ID', value: widget.id),
             _Field(label: 'Kind', value: widget.kind),
+            if (!transformsUnlockedAt(level))
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  'Transforms locked — switch to Advanced to move widgets.',
+                  style: TextStyle(fontSize: 11, color: Colors.orange),
+                ),
+              ),
             const Divider(),
             for (final entry in widget.properties.entries)
-              _BindingField(
-                name: entry.key,
-                binding: entry.value,
-              ),
+              if (visibleProperties(widget.kind, level)
+                  .any((m) => m.key == entry.key))
+                _BindingField(
+                  name: entry.key,
+                  binding: entry.value,
+                ),
           ],
         ],
       ),
@@ -447,27 +459,6 @@ class _BindingField extends StatelessWidget {
           Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
           Text(desc,
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-        ],
-      ),
-    );
-  }
-}
-
-class _TemplateModePlaceholder extends StatelessWidget {
-  const _TemplateModePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.dashboard_customize, size: 64),
-          SizedBox(height: 16),
-          Text('Template mode',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          SizedBox(height: 8),
-          Text('Starter templates + Basic-mode editing arrive in Phase 5.'),
         ],
       ),
     );

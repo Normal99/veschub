@@ -1,4 +1,4 @@
-# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,editor_canvas,vesc_telemetry,widgets_library,dashboard_storage
+# melos_managed_dependency_overrides: dashboard_model,dashboard_runtime,editor_canvas,vesc_telemetry,widgets_library,dashboard_storage,templates
 dependency_overrides:
   dashboard_model:
     path: ../../packages/dashboard_model
@@ -8,6 +8,8 @@ dependency_overrides:
     path: ../../packages/dashboard_storage
   editor_canvas:
     path: ../../packages/editor_canvas
+  templates:
+    path: ../../packages/templates
   vesc_telemetry:
     path: ../../packages/vesc_telemetry
   widgets_library:
