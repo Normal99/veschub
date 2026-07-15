@@ -24,7 +24,6 @@ class DashboardRuntime {
   final StreamController<Map<String, ResolvedProperties>> _dirtyController =
       StreamController<Map<String, ResolvedProperties>>.broadcast(sync: true);
 
-  StreamSubscription<dynamic>? _activeSub;
   final Set<String> _watchedKeys = {};
 
   DashboardRuntime({
@@ -62,9 +61,10 @@ class DashboardRuntime {
 
   /// Stops listening. Call from dispose.
   void dispose() {
-    for (final key in _watchedKeys.toList()) {
-      _unwatchKey(key);
+    for (final sub in _subs.values) {
+      sub.cancel();
     }
+    _subs.clear();
     _dirtyController.close();
   }
 
@@ -101,26 +101,16 @@ class DashboardRuntime {
     _watchedKeys.add(key);
     final sub =
         _store.watch(key, replayLast: false).listen((_) => _recomputeAll());
-    if (_activeSub == null) {
-      _activeSub = sub;
-    } else {
-      // Multiple keys: keep a list. For Phase 2 simplicity, store subs on a map.
-      _extraSubs[key] = sub;
-    }
+    _subs[key] = sub;
   }
-
-  final Map<String, StreamSubscription<dynamic>> _extraSubs = {};
 
   void _unwatchKey(String key) {
     _watchedKeys.remove(key);
-    final sub = _extraSubs.remove(key);
-    if (sub != null) {
-      sub.cancel();
-    } else if (_activeSub != null && _watchedKeys.isEmpty) {
-      _activeSub!.cancel();
-      _activeSub = null;
-    }
+    final sub = _subs.remove(key);
+    sub?.cancel();
   }
+
+  final Map<String, StreamSubscription<dynamic>> _subs = {};
 
   void _recomputeAll() {
     final dirty = <String, ResolvedProperties>{};

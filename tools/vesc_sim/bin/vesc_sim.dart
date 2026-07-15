@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:vesc_sim/vesc_sim.dart';
 import 'package:vesc_proto/vesc_proto.dart';
@@ -36,7 +37,11 @@ Future<void> main(List<String> args) async {
   });
 
   print('vesc_sim running — press Ctrl-C to stop.');
-  await Future<void>.delayed(const Duration(seconds: 30));
+  final done = Completer<void>();
+  ProcessSignal.sigint.watch().listen((_) {
+    if (!done.isCompleted) done.complete();
+  });
+  await done.future;
   await sub.cancel();
   await sim.stop();
   pair.close();

@@ -12,10 +12,13 @@ import 'package:editor_canvas/editor_canvas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:paint_dsl/paint_dsl.dart';
+import 'package:node_graph/node_graph.dart';
+import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
 import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
+import '../widgets/simple_color_picker.dart';
 import 'flow_mode.dart';
 import 'template_mode.dart';
 
@@ -55,6 +58,11 @@ class StudioEditor extends ConsumerWidget {
             tooltip: commands.redoLabel ?? 'Redo',
           ),
           const VerticalDivider(),
+          IconButton(
+            icon: const Icon(Icons.note_add),
+            onPressed: () => _newDashboard(context, ref),
+            tooltip: 'New dashboard',
+          ),
           IconButton(
             icon: const Icon(Icons.folder_open),
             onPressed: () => _showOpenDialog(context, ref),
@@ -145,6 +153,10 @@ class StudioEditor extends ConsumerWidget {
       scene: scene,
       name: saveName,
       description: saveDesc,
+      canvasSize: ref.read(canvasSizeProvider),
+      background: ref.read(backgroundProvider),
+      accent: ref.read(accentProvider),
+      graphs: ref.read(flowGraphsProvider),
     );
     try {
       int id;
@@ -234,6 +246,28 @@ class StudioEditor extends ConsumerWidget {
     return result;
   }
 
+  void _newDashboard(BuildContext context, WidgetRef ref) {
+    ref.read(sceneModelProvider).replaceAll(const []);
+    ref.read(selectionModelProvider).clear();
+    ref.read(commandStackProvider).clear();
+    ref.read(dashboardNameProvider.notifier).state = 'Untitled';
+    ref.read(dashboardDescriptionProvider.notifier).state = '';
+    ref.read(dashboardIdProvider.notifier).state = null;
+    ref.read(canvasSizeProvider.notifier).state = kDefaultCanvasSize;
+    ref.read(backgroundProvider.notifier).state = kDefaultBackground;
+    ref.read(accentProvider.notifier).state = kDefaultAccent;
+    ref.read(flowGraphsProvider.notifier).state = const {};
+    ref.read(flowGraphProvider.notifier).state = FlowGraph.empty('graph_1');
+    ref.read(flowPropertiesProvider.notifier).state = const {};
+    ref.read(isDirtyProvider.notifier).state = false;
+    ref.read(editorModeProvider.notifier).state = EditorMode.canvas;
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Started a new dashboard')),
+      );
+    }
+  }
+
   Future<void> _showOpenDialog(BuildContext context, WidgetRef ref) async {
     final db = ref.read(dashboardDatabaseProvider);
     final entries = await db.recentDashboards();
@@ -263,17 +297,14 @@ class StudioEditor extends ConsumerWidget {
                               : 'Updated ${e.updatedAt.toLocal()}',
                         ),
                         onTap: () {
-                          final doc = db.decodeDocument(e);
                           final scene = ref.read(sceneModelProvider);
-                          sceneFromDocument(scene, doc);
-                          ref.read(dashboardNameProvider.notifier).state =
-                              e.name;
-                          ref
-                              .read(dashboardDescriptionProvider.notifier)
-                              .state = doc.description;
-                          ref.read(dashboardIdProvider.notifier).state = e.id;
-                          ref.read(commandStackProvider).clear();
-                          ref.read(isDirtyProvider.notifier).state = false;
+                          applyDocumentToEditor(
+                            ref,
+                            scene: scene,
+                            doc: doc,
+                            id: e.id,
+                            name: e.name,
+                          );
                           Navigator.of(context).pop();
                         },
                       );
@@ -357,12 +388,23 @@ class _PaletteTile extends StatelessWidget {
   final String kind;
   const _PaletteTile({required this.kind});
 
+  static const _icons = <String, IconData>{
+    'gauge': Icons.speed,
+    'bar': Icons.bar_chart,
+    'text': Icons.text_fields,
+    'chart': Icons.show_chart,
+    'status': Icons.info_outline,
+    'image': Icons.image,
+    'web': Icons.public,
+    'paint': Icons.brush,
+  };
+
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: ListTile(
-        leading: const Icon(Icons.widgets),
+        leading: Icon(_icons[kind] ?? Icons.widgets),
         title: Text(kind),
         dense: true,
       ),
@@ -371,56 +413,145 @@ class _PaletteTile extends StatelessWidget {
 }
 
 /// The canvas area with drag-drop acceptance.
-class _CanvasArea extends ConsumerWidget {
+class _CanvasArea extends ConsumerStatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CanvasArea> createState() => _CanvasAreaState();
+}
+
+class _CanvasAreaState extends ConsumerState<_CanvasArea> {
+  final _dropTargetKey = GlobalKey();
+
+  static const _aspectPresets = <String, CanvasSize>{
+    'HD': CanvasSize(width: 1280, height: 720),
+    'FHD': CanvasSize(width: 1920, height: 1080),
+    'QHD': CanvasSize(width: 2560, height: 1440),
+    '4:3': CanvasSize(width: 1024, height: 768),
+    '1:1': CanvasSize(width: 800, height: 800),
+  };
+
+  Offset _toCanvasPosition(Offset globalPos) {
+    final box = _dropTargetKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return globalPos;
+    return box.globalToLocal(globalPos);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final scene = ref.watch(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
     final commands = ref.watch(commandStackProvider);
+    final canvasSize = ref.watch(canvasSizeProvider);
 
-    return DragTarget<Map<String, dynamic>>(
-      onAcceptWithDetails: (details) {
-        final kind = details.data['kind'] as String;
-        final id = ref.read(idGeneratorProvider).next();
-        final node = CanvasNode(
-          id: id,
-          transform: NodeTransforms.compose(
-            translation: details.offset,
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+              for (final preset in _aspectPresets.entries)
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: ActionChip(
+                    label: Text(preset.key, style: const TextStyle(fontSize: 10)),
+                    backgroundColor:
+                        canvasSize.width == preset.value.width &&
+                                canvasSize.height == preset.value.height
+                            ? Theme.of(context).colorScheme.primaryContainer
+                            : null,
+                    onPressed: () {
+                      ref.read(canvasSizeProvider.notifier).state = preset.value;
+                      ref.read(isDirtyProvider.notifier).state = true;
+                    },
+                  ),
+                ),
+              const SizedBox(width: 12),
+              IconButton(
+                icon: const Icon(Icons.screen_rotation, size: 16),
+                tooltip: 'Swap orientation (landscape ↔ portrait)',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                onPressed: () {
+                  ref.read(canvasSizeProvider.notifier).state = CanvasSize(
+                    width: canvasSize.height,
+                    height: canvasSize.width,
+                  );
+                  ref.read(isDirtyProvider.notifier).state = true;
+                },
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${canvasSize.width.toInt()}×${canvasSize.height.toInt()}',
+                style: const TextStyle(fontSize: 10),
+              ),
+            ],
           ),
-          data: WidgetInstance(
-            id: id,
-            kind: kind,
-            properties: _defaultProperties(kind),
           ),
-        );
-        commands.execute(AddNodeCommand(node));
-        ref.read(isDirtyProvider.notifier).state = true;
-      },
-      builder: (context, candidate, rejected) {
-        return Container(
-          color: candidate.isNotEmpty
-              ? Colors.blue.withValues(alpha: 0.05)
-              : Theme.of(context).colorScheme.surface,
-          child: EditorCanvas(
-            scene: scene,
-            selection: selection,
-            commands: commands,
-            nodeBuilder: (node) {
-              final w = node.data as WidgetInstance?;
-              if (w == null) {
-                return const Center(child: Text('No data'));
-              }
-              return buildWidget(w, const {});
+        ),
+        Expanded(
+          child: DragTarget<Map<String, dynamic>>(
+            key: _dropTargetKey,
+            onAcceptWithDetails: (details) {
+              final kind = details.data['kind'] as String;
+              final id = ref.read(idGeneratorProvider).next();
+              final localPos = _toCanvasPosition(details.offset);
+              final node = CanvasNode(
+                id: id,
+                transform: NodeTransforms.compose(translation: localPos),
+                data: WidgetInstance(
+                  id: id,
+                  kind: kind,
+                  properties: _defaultProperties(kind),
+                ),
+              );
+              commands.execute(AddNodeCommand(node));
+              ref.read(isDirtyProvider.notifier).state = true;
             },
-            nodeWidth: (_) => kDefaultNodeWidth,
-            nodeHeight: (_) => kDefaultNodeHeight,
+            builder: (context, candidate, rejected) {
+              final borderColor = candidate.isNotEmpty
+                  ? Colors.blue
+                  : Theme.of(context).colorScheme.outline;
+              return Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: borderColor, width: 2),
+                  color: candidate.isNotEmpty
+                      ? Colors.blue.withValues(alpha: 0.05)
+                      : Theme.of(context).colorScheme.surface,
+                ),
+                child: FittedBox(
+                  child: SizedBox(
+                    width: canvasSize.width,
+                    height: canvasSize.height,
+                    child: EditorCanvas(
+                      scene: scene,
+                      selection: selection,
+                      commands: commands,
+                      onCommandExecuted: (_) =>
+                          ref.read(isDirtyProvider.notifier).state = true,
+                      nodeBuilder: (node) {
+                        final w = node.data as WidgetInstance?;
+                        if (w == null) {
+                          return const Center(child: Text('No data'));
+                        }
+                        final store = ref.read(canvasPreviewTelemetryProvider);
+                        return buildWidget(w, _resolve(w, store));
+                      },
+                      nodeWidth: (_) => kDefaultNodeWidth,
+                      nodeHeight: (_) => kDefaultNodeHeight,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
-  Map<String, Binding> _defaultProperties(String kind) {
+  static Map<String, Binding> _defaultProperties(String kind) {
     return switch (kind) {
       'gauge' => {
           'value': const Binding.telemetry(key: 'erpm'),
@@ -459,6 +590,19 @@ class _CanvasArea extends ConsumerWidget {
         },
       _ => <String, Binding>{},
     };
+  }
+
+  static Map<String, dynamic> _resolve(WidgetInstance w, TelemetryStore store) {
+    final out = <String, dynamic>{};
+    for (final entry in w.properties.entries) {
+      final v = entry.value.map(
+        literal: (b) => b.value,
+        telemetry: (b) => store.value(b.key),
+        graph: (_) => null,
+      );
+      if (v != null) out[entry.key] = v;
+    }
+    return out;
   }
 }
 
@@ -501,7 +645,21 @@ class _PropertiesInspector extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       child: ListView(
         children: [
-          Text('Properties', style: Theme.of(context).textTheme.titleSmall),
+          Row(
+            children: [
+              Text('Properties', style: Theme.of(context).textTheme.titleSmall),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.delete_outline, size: 20),
+                tooltip: 'Delete widget',
+                onPressed: () {
+                  ref.read(commandStackProvider).execute(RemoveNodesCommand([node]));
+                  ref.read(selectionModelProvider).clear();
+                  ref.read(isDirtyProvider.notifier).state = true;
+                },
+              ),
+            ],
+          ),
           const SizedBox(height: 8),
           if (widget != null) ...[
             _Field(label: 'ID', value: widget.id),
@@ -528,12 +686,14 @@ class _PropertiesInspector extends ConsumerWidget {
                 ),
               for (final entry in widget.properties.entries)
                 if (entry.key != 'program')
-                  _BindingField(name: entry.key, binding: entry.value),
+                  _BindingField(node: node, widget: widget, name: entry.key, binding: entry.value),
             ] else
               for (final entry in widget.properties.entries)
                 if (visibleProperties(widget.kind, level)
                     .any((m) => m.key == entry.key))
                   _BindingField(
+                    node: node,
+                    widget: widget,
                     name: entry.key,
                     binding: entry.value,
                   ),
@@ -567,28 +727,249 @@ class _Field extends StatelessWidget {
   }
 }
 
-class _BindingField extends StatelessWidget {
+class _BindingField extends ConsumerWidget {
+  final CanvasNode node;
+  final WidgetInstance widget;
   final String name;
   final Binding binding;
-  const _BindingField({required this.name, required this.binding});
+  const _BindingField({
+    required this.node,
+    required this.widget,
+    required this.name,
+    required this.binding,
+  });
+
+  void _commit(WidgetRef ref, Binding newBinding) {
+    final newProps = Map<String, Binding>.from(widget.properties);
+    newProps[name] = newBinding;
+    final newWidget = widget.copyWith(properties: newProps);
+    ref.read(commandStackProvider).execute(
+          UpdateNodeDataCommand(
+            id: node.id,
+            oldData: widget,
+            newData: newWidget,
+          ),
+        );
+    ref.read(isDirtyProvider.notifier).state = true;
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final desc = binding.map(
-      literal: (b) => 'Literal: ${b.value}',
-      telemetry: (b) => 'Telemetry: ${b.key}',
-      graph: (b) => 'Graph: ${b.graphId}.${b.output}',
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final meta = visibleProperties(widget.kind, ref.watch(capabilityLevelProvider))
+        .firstWhere(
+          (m) => m.key == name,
+          orElse: () => PropertyMeta(key: name, minLevel: CapabilityLevel.basic, label: name),
+        );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(name, style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(desc,
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          Text(meta.label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          binding.map(
+            literal: (b) => _LiteralEditor(
+              value: b.value,
+              onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+            ),
+            telemetry: (b) => _TelemetryEditor(
+              currentKey: b.key,
+              onChanged: (k) => _commit(ref, Binding.telemetry(key: k)),
+            ),
+            graph: (b) => _GraphEditor(
+              graphId: b.graphId,
+              output: b.output,
+              onChanged: (gid, out) =>
+                  _commit(ref, Binding.graph(graphId: gid, output: out)),
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _LiteralEditor extends StatefulWidget {
+  final Object value;
+  final ValueChanged<Object> onChanged;
+  const _LiteralEditor({required this.value, required this.onChanged});
+
+  @override
+  State<_LiteralEditor> createState() => _LiteralEditorState();
+}
+
+class _LiteralEditorState extends State<_LiteralEditor> {
+  late final TextEditingController _controller;
+  bool _isColor = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isColor = widget.value is int && (widget.value as int) > 0xFF000000;
+    _controller = TextEditingController(text: _format(widget.value));
+  }
+
+  String _format(Object v) {
+    if (v is num) return v.toString();
+    return v.toString();
+  }
+
+  @override
+  void didUpdateWidget(covariant _LiteralEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _controller.text = _format(widget.value);
+      _isColor = widget.value is int && (widget.value as int) > 0xFF000000;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isColor) {
+      final colorVal = (widget.value as num).toInt();
+      return Row(
+        children: [
+          GestureDetector(
+            onTap: () async {
+              final picked = await showDialog<int>(
+                context: context,
+                builder: (context) => SimpleColorPicker(current: colorVal),
+              );
+              if (picked != null) widget.onChanged(picked);
+            },
+            child: Container(
+              width: 40,
+              height: 28,
+              decoration: BoxDecoration(
+                color: Color(colorVal),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.black26),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          TextButton(
+            onPressed: () => setState(() => _isColor = false),
+            child: const Text('Hex', style: TextStyle(fontSize: 11)),
+          ),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            controller: _controller,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(isDense: true),
+            onFieldSubmitted: (s) => _apply(s),
+          ),
+        ),
+        if (widget.value is int && (widget.value as int) > 0xFF000000)
+          TextButton(
+            onPressed: () => setState(() => _isColor = true),
+            child: const Text('Color', style: TextStyle(fontSize: 11)),
+          ),
+      ],
+    );
+  }
+
+  void _apply(String s) {
+    final trimmed = s.trim();
+    final n = num.tryParse(trimmed);
+    widget.onChanged(n ?? trimmed);
+  }
+}
+
+class _TelemetryEditor extends StatefulWidget {
+  final String currentKey;
+  final ValueChanged<String> onChanged;
+  const _TelemetryEditor({required this.currentKey, required this.onChanged});
+
+  @override
+  State<_TelemetryEditor> createState() => _TelemetryEditorState();
+}
+
+class _TelemetryEditorState extends State<_TelemetryEditor> {
+  bool _manual = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_manual) {
+      return Row(
+        children: [
+          Expanded(
+            child: TextFormField(
+              initialValue: widget.currentKey,
+              style: const TextStyle(fontSize: 12),
+              decoration: const InputDecoration(isDense: true, hintText: 'e.g. fault'),
+              onFieldSubmitted: (v) {
+                if (v.trim().isNotEmpty) widget.onChanged(v.trim());
+                setState(() => _manual = false);
+              },
+            ),
+          ),
+          TextButton(
+            onPressed: () => setState(() => _manual = false),
+            child: const Text('Pick', style: TextStyle(fontSize: 11)),
+          ),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: DropdownButton<String>(
+            value: TelemetryKey.all.contains(widget.currentKey) ? widget.currentKey : null,
+            isExpanded: true,
+            hint: Text(widget.currentKey, style: const TextStyle(fontSize: 12)),
+            items: [for (final k in TelemetryKey.all) DropdownMenuItem(value: k, child: Text(k, style: const TextStyle(fontSize: 12)))],
+            onChanged: (v) { if (v != null) widget.onChanged(v); },
+          ),
+        ),
+        TextButton(
+          onPressed: () => setState(() => _manual = true),
+          child: const Text('Manual', style: TextStyle(fontSize: 11)),
+        ),
+      ],
+    );
+  }
+}
+
+class _GraphEditor extends StatelessWidget {
+  final String graphId;
+  final String output;
+  final void Function(String, String) onChanged;
+  const _GraphEditor({required this.graphId, required this.output, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: TextFormField(
+            initialValue: graphId,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(isDense: true, labelText: 'Graph', labelStyle: TextStyle(fontSize: 10)),
+            onFieldSubmitted: (v) => onChanged(v.trim(), output),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextFormField(
+            initialValue: output,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(isDense: true, labelText: 'Output', labelStyle: TextStyle(fontSize: 10)),
+            onFieldSubmitted: (v) => onChanged(graphId, v.trim()),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -613,6 +994,15 @@ class _PaintProgramEditorState extends ConsumerState<_PaintProgramEditor> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: _encodedProgram());
+  }
+
+  @override
+  void didUpdateWidget(covariant _PaintProgramEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final encoded = _encodedProgram();
+    if (encoded != _controller.text && _error == null) {
+      _controller.text = encoded;
+    }
   }
 
   String _encodedProgram() {

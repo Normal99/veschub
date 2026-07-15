@@ -73,25 +73,27 @@ class VescSim {
 
   void _onPayload(List<int> payload) {
     if (payload.isEmpty) return;
-    final id = payload[0];
-    switch (CommPacketId.fromCode(id)) {
-      case CommPacketId.setDuty:
-        final r = ByteReader(payload)..readU8();
-        _targetDuty = r.readI32() / 100000.0;
-        break;
-      case CommPacketId.setCurrent:
-        final r = ByteReader(payload)..readU8();
-        _currentMotor = r.readI32() / 1000.0;
-        break;
-      case CommPacketId.setRpm:
-        // Simple model: requested erpm becomes the new target; duty follows.
-        final r = ByteReader(payload)..readU8();
-        _erpm = r.readI32().toDouble();
-        _duty = (_erpm / config.maxRpm).clamp(-1.0, 1.0).toDouble();
-        break;
-      default:
-        // Unhandled command types are ignored in this Phase-1 sim.
-        break;
+    try {
+      final id = payload[0];
+      switch (CommPacketId.fromCode(id)) {
+        case CommPacketId.setDuty:
+          final r = ByteReader(payload)..readU8();
+          _targetDuty = r.readI32() / 100000.0;
+          break;
+        case CommPacketId.setCurrent:
+          final r = ByteReader(payload)..readU8();
+          _currentMotor = r.readI32() / 1000.0;
+          break;
+        case CommPacketId.setRpm:
+          final r = ByteReader(payload)..readU8();
+          _erpm = r.readI32().toDouble();
+          _duty = (_erpm / config.maxRpm).clamp(-1.0, 1.0).toDouble();
+          break;
+        default:
+          break;
+      }
+    } catch (_) {
+      return;
     }
   }
 

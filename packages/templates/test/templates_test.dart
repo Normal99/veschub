@@ -45,6 +45,7 @@ void main() {
         'status',
         'image',
         'web',
+        'paint',
       };
       for (final t in builtInTemplates) {
         for (final w in t.document.widgets) {

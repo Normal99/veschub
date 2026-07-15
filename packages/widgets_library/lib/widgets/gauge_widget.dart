@@ -94,7 +94,7 @@ class _GaugePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.shortestSide / 2) - 8;
+    final radius = math.max(0.0, (size.shortestSide / 2) - 8);
     final rect = Rect.fromCircle(center: center, radius: radius);
     final track = Paint()
       ..style = PaintingStyle.stroke

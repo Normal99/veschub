@@ -84,15 +84,21 @@ class PlatformAppIntegration
       StreamController<Uri>.broadcast();
   Uri? _initial;
   bool _initialised = false;
+  Future<void>? _initFuture;
 
-  Future<void> _ensureInit() async {
-    if (_initialised) return;
+  Future<void> _ensureInit() {
+    if (_initialised) return Future<void>.value();
     _initialised = true;
+    _initFuture = _doInit();
+    return _initFuture!;
+  }
+
+  Future<void> _doInit() async {
     _channel.setMethodCallHandler(_handle);
     try {
       final raw = await _channel.invokeMethod<String>('getInitialLink');
       if (raw != null) _initial = Uri.parse(raw);
-    } on PlatformException {
+    } on Exception {
       // Channel not implemented on this platform — no-op.
     }
   }
@@ -111,7 +117,7 @@ class PlatformAppIntegration
     try {
       final raw = await _channel.invokeMethod<bool>('launch', {'uri': uri});
       return raw ?? false;
-    } on PlatformException {
+    } on Exception {
       return false;
     }
   }
@@ -128,7 +134,7 @@ class PlatformAppIntegration
         'extras': extras,
       });
       return raw ?? false;
-    } on PlatformException {
+    } on Exception {
       return false;
     }
   }
@@ -136,10 +142,14 @@ class PlatformAppIntegration
   @override
   Future<void> shareText(String text, {String? subject}) async {
     await _ensureInit();
-    await _channel.invokeMethod<void>('share', {
-      'text': text,
-      if (subject != null) 'subject': subject,
-    });
+    try {
+      await _channel.invokeMethod<void>('share', {
+        'text': text,
+        if (subject != null) 'subject': subject,
+      });
+    } on Exception {
+      // Channel not implemented on this platform.
+    }
   }
 
   @override
@@ -148,11 +158,17 @@ class PlatformAppIntegration
     return _initial;
   }
 
+  /// Stream of inbound links. Callers that need the initial link delivered
+  /// as part of this stream should [await] [initialLink] first, or await
+  /// [_initFuture] before subscribing.
   @override
   Stream<Uri> get links {
-    _ensureInit();
+    _initFuture = _ensureInit();
     return _linkController.stream;
   }
 
-  void dispose() => _linkController.close();
+  void dispose() {
+    _channel.setMethodCallHandler(null);
+    _linkController.close();
+  }
 }

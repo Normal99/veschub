@@ -23,7 +23,12 @@ String? hitTest(
 ) {
   // Iterate front-to-back (reverse of z-sorted list).
   for (final node in nodes.toList().reversed) {
-    final local = node.transform.clone()..invert();
+    Matrix4 local;
+    try {
+      local = node.transform.clone()..invert();
+    } catch (_) {
+      continue;
+    }
     final p = MatrixUtils.transformPoint(local, canvasPoint);
     final w = boundsWidth(node);
     final h = boundsHeight(node);

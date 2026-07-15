@@ -19,16 +19,25 @@ veschub/
 │   ├── vesc_proto/        # VESC COMM frame codec (encode/decode, typed)
 │   ├── vesc_transport/    # connection abstraction: BLE + USB-serial + virtual
 │   ├── vesc_telemetry/    # typed value store + streams
-│   ├── dashboard_model/   # serializable dashboard document (freezed/json)
+│   ├── dashboard_model/   # versioned, serializable dashboard document (freezed/json)
 │   ├── dashboard_runtime/ # evaluates a model against telemetry → repaints
-│   ├── widgets_library/   # built-in widgets: gauge, bar, chart, map, status…
-│   ├── editor_canvas/     # reusable scene-graph editor
-│   ├── node_graph/        # dataflow editor for pro binding mode
-│   └── navigation/        # GPS, routes, GPX, offline maps, trips
+│   ├── dashboard_storage/ # drift (SQLite) persistence for dashboards
+│   ├── widgets_library/   # built-in widgets: gauge, bar, chart, status, paint…
+│   ├── editor_canvas/     # reusable scene-graph editor + commands
+│   ├── node_graph/        # dataflow model for pro binding mode
+│   ├── node_graph_editor/ # Flutter UI for the node-graph editor
+│   ├── paint_dsl/         # declarative custom-paint DSL (serialisable ops)
+│   ├── templates/         # built-in starter dashboard catalog
+│   ├── settings/          # SettingsService (shared_preferences) + provider
+│   ├── app_integration/   # launch apps / share / deep links
+│   └── navigation/        # GPS, routes, GPX (stub — see FUTURE_FEATURES.md)
 ├── tools/
 │   └── vesc_sim/          # mock VESC speaking the protocol over virtual transport
 └── melos.yaml
 ```
+
+See `README.md` for full architecture docs, the document format, telemetry keys, and
+how to run/develop.
 
 ## Prerequisites
 

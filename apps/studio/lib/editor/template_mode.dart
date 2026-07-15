@@ -13,8 +13,8 @@ import 'package:templates/templates.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
-import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
+import '../widgets/simple_color_picker.dart';
 
 /// The currently-selected template (null = none).
 final selectedTemplateProvider =
@@ -245,10 +245,7 @@ class _TemplateEditorState extends ConsumerState<_TemplateEditor> {
     final name = widget.template.name;
 
     final id = await db.saveDashboard(name, doc);
-    sceneFromDocument(scene, doc);
-    ref.read(dashboardNameProvider.notifier).state = name;
-    ref.read(dashboardIdProvider.notifier).state = id;
-    ref.read(commandStackProvider).clear();
+    applyDocumentToEditor(ref, scene: scene, doc: doc, id: id, name: name);
     ref.read(editorModeProvider.notifier).state = EditorMode.canvas;
     ref.read(selectedTemplateProvider.notifier).state = null;
     ref.invalidate(recentDashboardsProvider);
@@ -477,7 +474,7 @@ class _ColorKnob extends StatelessWidget {
           onTap: () async {
             final picked = await showDialog<int>(
               context: context,
-              builder: (context) => _SimpleColorPicker(current: value),
+              builder: (context) => SimpleColorPicker(current: value),
             );
             if (picked != null) onChanged(picked);
           },
@@ -492,50 +489,6 @@ class _ColorKnob extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SimpleColorPicker extends StatelessWidget {
-  final int current;
-  const _SimpleColorPicker({required this.current});
-
-  static const _swatches = [
-    0xFF4FC3F7,
-    0xFFFFB74D,
-    0xFFAED581,
-    0xFFEF5350,
-    0xFFCE93D8,
-    0xFFFFD54F,
-    0xFF80CBC4,
-    0xFFFFFFFF,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Pick a colour'),
-      content: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final c in _swatches)
-            GestureDetector(
-              onTap: () => Navigator.of(context).pop(c),
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Color(c),
-                  shape: BoxShape.circle,
-                  border: c == current
-                      ? Border.all(color: Colors.black, width: 3)
-                      : null,
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

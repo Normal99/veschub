@@ -38,7 +38,7 @@ abstract class Transport {
 /// [feedRaw] for every incoming chunk; this class handles [encodeFrame] and
 /// [FrameDecoder] and exposes framed [payloads] and [send].
 abstract class FramedTransport extends Transport {
-  final FrameDecoder _decoder = FrameDecoder();
+  final FrameDecoder decoder = FrameDecoder();
   final StreamController<List<int>> _payloadController =
       StreamController<List<int>>.broadcast(sync: true);
 
@@ -60,11 +60,11 @@ abstract class FramedTransport extends Transport {
 
   /// Subclasses call this for every chunk of bytes arriving from the link.
   void feedRaw(List<int> bytes) {
-    _decoder.add(bytes);
-    for (final p in _decoder.payloads) {
+    decoder.add(bytes);
+    for (final p in decoder.payloads) {
       _payloadController.add(p);
     }
-    _decoder.payloads.clear();
+    decoder.payloads.clear();
   }
 
   @override
@@ -78,7 +78,7 @@ abstract class FramedTransport extends Transport {
 
   /// Releases framing resources. Subclasses must call this from [disconnect].
   void disposeFramed() {
-    _decoder.reset();
+    decoder.reset();
     _payloadController.close();
     _stateController.close();
   }

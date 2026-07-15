@@ -314,7 +314,7 @@ packages:
     source: hosted
     version: "2.2.0"
   vesc_telemetry:
-    dependency: "direct main"
+    dependency: "direct overridden"
     description:
       path: "../vesc_telemetry"
       relative: true

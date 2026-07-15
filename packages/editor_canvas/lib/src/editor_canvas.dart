@@ -29,6 +29,10 @@ class EditorCanvas extends StatefulWidget {
   final SnapConfig snapConfig;
   final ValueChanged<List<GuideLine>>? onGuidesChanged;
 
+  /// Called whenever the canvas itself executes a command (e.g. a move).
+  /// Lets the host mark the document dirty.
+  final ValueChanged<EditorCommand>? onCommandExecuted;
+
   const EditorCanvas({
     required this.scene,
     required this.selection,
@@ -38,6 +42,7 @@ class EditorCanvas extends StatefulWidget {
     required this.nodeHeight,
     this.snapConfig = const SnapConfig(),
     this.onGuidesChanged,
+    this.onCommandExecuted,
     super.key,
   });
 
@@ -141,6 +146,28 @@ class _EditorCanvasState extends State<EditorCanvas> {
           widget.selection.add(hit);
         }
       }
+      final node = widget.scene[hit];
+      if (node != null) {
+        final bounds =
+            transformedBounds(node, widget.nodeWidth(node), widget.nodeHeight(node));
+        final corner = _hitTestCorner(p, bounds);
+        if (corner != null) {
+          final anchor = Offset(
+            bounds.center.dx - (corner.dx - bounds.center.dx),
+            bounds.center.dy - (corner.dy - bounds.center.dy),
+          );
+          _drag = _DragSession.resize(
+            origin: p,
+            startTransforms: {
+              for (final id in widget.selection.ids)
+                id: widget.scene[id]!.transform.clone(),
+            },
+            resizeAnchor: anchor,
+          );
+          setState(() {});
+          return;
+        }
+      }
       _drag = _DragSession.move(
         origin: p,
         startTransforms: {
@@ -149,7 +176,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
         },
       );
     } else {
-      // Clicked empty space: start marquee, clear selection unless modifier.
+      // Clicked empty space: start marquee, clear existing selection.
       widget.selection.clear();
       _marqueeStart = p;
       _marqueeCurrent = p;
@@ -160,7 +187,11 @@ class _EditorCanvasState extends State<EditorCanvas> {
   void _onPanUpdate(DragUpdateDetails details) {
     final p = details.localPosition;
     if (_drag != null) {
-      _applyMove(p);
+      if (_drag!.isResize) {
+        _applyResize(p);
+      } else {
+        _applyMove(p);
+      }
     } else if (_marqueeStart != null) {
       _marqueeCurrent = p;
       final rect = Rect.fromPoints(_marqueeStart!, p);
@@ -181,7 +212,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
         }
       }
       if (changes.isNotEmpty) {
-        widget.commands.execute(TransformNodesCommand(changes));
+        final cmd = TransformNodesCommand(changes);
+        widget.commands.execute(cmd);
+        widget.onCommandExecuted?.call(cmd);
       }
       widget.onGuidesChanged?.call(const []);
       _drag = null;
@@ -235,13 +268,32 @@ class _EditorCanvasState extends State<EditorCanvas> {
       final node = widget.scene[entry.key];
       if (node != null) {
         final snapped = snap.adjustedOffset;
-        // ignore: deprecated_member_use
-        final t = entry.value.clone()..translate(snapped.dx, snapped.dy);
+        final t = Matrix4.translationValues(snapped.dx, snapped.dy, 0)
+          ..multiply(entry.value);
         widget.scene.upsert(node.copyWith(transform: t));
       }
     }
     drag.guides = snap.guides;
     widget.onGuidesChanged?.call(snap.guides);
+  }
+
+  void _applyResize(Offset current) {
+    assert(_drag != null && _drag!.isResize);
+    final drag = _drag!;
+    final newDist = (current - drag.resizeAnchor).distance;
+    final scale = drag.initialScale > 0 ? newDist / drag.initialScale : 1.0;
+    final clamped = scale.clamp(0.2, 5.0);
+    final anchor = drag.resizeAnchor;
+    for (final entry in drag.startTransforms.entries) {
+      final node = widget.scene[entry.key];
+      if (node == null) continue;
+      final t = Matrix4.identity()
+        ..translate(anchor.dx, anchor.dy)
+        ..scale(clamped, clamped, 1.0)
+        ..translate(-anchor.dx, -anchor.dy)
+        ..multiply(entry.value);
+      widget.scene.upsert(node.copyWith(transform: t));
+    }
   }
 
   String? hitTestNode(Offset p) => hitTest(
@@ -250,6 +302,23 @@ class _EditorCanvasState extends State<EditorCanvas> {
         widget.nodeWidth,
         widget.nodeHeight,
       );
+
+  static const _cornerHitRadius = 14.0;
+
+  Offset? _hitTestCorner(Offset p, Rect bounds) {
+    for (final corner in [
+      bounds.topLeft,
+      bounds.topRight,
+      bounds.bottomLeft,
+      bounds.bottomRight,
+    ]) {
+      if ((p - corner).distanceSquared <=
+          _cornerHitRadius * _cornerHitRadius) {
+        return corner;
+      }
+    }
+    return null;
+  }
 
   Set<String> hitTestRectAll(Rect rect) => hitTestRect(
         widget.scene.nodes,
@@ -270,11 +339,17 @@ class _EditorCanvasState extends State<EditorCanvas> {
 class _DragSession {
   final Offset origin;
   final Map<String, Matrix4> startTransforms;
+  final bool isResize;
+  final Offset resizeAnchor;
+  final double initialScale;
   List<GuideLine> guides;
 
   _DragSession({
     required this.origin,
     required this.startTransforms,
+    this.isResize = false,
+    this.resizeAnchor = Offset.zero,
+    this.initialScale = 1.0,
   }) : guides = const [];
 
   factory _DragSession.move({
@@ -282,6 +357,19 @@ class _DragSession {
     required Map<String, Matrix4> startTransforms,
   }) =>
       _DragSession(origin: origin, startTransforms: startTransforms);
+
+  factory _DragSession.resize({
+    required Offset origin,
+    required Map<String, Matrix4> startTransforms,
+    required Offset resizeAnchor,
+  }) =>
+      _DragSession(
+        origin: origin,
+        startTransforms: startTransforms,
+        isResize: true,
+        resizeAnchor: resizeAnchor,
+        initialScale: (origin - resizeAnchor).distance,
+      );
 }
 
 class _OverlayPainter extends CustomPainter {
@@ -367,5 +455,6 @@ class _OverlayPainter extends CustomPainter {
   bool shouldRepaint(covariant _OverlayPainter old) =>
       old.marquee != marquee ||
       old.guides != guides ||
-      old.selection != selection;
+      old.selection != selection ||
+      old.scene != scene;
 }

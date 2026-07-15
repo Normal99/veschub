@@ -50,23 +50,51 @@ WidgetInstance widgetFromNode(CanvasNode node) {
 const double kDefaultNodeWidth = 300;
 const double kDefaultNodeHeight = 220;
 
-/// Builds a [DashboardDocument] from the current scene.
+/// Default canvas size for a new dashboard.
+const CanvasSize kDefaultCanvasSize = CanvasSize(width: 1280, height: 720);
+
+/// Default background colour (ARGB int) for a new dashboard.
+const int kDefaultBackground = 0xFF000000;
+
+/// Default accent colour (ARGB int) for a new dashboard.
+const int kDefaultAccent = 0xFFFFFFFF;
+
+/// Builds a [DashboardDocument] from the current scene, preserving the
+/// document-level metadata (canvas size, colours, graphs) that lives outside
+/// the scene graph. Pass the existing document's values (or the defaults) so
+/// saving an already-authored board does not overwrite its theme.
 DashboardDocument documentFromScene({
   required SceneModel scene,
   required String name,
   String description = '',
-  double canvasWidth = 1280,
-  double canvasHeight = 720,
+  CanvasSize canvasSize = kDefaultCanvasSize,
+  int background = kDefaultBackground,
+  int accent = kDefaultAccent,
+  Map<String, dynamic> graphs = const {},
 }) {
   return DashboardDocument(
     name: name,
     description: description,
-    canvas: CanvasSize(width: canvasWidth, height: canvasHeight),
+    canvas: canvasSize,
+    background: background,
+    accent: accent,
+    graphs: graphs,
     widgets: scene.nodes.map(widgetFromNode).toList(),
   );
 }
 
-/// Loads a [DashboardDocument] into a [SceneModel].
-void sceneFromDocument(SceneModel scene, DashboardDocument doc) {
+/// Loads a [DashboardDocument] into a [SceneModel]. Returns the document-level
+/// metadata so callers can seed their providers (canvas size, colours, graphs).
+/// Returns `(canvasSize, background, accent, graphs)`.
+(CanvasSize, int, int, Map<String, dynamic>) sceneFromDocument(
+  SceneModel scene,
+  DashboardDocument doc,
+) {
   scene.replaceAll(doc.widgets.map(nodeFromWidget));
+  return (
+    doc.canvas,
+    doc.background,
+    doc.accent,
+    Map<String, dynamic>.from(doc.graphs)
+  );
 }

@@ -4,9 +4,9 @@
 /// sent by one are framed and delivered (unframed) to the other. This lets the
 /// dashboard runtime and the simulator talk over a virtual link with no
 /// platform dependencies.
-library;
 
 import 'dart:async';
+import 'dart:developer';
 
 import 'transport.dart';
 
@@ -43,9 +43,13 @@ class VirtualTransport extends FramedTransport {
 
   @override
   Future<void> connect() async {
-    if (state == TransportState.connected) return;
+    if (state != TransportState.disconnected) return;
     setState(TransportState.connecting);
-    _sub = _incoming.listen(feedRaw);
+    _sub = _incoming.listen(feedRaw, onError: (Object error, StackTrace stack) {
+      decoder.reset();
+      log('VirtualTransport feedRaw error: $error',
+          error: error, stackTrace: stack);
+    });
     setState(TransportState.connected);
   }
 

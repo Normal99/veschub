@@ -11,8 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
 class StudioOnboarding extends ConsumerStatefulWidget {
-  final VoidCallback onDone;
-  const StudioOnboarding({required this.onDone, super.key});
+  const StudioOnboarding({super.key});
 
   @override
   ConsumerState<StudioOnboarding> createState() => _StudioOnboardingState();
@@ -51,9 +50,7 @@ class _StudioOnboardingState extends ConsumerState<StudioOnboarding> {
   }
 
   Future<void> _finish() async {
-    final settings = ref.read(settingsServiceProvider);
-    await settings.markOnboardingDone();
-    widget.onDone();
+    await ref.read(settingsServiceProvider).markOnboardingDone();
   }
 
   @override

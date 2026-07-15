@@ -1,7 +1,6 @@
 /// First-run onboarding for the dashboard runtime app.
 ///
-/// Introduces the connect-to-VESC flow and the transport preference, then
-/// marks onboarding complete.
+/// Introduces the connect-to-VESC flow, then marks onboarding complete.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,8 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
 class DashboardOnboarding extends ConsumerStatefulWidget {
-  final VoidCallback onDone;
-  const DashboardOnboarding({required this.onDone, super.key});
+  const DashboardOnboarding({super.key});
 
   @override
   ConsumerState<DashboardOnboarding> createState() =>
@@ -20,11 +18,10 @@ class DashboardOnboarding extends ConsumerStatefulWidget {
 class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
   final _controller = PageController();
   int _page = 0;
-  TransportPreference _transport = TransportPreference.auto;
 
   static const _pages = <_OnboardPage>[
     _OnboardPage(
-      icon: Icons.electric_scooter,
+      icon: Icons.electric_moped,
       title: 'Veschub Dashboard',
       body: 'Render the dashboards you built in Studio, live against your '
           'VESC controller over BLE or USB.',
@@ -32,15 +29,15 @@ class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
     _OnboardPage(
       icon: Icons.bluetooth,
       title: 'Connect your VESC',
-      body: 'Pick how the runtime talks to your controller. You can change '
-          'this later in Settings.',
+      body: 'The viewer currently runs against a built-in simulator so you '
+          'can explore immediately. Real BLE/USB connectivity is coming soon.',
     ),
     _OnboardPage(
       icon: Icons.play_circle,
       title: 'Ready to ride',
-      body: 'The viewer loads a sample dashboard wired to a simulated VESC '
-          'so you can explore immediately. Connect real hardware from the '
-          'toolbar.',
+      body: 'The viewer loads a sample dashboard wired to a simulated VESC. '
+          'Open the folder icon in the toolbar to load dashboards you saved '
+          'from Studio.',
     ),
   ];
 
@@ -51,10 +48,7 @@ class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
   }
 
   Future<void> _finish() async {
-    final settings = ref.read(settingsServiceProvider);
-    await settings.setTransport(_transport);
-    await settings.markOnboardingDone();
-    widget.onDone();
+    await ref.read(settingsServiceProvider).markOnboardingDone();
   }
 
   @override
@@ -83,20 +77,6 @@ class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
                           Text(_pages[i].body,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyLarge),
-                          if (i == 1) ...[
-                            const SizedBox(height: 24),
-                            Wrap(
-                              spacing: 8,
-                              children: TransportPreference.values.map((t) {
-                                return ChoiceChip(
-                                  label: Text(_transportLabel(t)),
-                                  selected: _transport == t,
-                                  onSelected: (_) =>
-                                      setState(() => _transport = t),
-                                );
-                              }).toList(),
-                            ),
-                          ],
                         ],
                       ),
                     ),
@@ -126,12 +106,6 @@ class _DashboardOnboardingState extends ConsumerState<DashboardOnboarding> {
       ),
     );
   }
-
-  String _transportLabel(TransportPreference t) => switch (t) {
-        TransportPreference.ble => 'BLE',
-        TransportPreference.usb => 'USB',
-        TransportPreference.auto => 'Auto',
-      };
 }
 
 class _OnboardPage {

@@ -5,25 +5,12 @@
 /// [evaluateGraph] at render time; the result feeds [Binding.graph] properties.
 library;
 
-import 'package:dashboard_model/dashboard_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_graph/node_graph.dart';
 import 'package:node_graph_editor/node_graph_editor.dart';
 
-/// The active flow graph being edited.
-final flowGraphProvider = StateProvider<FlowGraph>((ref) {
-  return FlowGraph.empty('graph_1');
-});
-
-/// Node properties for the active graph: nodeId → propName → value.
-final flowPropertiesProvider =
-    StateProvider<Map<String, Map<String, dynamic>>>((ref) {
-  return const {};
-});
-
-/// Currently selected node in the flow editor.
-final selectedNodeProvider = StateProvider<String?>((ref) => null);
+import '../providers/editor_providers.dart';
 
 class FlowMode extends ConsumerWidget {
   const FlowMode({super.key});
@@ -88,14 +75,14 @@ class _FlowToolbar extends ConsumerWidget {
   }
 
   void _saveToDocument(BuildContext context, WidgetRef ref) {
-    // The graph + properties are stored in the document's `graphs` map.
-    // The studio's save flow picks this up when saving the dashboard.
     final graph = ref.read(flowGraphProvider);
     final properties = ref.read(flowPropertiesProvider);
     final serialized = graph.toJson();
     serialized['properties'] = properties;
-    // For now, just show a confirmation — the actual document merge
-    // happens when the dashboard is saved via the studio's save button.
+    final graphs = Map<String, dynamic>.from(ref.read(flowGraphsProvider));
+    graphs[graph.id] = serialized;
+    ref.read(flowGraphsProvider.notifier).state = graphs;
+    ref.read(isDirtyProvider.notifier).state = true;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -128,6 +115,7 @@ class _NodePalette extends ConsumerWidget {
               children: [
                 for (final def in builtInNodeKinds.values)
                   Draggable<String>(
+                    key: ValueKey(def.kind),
                     data: def.kind,
                     feedback: Material(
                       elevation: 4,
@@ -173,7 +161,7 @@ class _NodePalette extends ConsumerWidget {
         'conditional' => Icons.alt_route,
         'clamp' => Icons.compress,
         'mapRange' => Icons.open_in_full,
-        'output' => Icons.output,
+        'output' => Icons.outlet,
         _ => Icons.extension,
       };
 }
@@ -298,6 +286,7 @@ class _NodePropertiesPanel extends ConsumerWidget {
             onChanged: (v) => _setProp(ref, node.id, 'name', v),
           ),
         ];
+      // conditional, clamp, mapRange: all inputs arrive via edges, not props.
       default:
         return [];
     }

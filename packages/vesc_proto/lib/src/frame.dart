@@ -149,6 +149,7 @@ class FrameDecoder {
 
   void _beginFrame({required bool isLong}) {
     _isLong = isLong;
+    _lenHigh = 0;
     _payload.clear();
     _state = _FrameState.len;
   }

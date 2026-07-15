@@ -44,12 +44,17 @@ class PaintProgram with _$PaintProgram {
 /// reference: a leading `$` is stripped, then the value is looked up in
 /// [vars] (missing keys resolve to 0). Anything else is 0.
 double resolveExpr(PaintExpr expr, Map<String, double> vars) {
-  if (expr is num) return expr.toDouble();
-  if (expr is String) {
+  double result;
+  if (expr is num) {
+    result = expr.toDouble();
+  } else if (expr is String) {
     final name = expr.startsWith('\$') ? expr.substring(1) : expr;
-    return vars[name] ?? 0;
+    result = vars[name] ?? 0;
+  } else {
+    result = 0;
   }
-  return 0;
+  if (result.isNaN || result.isInfinite) return 0.0;
+  return result;
 }
 
 /// Internal interpreter that walks the op list and draws.
@@ -166,6 +171,7 @@ class PaintProgramInterpreter {
         );
       case PathOp(:final points, :final close):
         if (points.isEmpty) break;
+        if (points.any((p) => p.length < 2)) break;
         final path = ui.Path();
         final first = points.first;
         path.moveTo(

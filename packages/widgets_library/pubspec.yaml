@@ -17,8 +17,6 @@ dependencies:
     path: ../dashboard_runtime
   paint_dsl:
     path: ../paint_dsl
-  vesc_telemetry:
-    path: ../vesc_telemetry
 
 dev_dependencies:
   flutter_test:

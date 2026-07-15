@@ -1,4 +1,4 @@
-/// Settings screen for the dashboard runtime: theme + transport preference.
+/// Settings screen for the dashboard runtime: theme preference.
 library;
 
 import 'package:flutter/material.dart';
@@ -32,22 +32,6 @@ class DashboardSettingsScreen extends ConsumerWidget {
               onChanged: (v) => v == null ? null : settings.setThemeMode(v),
             ),
           ),
-          const _SectionHeader('Connection'),
-          ListTile(
-            leading: const Icon(Icons.cable),
-            title: const Text('Transport'),
-            subtitle: const Text('How the runtime connects to your VESC.'),
-            trailing: DropdownButton<TransportPreference>(
-              value: settings.transport,
-              items: TransportPreference.values
-                  .map((t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(_transportLabel(t)),
-                      ))
-                  .toList(),
-              onChanged: (v) => v == null ? null : settings.setTransport(v),
-            ),
-          ),
         ],
       ),
     );
@@ -73,9 +57,3 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
-String _transportLabel(TransportPreference t) => switch (t) {
-      TransportPreference.ble => 'BLE',
-      TransportPreference.usb => 'USB',
-      TransportPreference.auto => 'Auto',
-    };

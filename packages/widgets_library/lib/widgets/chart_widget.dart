@@ -10,6 +10,7 @@ import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:dashboard_runtime/dashboard_runtime.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../src/format.dart';
@@ -49,7 +50,7 @@ class _ChartWidgetState extends State<ChartWidget> {
     if (window != _maxSamples) _maxSamples = window;
 
     // Push the latest sample.
-    if (value != null && !value.isNaN) {
+    if (value != null && !value.isNaN && value.isFinite) {
       _history.addLast(value);
       while (_history.length > _maxSamples) {
         _history.removeFirst();
@@ -167,5 +168,5 @@ class _ChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ChartPainter old) =>
-      old.samples != samples || old.min != min || old.max != max;
+      !listEquals(old.samples, samples) || old.min != min || old.max != max;
 }

@@ -16,7 +16,13 @@ import 'settings/studio_settings_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: StudioApp()));
+  final settings = await createSettingsService();
+  runApp(
+    ProviderScope(
+      overrides: [settingsServiceProvider.overrideWith((ref) => settings)],
+      child: const StudioApp(),
+    ),
+  );
 }
 
 class StudioApp extends ConsumerWidget {
@@ -39,9 +45,7 @@ class StudioApp extends ConsumerWidget {
       themeMode: themeMode,
       home: settings.onboardingDone
           ? const StudioEditor()
-          : StudioOnboarding(
-              onDone: () => settings.markOnboardingDone(),
-            ),
+          : const StudioOnboarding(),
       routes: {
         '/settings': (_) => const StudioSettingsScreen(),
       },

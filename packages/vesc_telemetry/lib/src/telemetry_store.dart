@@ -30,12 +30,14 @@ class TelemetryStore {
 
   /// Updates [key] to [value] and notifies subscribers.
   void update(String key, dynamic value) {
+    if (_disposed) return;
     _values[key] = value;
     _controllerFor(key).add(value);
   }
 
   /// Removes [key] and closes its stream (if any).
   void remove(String key) {
+    if (_disposed) return;
     _values.remove(key);
     final c = _controllers.remove(key);
     c?.close();
@@ -44,6 +46,7 @@ class TelemetryStore {
   /// Returns a broadcast stream of values for [key]. If [replayLast] is true
   /// (default) and a value already exists, it is emitted once on subscribe.
   Stream<dynamic> watch(String key, {bool replayLast = true}) {
+    if (_disposed) return const Stream.empty();
     final controller = _controllerFor(key);
     late StreamSubscription<dynamic> sub;
     late StreamController<dynamic> out;
@@ -68,10 +71,13 @@ class TelemetryStore {
 
   /// Closes all per-key streams. The store cannot be reused after this.
   void dispose() {
+    _disposed = true;
     for (final c in _controllers.values) {
       c.close();
     }
     _controllers.clear();
     _values.clear();
   }
+
+  bool _disposed = false;
 }

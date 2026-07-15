@@ -60,79 +60,103 @@ class _NodeEditorState extends State<NodeEditor> {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onPanUpdate: _onPan,
+        onTapDown: _onTapDown,
         child: ClipRect(
-          child: CustomPaint(
-            painter: _GraphPainter(
-              graph: widget.graph,
-              toScreen: _toScreen,
-              selectedNodeId: widget.selectedNodeId,
-              dragFrom: _dragSourceNode != null && _dragCurrent != null
-                  ? _toScreen(
-                      widget.graph.node(_dragSourceNode!)!.position,
-                    )
-                  : null,
-              dragTo: _dragCurrent,
-            ),
-            child: Stack(
-              children: [
-                for (final node in widget.graph.nodes)
-                  _NodeCard(
-                    node: node,
-                    position: _toScreen(node.position),
-                    isSelected: node.id == widget.selectedNodeId,
-                    onTap: () {
-                      widget.onNodeSelected?.call(node.id);
-                    },
-                    onPanStart: (details) {
-                      _draggingNode = node.id;
-                      _dragOffset = details.localPosition;
-                    },
-                    onPanUpdate: (details) {
-                      if (_draggingNode != node.id) return;
-                      final newPos = _toGraph(
-                        details.globalPosition - _dragOffset,
-                      );
-                      final updated = node.copyWith(position: newPos);
-                      final newNodes = widget.graph.nodes
-                          .map((n) => n.id == node.id ? updated : n)
-                          .toList();
-                      widget.onChanged(
-                        widget.graph.copyWith(nodes: newNodes),
-                      );
-                    },
-                    onPanEnd: (_) => _draggingNode = null,
-                    onSocketTap: (socketId, isOutput, screenPos) {
-                      if (isOutput) {
-                        setState(() {
-                          _dragSourceNode = node.id;
-                          _dragSourceSocket = socketId;
-                          _dragCurrent = screenPos;
-                        });
-                      } else if (_dragSourceNode != null) {
-                        // Complete connection.
-                        final edge = GraphEdge(
-                          sourceNode: _dragSourceNode!,
-                          sourceSocket: _dragSourceSocket!,
-                          targetNode: node.id,
-                          targetSocket: socketId,
-                        );
-                        if (!widget.graph.edges.contains(edge)) {
-                          widget.onChanged(
-                            widget.graph.copyWith(
-                              edges: [...widget.graph.edges, edge],
-                            ),
+          child: DragTarget<String>(
+            onAcceptWithDetails: (details) {
+              final kind = details.data;
+              final def = builtInNodeKinds[kind];
+              if (def == null) return;
+              final pos = _toGraph(details.offset);
+              final id = '${kind}_${DateTime.now().millisecondsSinceEpoch}';
+              final node = GraphNode(
+                id: id,
+                kind: kind,
+                position: pos,
+                inputs: def.inputs,
+                outputs: def.outputs,
+              );
+              widget.onChanged(
+                widget.graph.copyWith(nodes: [...widget.graph.nodes, node]),
+              );
+            },
+            builder: (context, candidate, rejected) {
+              return CustomPaint(
+                painter: _GraphPainter(
+                  graph: widget.graph,
+                  toScreen: _toScreen,
+                  selectedNodeId: widget.selectedNodeId,
+                  dragFrom: _dragSourceNode != null && _dragCurrent != null
+                      ? _toScreen(
+                          widget.graph.node(_dragSourceNode!)!.position,
+                        )
+                      : null,
+                  dragTo: _dragCurrent,
+                  showDropHint: candidate.isNotEmpty,
+                ),
+                child: Stack(
+                  children: [
+                    for (final node in widget.graph.nodes)
+                      _NodeCard(
+                        node: node,
+                        position: _toScreen(node.position),
+                        isSelected: node.id == widget.selectedNodeId,
+                        onTap: () {
+                          widget.onNodeSelected?.call(node.id);
+                        },
+                        onPanStart: (details) {
+                          if (_dragSourceNode != null) return;
+                          _draggingNode = node.id;
+                          _dragOffset = details.localPosition;
+                        },
+                        onPanUpdate: (details) {
+                          if (_draggingNode != node.id) return;
+                          final newPos = _toGraph(
+                            details.globalPosition - _dragOffset,
                           );
-                        }
-                        setState(() {
-                          _dragSourceNode = null;
-                          _dragSourceSocket = null;
-                          _dragCurrent = null;
-                        });
-                      }
-                    },
-                  ),
-              ],
-            ),
+                          final updated = node.copyWith(position: newPos);
+                          final newNodes = widget.graph.nodes
+                              .map((n) => n.id == node.id ? updated : n)
+                              .toList();
+                          widget.onChanged(
+                            widget.graph.copyWith(nodes: newNodes),
+                          );
+                        },
+                        onPanEnd: (_) => _draggingNode = null,
+                        onSocketTap: (socketId, isOutput, screenPos) {
+                          if (isOutput) {
+                            setState(() {
+                              _dragSourceNode = node.id;
+                              _dragSourceSocket = socketId;
+                              _dragCurrent = screenPos;
+                            });
+                          } else if (_dragSourceNode != null) {
+                            // Complete connection.
+                            final edge = GraphEdge(
+                              sourceNode: _dragSourceNode!,
+                              sourceSocket: _dragSourceSocket!,
+                              targetNode: node.id,
+                              targetSocket: socketId,
+                            );
+                            if (!widget.graph.edges.contains(edge)) {
+                              widget.onChanged(
+                                widget.graph.copyWith(
+                                  edges: [...widget.graph.edges, edge],
+                                ),
+                              );
+                            }
+                            setState(() {
+                              _dragSourceNode = null;
+                              _dragSourceSocket = null;
+                              _dragCurrent = null;
+                            });
+                          }
+                        },
+                      ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -152,6 +176,33 @@ class _NodeEditorState extends State<NodeEditor> {
       setState(() {
         _zoom = (_zoom - event.scrollDelta.dy * 0.001).clamp(0.3, 3.0);
       });
+    }
+  }
+
+  void _onTapDown(TapDownDetails details) {
+    final local = details.localPosition;
+    // Hit-test edges: if the tap is near an edge's midpoint, delete it.
+    for (final edge in widget.graph.edges) {
+      final source = widget.graph.node(edge.sourceNode);
+      final target = widget.graph.node(edge.targetNode);
+      if (source == null || target == null) continue;
+      final start = _toScreen(source.position) + const Offset(180, 20);
+      final end = _toScreen(target.position) + const Offset(0, 20);
+      final mid = Offset((start.dx + end.dx) / 2, (start.dy + end.dy) / 2);
+      if ((local - mid).distance < 20) {
+        final newEdges = widget.graph.edges
+            .where(
+              (e) => !(e.sourceNode == edge.sourceNode &&
+                  e.sourceSocket == edge.sourceSocket &&
+                  e.targetNode == edge.targetNode &&
+                  e.targetSocket == edge.targetSocket),
+            )
+            .toList();
+        widget.onChanged(
+          widget.graph.copyWith(edges: newEdges),
+        );
+        return;
+      }
     }
   }
 }
@@ -271,7 +322,7 @@ class _NodeCard extends StatelessWidget {
         'conditional' => Icons.alt_route,
         'clamp' => Icons.compress,
         'mapRange' => Icons.open_in_full,
-        'output' => Icons.output,
+        'output' => Icons.outlet,
         _ => Icons.extension,
       };
 
@@ -348,6 +399,7 @@ class _GraphPainter extends CustomPainter {
   final String? selectedNodeId;
   final Offset? dragFrom;
   final Offset? dragTo;
+  final bool showDropHint;
 
   _GraphPainter({
     required this.graph,
@@ -355,6 +407,7 @@ class _GraphPainter extends CustomPainter {
     this.selectedNodeId,
     this.dragFrom,
     this.dragTo,
+    this.showDropHint = false,
   });
 
   @override
@@ -389,9 +442,21 @@ class _GraphPainter extends CustomPainter {
         paint..color = Colors.blue.withValues(alpha: 0.5),
       );
     }
+
+    // Draw a drop hint overlay when a palette item is being dragged over the
+    // canvas.
+    if (showDropHint) {
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()..color = Colors.blue.withValues(alpha: 0.06),
+      );
+    }
   }
 
   @override
   bool shouldRepaint(covariant _GraphPainter old) =>
-      old.graph != graph || old.dragTo != dragTo;
+      old.graph != graph ||
+      old.dragTo != dragTo ||
+      old.showDropHint != showDropHint ||
+      old.toScreen != toScreen;
 }

@@ -45,7 +45,10 @@ class TextWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(text, style: valueStyle),
+            Flexible(
+              child: Text(text,
+                  style: valueStyle, overflow: TextOverflow.ellipsis),
+            ),
             if (unit != null)
               Padding(
                 padding: const EdgeInsets.only(left: 4),
