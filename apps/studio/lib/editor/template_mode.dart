@@ -98,6 +98,7 @@ class _TemplateCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final store = ref.watch(previewTelemetryProvider);
     return Card(
       clipBehavior: Clip.antiAlias,
       elevation: 2,
@@ -125,9 +126,9 @@ class _TemplateCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: Text(
-                  template.description,
-                  style: Theme.of(context).textTheme.bodySmall,
+                child: _TemplatePreview(
+                  document: template.document,
+                  store: store,
                 ),
               ),
               const SizedBox(height: 4),
@@ -152,6 +153,64 @@ class _TemplateCard extends ConsumerWidget {
         'offroad' => Icons.terrain,
         _ => Icons.dashboard,
       };
+}
+
+class _TemplatePreview extends StatelessWidget {
+  final DashboardDocument document;
+  final TelemetryStore store;
+  const _TemplatePreview({required this.document, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(document.background),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: FittedBox(
+          child: SizedBox(
+            width: document.canvas.width,
+            height: document.canvas.height,
+            child: DashboardThemeProvider(
+              theme: DashboardTheme.fromDocument(
+                backgroundArgb: document.background,
+                accentArgb: document.accent,
+              ),
+              child: Stack(
+                children: [
+                  for (final w in document.widgets)
+                    Positioned(
+                      left: w.transform[4],
+                      top: w.transform[5],
+                      width: 300,
+                      height: 220,
+                      child: buildWidget(w, _resolve(w)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Map<String, dynamic> _resolve(WidgetInstance w) {
+    final out = <String, dynamic>{};
+    for (final entry in w.properties.entries) {
+      final v = entry.value.map(
+        literal: (b) => b.value,
+        telemetry: (b) => store.value(b.key),
+        graph: (_) => null,
+        formula: (_) => null,
+      );
+      if (v != null) out[entry.key] = v;
+    }
+    return out;
+  }
 }
 
 class _Chip extends StatelessWidget {
@@ -308,6 +367,7 @@ class _LivePreview extends StatelessWidget {
         literal: (b) => b.value,
         telemetry: (b) => store.value(b.key),
         graph: (_) => null,
+        formula: (_) => null,
       );
       if (v != null) out[entry.key] = v;
     }

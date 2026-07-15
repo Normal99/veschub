@@ -421,6 +421,10 @@ class _CanvasArea extends ConsumerStatefulWidget {
 class _CanvasAreaState extends ConsumerState<_CanvasArea> {
   final _dropTargetKey = GlobalKey();
 
+  /// Key on the inner canvas container (inside FittedBox), used for
+  /// coordinate conversion that correctly accounts for FittedBox scaling.
+  final _canvasKey = GlobalKey();
+
   static const _aspectPresets = <String, CanvasSize>{
     'HD': CanvasSize(width: 1280, height: 720),
     'FHD': CanvasSize(width: 1920, height: 1080),
@@ -430,7 +434,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
   };
 
   Offset _toCanvasPosition(Offset globalPos) {
-    final box = _dropTargetKey.currentContext?.findRenderObject() as RenderBox?;
+    final box = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return globalPos;
     return box.globalToLocal(globalPos);
   }
@@ -491,60 +495,67 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
           ),
         ),
         Expanded(
-          child: DragTarget<Map<String, dynamic>>(
-            key: _dropTargetKey,
-            onAcceptWithDetails: (details) {
-              final kind = details.data['kind'] as String;
-              final id = ref.read(idGeneratorProvider).next();
-              final localPos = _toCanvasPosition(details.offset);
-              final node = CanvasNode(
-                id: id,
-                transform: NodeTransforms.compose(translation: localPos),
-                data: WidgetInstance(
-                  id: id,
-                  kind: kind,
-                  properties: _defaultProperties(kind),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+            ),
+            child: FittedBox(
+              child: SizedBox(
+                width: canvasSize.width,
+                height: canvasSize.height,
+                child: DragTarget<Map<String, dynamic>>(
+                  key: _dropTargetKey,
+                  onAcceptWithDetails: (details) {
+                    final kind = details.data['kind'] as String;
+                    final id = ref.read(idGeneratorProvider).next();
+                    final localPos = _toCanvasPosition(details.offset);
+                    final node = CanvasNode(
+                      id: id,
+                      transform: NodeTransforms.compose(translation: localPos),
+                      data: WidgetInstance(
+                        id: id,
+                        kind: kind,
+                        properties: _defaultProperties(kind),
+                      ),
+                    );
+                    commands.execute(AddNodeCommand(node));
+                    ref.read(isDirtyProvider.notifier).state = true;
+                  },
+                  builder: (context, candidate, rejected) {
+                    final borderColor = candidate.isNotEmpty
+                        ? Colors.blue
+                        : Theme.of(context).colorScheme.outline;
+                    return Container(
+                      key: _canvasKey,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: borderColor, width: 2),
+                        color: candidate.isNotEmpty
+                            ? Colors.blue.withValues(alpha: 0.05)
+                            : Theme.of(context).colorScheme.surface.withValues(alpha: 0.98),
+                      ),
+                      child: EditorCanvas(
+                        scene: scene,
+                        selection: selection,
+                        commands: commands,
+                        canvasSize: Size(canvasSize.width, canvasSize.height),
+                        onCommandExecuted: (_) =>
+                            ref.read(isDirtyProvider.notifier).state = true,
+                        nodeBuilder: (node) {
+                          final w = node.data as WidgetInstance?;
+                          if (w == null) {
+                            return const Center(child: Text('No data'));
+                          }
+                          final store = ref.read(canvasPreviewTelemetryProvider);
+                          return buildWidget(w, _resolve(w, store));
+                        },
+                        nodeWidth: (_) => kDefaultNodeWidth,
+                        nodeHeight: (_) => kDefaultNodeHeight,
+                      ),
+                    );
+                  },
                 ),
-              );
-              commands.execute(AddNodeCommand(node));
-              ref.read(isDirtyProvider.notifier).state = true;
-            },
-            builder: (context, candidate, rejected) {
-              final borderColor = candidate.isNotEmpty
-                  ? Colors.blue
-                  : Theme.of(context).colorScheme.outline;
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: borderColor, width: 2),
-                  color: candidate.isNotEmpty
-                      ? Colors.blue.withValues(alpha: 0.05)
-                      : Theme.of(context).colorScheme.surface,
-                ),
-                child: FittedBox(
-                  child: SizedBox(
-                    width: canvasSize.width,
-                    height: canvasSize.height,
-                    child: EditorCanvas(
-                      scene: scene,
-                      selection: selection,
-                      commands: commands,
-                      onCommandExecuted: (_) =>
-                          ref.read(isDirtyProvider.notifier).state = true,
-                      nodeBuilder: (node) {
-                        final w = node.data as WidgetInstance?;
-                        if (w == null) {
-                          return const Center(child: Text('No data'));
-                        }
-                        final store = ref.read(canvasPreviewTelemetryProvider);
-                        return buildWidget(w, _resolve(w, store));
-                      },
-                      nodeWidth: (_) => kDefaultNodeWidth,
-                      nodeHeight: (_) => kDefaultNodeHeight,
-                    ),
-                  ),
-                ),
-              );
-            },
+              ),
+            ),
           ),
         ),
       ],
@@ -599,6 +610,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
         literal: (b) => b.value,
         telemetry: (b) => store.value(b.key),
         graph: (_) => null,
+        formula: (_) => null,
       );
       if (v != null) out[entry.key] = v;
     }
@@ -673,33 +685,124 @@ class _PropertiesInspector extends ConsumerWidget {
                 ),
               ),
             const Divider(),
-            if (widget.kind == 'paint') ...[
-              if (level.includes(CapabilityLevel.expert))
-                _PaintProgramEditor(node: node, widget: widget)
-              else
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4),
-                  child: Text(
-                    'Switch to Expert to edit the paint program.',
-                    style: TextStyle(fontSize: 11, color: Colors.orange),
-                  ),
-                ),
-              for (final entry in widget.properties.entries)
-                if (entry.key != 'program')
-                  _BindingField(node: node, widget: widget, name: entry.key, binding: entry.value),
-            ] else
-              for (final entry in widget.properties.entries)
-                if (visibleProperties(widget.kind, level)
-                    .any((m) => m.key == entry.key))
-                  _BindingField(
-                    node: node,
-                    widget: widget,
-                    name: entry.key,
-                    binding: entry.value,
-                  ),
+            ..._PropertiesInspector._buildProperties(node, widget, level),
           ],
         ],
       ),
+    );
+  }
+
+  static List<Widget> _buildProperties(
+    CanvasNode node,
+    WidgetInstance widget,
+    CapabilityLevel level,
+  ) {
+    if (widget.kind == 'paint') {
+      return [
+        if (level.includes(CapabilityLevel.expert))
+          _PaintProgramEditor(node: node, widget: widget)
+        else
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 4),
+            child: Text(
+              'Switch to Expert to edit the paint program.',
+              style: TextStyle(fontSize: 11, color: Colors.orange),
+            ),
+          ),
+        for (final entry in widget.properties.entries)
+          if (entry.key != 'program')
+            _BindingField(node: node, widget: widget, name: entry.key, binding: entry.value),
+      ];
+    }
+
+    final all = allProperties(widget.kind);
+    final basic = all.where((m) => m.minLevel == CapabilityLevel.basic).toList();
+    final advanced = all.where((m) => m.minLevel == CapabilityLevel.advanced).toList();
+    final expert = all.where((m) => m.minLevel == CapabilityLevel.expert).toList();
+    final entries = Map<String, Binding>.from(widget.properties);
+
+    return [
+      for (final m in basic)
+        if (entries.containsKey(m.key))
+          _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+      if (advanced.isNotEmpty)
+        _ExpandableSection(
+          title: 'Advanced',
+          initiallyExpanded: true,
+          children: [
+            for (final m in advanced)
+              if (entries.containsKey(m.key))
+                _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+          ],
+        ),
+      if (expert.isNotEmpty)
+        _ExpandableSection(
+          title: 'Expert',
+          initiallyExpanded: false,
+          children: [
+            for (final m in expert)
+              if (entries.containsKey(m.key))
+                _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+          ],
+        ),
+    ];
+  }
+}
+
+class _ExpandableSection extends StatefulWidget {
+  final String title;
+  final bool initiallyExpanded;
+  final List<Widget> children;
+  const _ExpandableSection({
+    required this.title,
+    this.initiallyExpanded = false,
+    required this.children,
+  });
+
+  @override
+  State<_ExpandableSection> createState() => _ExpandableSectionState();
+}
+
+class _ExpandableSectionState extends State<_ExpandableSection> {
+  late bool _expanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _expanded = widget.initiallyExpanded;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _expanded = !_expanded),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Icon(
+                  _expanded ? Icons.expand_less : Icons.expand_more,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  widget.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_expanded) ...widget.children,
+      ],
     );
   }
 }
@@ -765,7 +868,16 @@ class _BindingField extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(meta.label, style: const TextStyle(fontWeight: FontWeight.w500)),
+          Row(
+            children: [
+              Expanded(child: Text(meta.label, style: const TextStyle(fontWeight: FontWeight.w500))),
+              _BindingTypeChip(label: 'Lit', active: binding is LiteralBinding, onTap: () => _commit(ref, const Binding.literal(value: 0))),
+              _BindingTypeChip(label: 'Tel', active: binding is TelemetryBinding, onTap: () => _commit(ref, const Binding.telemetry(key: 'erpm'))),
+              _BindingTypeChip(label: 'F(x)', active: binding is FormulaBinding, onTap: () => _commit(ref, const Binding.formula(expression: 'erpm / 1000'))),
+              if (ref.watch(capabilityLevelProvider).includes(CapabilityLevel.expert))
+                _BindingTypeChip(label: 'Graph', active: binding is GraphBinding, onTap: () => _commit(ref, Binding.graph(graphId: '', output: ''))),
+            ],
+          ),
           const SizedBox(height: 4),
           binding.map(
             literal: (b) => _LiteralEditor(
@@ -782,8 +894,36 @@ class _BindingField extends ConsumerWidget {
               onChanged: (gid, out) =>
                   _commit(ref, Binding.graph(graphId: gid, output: out)),
             ),
+            formula: (b) => _FormulaEditor(
+              expression: b.expression,
+              onChanged: (expr) =>
+                  _commit(ref, Binding.formula(expression: expr)),
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BindingTypeChip extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+  const _BindingTypeChip({required this.label, required this.active, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(left: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: active ? Theme.of(context).colorScheme.primaryContainer : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(label, style: TextStyle(fontSize: 10, color: active ? Theme.of(context).colorScheme.onPrimaryContainer : Colors.grey.shade700)),
       ),
     );
   }
@@ -936,6 +1076,35 @@ class _TelemetryEditorState extends State<_TelemetryEditor> {
         TextButton(
           onPressed: () => setState(() => _manual = true),
           child: const Text('Manual', style: TextStyle(fontSize: 11)),
+        ),
+      ],
+    );
+  }
+}
+
+class _FormulaEditor extends StatelessWidget {
+  final String expression;
+  final ValueChanged<String> onChanged;
+  const _FormulaEditor({required this.expression, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(Icons.functions, size: 16, color: Colors.grey.shade500),
+        const SizedBox(width: 8),
+        Expanded(
+          child: TextField(
+            controller: TextEditingController(text: expression),
+            decoration: const InputDecoration(
+              hintText: 'erpm / 1000',
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              border: OutlineInputBorder(),
+            ),
+            style: const TextStyle(fontSize: 13, fontFamily: 'monospace'),
+            onChanged: onChanged,
+          ),
         ),
       ],
     );

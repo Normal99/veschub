@@ -73,6 +73,23 @@ const List<PropertyMeta> _gauge = [
     minLevel: CapabilityLevel.advanced,
     label: 'Accent colour',
   ),
+  PropertyMeta(
+    key: 'backgroundColor',
+    minLevel: CapabilityLevel.basic,
+    label: 'Background',
+    safe: true,
+  ),
+  PropertyMeta(
+    key: 'borderRadius',
+    minLevel: CapabilityLevel.advanced,
+    label: 'Corner radius',
+  ),
+  PropertyMeta(
+    key: 'fontSize',
+    minLevel: CapabilityLevel.basic,
+    label: 'Font size',
+    safe: true,
+  ),
 ];
 
 const List<PropertyMeta> _bar = [
@@ -103,6 +120,23 @@ const List<PropertyMeta> _bar = [
     key: 'orientation',
     minLevel: CapabilityLevel.advanced,
     label: 'Orientation',
+  ),
+  PropertyMeta(
+    key: 'backgroundColor',
+    minLevel: CapabilityLevel.basic,
+    label: 'Background',
+    safe: true,
+  ),
+  PropertyMeta(
+    key: 'borderRadius',
+    minLevel: CapabilityLevel.advanced,
+    label: 'Corner radius',
+  ),
+  PropertyMeta(
+    key: 'fontSize',
+    minLevel: CapabilityLevel.basic,
+    label: 'Font size',
+    safe: true,
   ),
 ];
 
@@ -148,6 +182,23 @@ const List<PropertyMeta> _status = [
     key: 'value',
     minLevel: CapabilityLevel.advanced,
     label: 'State text',
+  ),
+  PropertyMeta(
+    key: 'backgroundColor',
+    minLevel: CapabilityLevel.basic,
+    label: 'Background',
+    safe: true,
+  ),
+  PropertyMeta(
+    key: 'borderRadius',
+    minLevel: CapabilityLevel.advanced,
+    label: 'Corner radius',
+  ),
+  PropertyMeta(
+    key: 'fontSize',
+    minLevel: CapabilityLevel.basic,
+    label: 'Font size',
+    safe: true,
   ),
 ];
 
@@ -217,6 +268,11 @@ const List<PropertyMeta> _image = [
     minLevel: CapabilityLevel.advanced,
     label: 'Opacity',
   ),
+  PropertyMeta(
+    key: 'borderRadius',
+    minLevel: CapabilityLevel.advanced,
+    label: 'Corner radius',
+  ),
 ];
 
 const List<PropertyMeta> _web = [
@@ -236,6 +292,11 @@ const List<PropertyMeta> _web = [
     key: 'js',
     minLevel: CapabilityLevel.advanced,
     label: 'JavaScript enabled',
+  ),
+  PropertyMeta(
+    key: 'borderRadius',
+    minLevel: CapabilityLevel.advanced,
+    label: 'Corner radius',
   ),
 ];
 
@@ -266,6 +327,11 @@ List<PropertyMeta> visibleProperties(
 ) {
   final manifest = propertyManifest[widgetKind] ?? const <PropertyMeta>[];
   return manifest.where((m) => level.includes(m.minLevel)).toList();
+}
+
+/// Returns all known properties for [widgetKind], unfiltered.
+List<PropertyMeta> allProperties(String widgetKind) {
+  return (propertyManifest[widgetKind] ?? const <PropertyMeta>[]).toList();
 }
 
 /// Whether transforms (move/scale/rotate) are unlocked at [level].

@@ -25,12 +25,15 @@ class StatusWidget extends StatelessWidget {
     final (severity, color) = _severity(fault, theme);
     final label = properties['label'] as String? ?? _faultLabel(fault);
     final value = properties['value']?.toString();
+    final bgColor = (properties['backgroundColor'] as int?) ?? 0x22111111;
+    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 24.0;
+    final fontSizeRaw = (properties['fontSize'] as num?) ?? 14.0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(24),
+        color: Color(bgColor),
+        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
         border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Row(
@@ -46,14 +49,14 @@ class StatusWidget extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: color,
-                  fontSize: 14,
+                  fontSize: fontSizeRaw.toDouble(),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               if (value != null)
                 Text(
                   value,
-                  style: TextStyle(color: theme.secondary, fontSize: 11),
+                  style: TextStyle(color: theme.secondary, fontSize: (fontSizeRaw.toDouble() * 0.78).clamp(9, 14)),
                 ),
             ],
           ),

@@ -3,3 +3,4 @@ library;
 
 export 'src/binding_resolver.dart';
 export 'src/dashboard_runtime.dart';
+export 'src/formula_evaluator.dart';

@@ -5,6 +5,8 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:node_graph/node_graph.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 
+import 'formula_evaluator.dart';
+
 /// Result of resolving a binding.
 class ResolvedValue {
   final dynamic value;
@@ -79,6 +81,18 @@ ResolvedValue resolveBinding(
         );
         final v = result[b.output];
         if (v == null) return const ResolvedValue.unresolved();
+        return ResolvedValue(v);
+      } catch (_) {
+        return const ResolvedValue.unresolved();
+      }
+    },
+    formula: (b) {
+      try {
+        final v = evaluateFormula(b.expression, (key) {
+          final val = store.value(key);
+          if (val is num) return val;
+          return null;
+        });
         return ResolvedValue(v);
       } catch (_) {
         return const ResolvedValue.unresolved();

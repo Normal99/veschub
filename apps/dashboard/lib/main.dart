@@ -24,6 +24,9 @@ import 'package:settings/settings.dart';
 import 'onboarding/dashboard_onboarding.dart';
 import 'settings/dashboard_settings_screen.dart';
 
+const double kDefaultWidgetWidth = 300;
+const double kDefaultWidgetHeight = 220;
+
 /// Singleton drift database (opened lazily).
 final dashboardDatabaseProvider = Provider<DashboardDatabase>((ref) {
   final db = DashboardDatabase();
@@ -206,8 +209,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         TelemetryKey.duty: v.duty,
         TelemetryKey.vIn: v.vIn,
         TelemetryKey.tempMosfet: v.tempMosfet,
+        TelemetryKey.tempMotor: v.tempMotor,
         TelemetryKey.currentMotor: v.currentMotor,
         TelemetryKey.currentInput: v.currentInput,
+        TelemetryKey.ampHoursCharged: v.ampHoursCharged,
+        TelemetryKey.ampHoursDischarged: v.ampHoursDischarged,
+        TelemetryKey.wattHoursCharged: v.wattHoursCharged,
+        TelemetryKey.wattHoursDischarged: v.wattHoursDischarged,
+        TelemetryKey.tachometer: v.tachometer,
+        TelemetryKey.tachometerAbs: v.tachometerAbs,
+        TelemetryKey.fault: v.fault.code,
       });
     } catch (_) {
       // Ignore non-telemetry payloads.
@@ -281,18 +292,22 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final tx = w.transform[4];
     final ty = w.transform[5];
     final resolved = _resolved[w.id] ?? const <String, dynamic>{};
+    final bgColor = Color((resolved['backgroundColor'] as int?) ?? (w.properties['backgroundColor']?.map(literal: (b) => b.value, telemetry: (_) => null, graph: (_) => null, formula: (_) => null) as int?) ?? 0xFF111111);
+    final borderRadius = ((resolved['borderRadius'] as num?) ?? (w.properties['borderRadius']?.map(literal: (b) => b.value, telemetry: (_) => null, graph: (_) => null, formula: (_) => null) as num?) ?? 0).toDouble();
     return Positioned(
       key: key,
       left: tx,
       top: ty,
-      width: 300,
-      height: 220,
+      width: kDefaultWidgetWidth,
+      height: kDefaultWidgetHeight,
       child: RepaintBoundary(
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF111111),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF222222)),
+            color: bgColor,
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: borderRadius > 0
+                ? null
+                : Border.all(color: const Color(0xFF222222)),
           ),
           padding: const EdgeInsets.all(12),
           child: buildWidget(w, resolved),

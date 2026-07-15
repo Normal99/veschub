@@ -3,6 +3,7 @@
 /// A binding is either:
 ///  * a [LiteralBinding] (constant value, e.g. a colour or a max RPM),
 ///  * a [TelemetryBinding] (resolved from the telemetry store by canonical key),
+///  * a [FormulaBinding] (a math expression evaluated against telemetry keys),
 ///  * or a [GraphBinding] (resolved by a node-graph dataflow, Expert mode only).
 library;
 
@@ -37,6 +38,12 @@ sealed class Binding with _$Binding {
     @JsonKey(name: 'graph_id') required String graphId,
     @JsonKey(name: 'output') required String output,
   }) = GraphBinding;
+
+  /// Resolved by evaluating a math expression (Expert). Telemetry keys are
+  /// referenced by name (e.g. `erpm / 1000`, `tempMotor - tempMosfet`).
+  const factory Binding.formula({
+    @JsonKey(name: 'expression') required String expression,
+  }) = FormulaBinding;
 
   factory Binding.fromJson(Map<String, dynamic> json) =>
       _$BindingFromJson(json);

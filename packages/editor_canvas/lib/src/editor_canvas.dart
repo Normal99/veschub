@@ -33,6 +33,10 @@ class EditorCanvas extends StatefulWidget {
   /// Lets the host mark the document dirty.
   final ValueChanged<EditorCommand>? onCommandExecuted;
 
+  /// The logical canvas size. When set, widgets are clamped so they cannot
+  /// be moved or resized beyond the canvas boundaries.
+  final Size? canvasSize;
+
   const EditorCanvas({
     required this.scene,
     required this.selection,
@@ -43,6 +47,7 @@ class EditorCanvas extends StatefulWidget {
     this.snapConfig = const SnapConfig(),
     this.onGuidesChanged,
     this.onCommandExecuted,
+    this.canvasSize,
     super.key,
   });
 
@@ -270,7 +275,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
         final snapped = snap.adjustedOffset;
         final t = Matrix4.translationValues(snapped.dx, snapped.dy, 0)
           ..multiply(entry.value);
-        widget.scene.upsert(node.copyWith(transform: t));
+        final cmat = _clampTransform(t, node);
+        widget.scene.upsert(node.copyWith(transform: cmat));
       }
     }
     drag.guides = snap.guides;
@@ -288,12 +294,40 @@ class _EditorCanvasState extends State<EditorCanvas> {
       final node = widget.scene[entry.key];
       if (node == null) continue;
       final t = Matrix4.identity()
-        ..translate(anchor.dx, anchor.dy)
-        ..scale(clamped, clamped, 1.0)
-        ..translate(-anchor.dx, -anchor.dy)
+        ..translateByDouble(anchor.dx, anchor.dy, 0, 1)
+        ..scaleByDouble(clamped, clamped, 1.0, 1)
+        ..translateByDouble(-anchor.dx, -anchor.dy, 0, 1)
         ..multiply(entry.value);
-      widget.scene.upsert(node.copyWith(transform: t));
+      final cmat = _clampTransform(t, node);
+      widget.scene.upsert(node.copyWith(transform: cmat));
     }
+  }
+
+  Matrix4 _clampTransform(Matrix4 transform, CanvasNode node) {
+    final cs = widget.canvasSize;
+    if (cs == null) return transform;
+    final w = widget.nodeWidth(node);
+    final h = widget.nodeHeight(node);
+    final temp = CanvasNode(id: '', transform: transform);
+    final b = transformedBounds(temp, w, h);
+    var dx = 0.0;
+    var dy = 0.0;
+    if (b.left < 0 && b.right > cs.width) {
+      dx = -b.left;
+    } else if (b.left < 0) {
+      dx = -b.left;
+    } else if (b.right > cs.width) {
+      dx = cs.width - b.right;
+    }
+    if (b.top < 0 && b.bottom > cs.height) {
+      dy = -b.top;
+    } else if (b.top < 0) {
+      dy = -b.top;
+    } else if (b.bottom > cs.height) {
+      dy = cs.height - b.bottom;
+    }
+    if (dx == 0 && dy == 0) return transform;
+    return Matrix4.translationValues(dx, dy, 0)..multiply(transform);
   }
 
   String? hitTestNode(Offset p) => hitTest(

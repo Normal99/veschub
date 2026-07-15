@@ -47,6 +47,9 @@ class _ChartWidgetState extends State<ChartWidget> {
     final label = widget.properties['label'] as String?;
     final unit = widget.properties['unit'] as String?;
     final window = (widget.properties['window'] as num?)?.toInt() ?? 120;
+    final bgColor = (widget.properties['backgroundColor'] as int?) ?? 0xFF111111;
+    final borderRadiusRaw = (widget.properties['borderRadius'] as num?) ?? 0.0;
+    final fontSizeRaw = (widget.properties['fontSize'] as num?) ?? 20.0;
     if (window != _maxSamples) _maxSamples = window;
 
     // Push the latest sample.
@@ -64,36 +67,42 @@ class _ChartWidgetState extends State<ChartWidget> {
             ? 1
             : samples.reduce(math.max).toDouble().clamp(1e-9, double.infinity));
 
-    return CustomPaint(
-      painter: _ChartPainter(
-        samples: samples,
-        min: yMin,
-        max: yMax,
-        color: color,
-        gridColor: theme.secondary.withValues(alpha: 0.2),
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(bgColor),
+        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (label != null)
-              Text(
-                label,
-                style: TextStyle(color: theme.secondary, fontSize: 12),
-              ),
-            const Spacer(),
-            if (value != null)
-              Text(
-                '${formatNumber(value)}${unit != null ? ' $unit' : ''}',
-                style: TextStyle(
-                  color: color,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+      child: CustomPaint(
+        painter: _ChartPainter(
+          samples: samples,
+          min: yMin,
+          max: yMax,
+          color: color,
+          gridColor: theme.secondary.withValues(alpha: 0.2),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (label != null)
+                Text(
+                  label,
+                  style: TextStyle(color: theme.secondary, fontSize: (fontSizeRaw.toDouble() * 0.6).clamp(9, 14)),
                 ),
-              ),
-          ],
+              const Spacer(),
+              if (value != null)
+                Text(
+                  '${formatNumber(value)}${unit != null ? ' $unit' : ''}',
+                  style: TextStyle(
+                    color: color,
+                    fontSize: fontSizeRaw.toDouble(),
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

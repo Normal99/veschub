@@ -30,40 +30,49 @@ class GaugeWidget extends StatelessWidget {
     final accent = Color((properties['accent'] as int?) ?? 0xFFFFFFFF);
     final label = properties['label'] as String?;
     final unit = properties['unit'] as String?;
+    final bgColor = (properties['backgroundColor'] as int?) ?? 0xFF111111;
+    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 0.0;
+    final fontSizeRaw = (properties['fontSize'] as num?) ?? 32.0;
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     final t = ((value - min) / span).clamp(0.0, 1.0);
 
-    return CustomPaint(
-      painter: _GaugePainter(
-        t: t,
-        color: color,
-        trackColor: color.withValues(alpha: 0.18),
-        accent: accent,
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(bgColor),
+        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
       ),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              _format(value),
-              style: TextStyle(
-                color: color,
-                fontSize: 32,
-                fontWeight: FontWeight.w600,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-            if (unit != null || label != null)
+      child: CustomPaint(
+        painter: _GaugePainter(
+          t: t,
+          color: color,
+          trackColor: color.withValues(alpha: 0.18),
+          accent: accent,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
               Text(
-                [label, unit].whereType<String>().join(' · '),
+                _format(value),
                 style: TextStyle(
-                  color: accent.withValues(alpha: 0.8),
-                  fontSize: 12,
+                  color: color,
+                  fontSize: fontSizeRaw.toDouble(),
+                  fontWeight: FontWeight.w600,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
-          ],
+              if (unit != null || label != null)
+                Text(
+                  [label, unit].whereType<String>().join(' · '),
+                  style: TextStyle(
+                    color: accent.withValues(alpha: 0.8),
+                    fontSize: (fontSizeRaw.toDouble() * 0.38).clamp(9, 14),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

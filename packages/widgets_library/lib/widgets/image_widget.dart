@@ -26,6 +26,7 @@ class ImageWidget extends StatelessWidget {
     final fit = _boxFit(properties['fit'] as String?);
     final tint = properties['tint'] as int?;
     final opacity = (properties['opacity'] as num?)?.toDouble() ?? 1.0;
+    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 0.0;
 
     final isUrl = src.startsWith('http://') || src.startsWith('https://');
     final image =
@@ -38,6 +39,13 @@ class ImageWidget extends StatelessWidget {
     if (tint != null) {
       widget = ColorFiltered(
         colorFilter: ColorFilter.mode(Color(tint), BlendMode.srcIn),
+        child: widget,
+      );
+    }
+    final radius = borderRadiusRaw.toDouble();
+    if (radius > 0) {
+      widget = ClipRRect(
+        borderRadius: BorderRadius.circular(radius),
         child: widget,
       );
     }

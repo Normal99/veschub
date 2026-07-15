@@ -28,9 +28,10 @@ class WebWidget extends StatelessWidget {
     final url = properties['url'] as String? ?? 'about:blank';
     final js = (properties['js'] as bool?) ?? true;
     final title = properties['title'] as String?;
+    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 8.0;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
       child: Stack(
         children: [
           Positioned.fill(

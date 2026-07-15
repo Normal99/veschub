@@ -24,64 +24,73 @@ class BarWidget extends StatelessWidget {
     final max = (properties['max'] as num?)?.toDouble() ?? 1;
     final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
     final vertical = properties['orientation'] == 'vertical';
+    final bgColor = (properties['backgroundColor'] as int?) ?? 0xFF111111;
+    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 6.0;
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     var t = (value - min) / span;
     t = t.clamp(0.0, 1.0);
+    final radius = borderRadiusRaw.toDouble();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final trackColor = color.withValues(alpha: 0.18);
-        if (vertical) {
-          final h = constraints.maxHeight * t;
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(bgColor),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final trackColor = color.withValues(alpha: 0.18);
+          if (vertical) {
+            final h = constraints.maxHeight * t;
+            return Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: trackColor,
+                    borderRadius: BorderRadius.circular(radius),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: h.isFinite ? h : 0,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(radius),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+          final w = constraints.maxWidth * t;
           return Stack(
-            alignment: Alignment.bottomCenter,
             children: [
               Container(
-                width: double.infinity,
+                height: double.infinity,
                 decoration: BoxDecoration(
                   color: trackColor,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(radius),
                 ),
               ),
               Align(
-                alignment: Alignment.bottomCenter,
+                alignment: Alignment.centerLeft,
                 child: Container(
-                  height: h.isFinite ? h : 0,
-                  width: double.infinity,
+                  width: w.isFinite ? w : 0,
+                  height: double.infinity,
                   decoration: BoxDecoration(
                     color: color,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(radius),
                   ),
                 ),
               ),
             ],
           );
-        }
-        final w = constraints.maxWidth * t;
-        return Stack(
-          children: [
-            Container(
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: trackColor,
-                borderRadius: BorderRadius.circular(6),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                width: w.isFinite ? w : 0,
-                height: double.infinity,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
+        },
+      ),
     );
   }
 }
