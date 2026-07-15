@@ -6,6 +6,7 @@
 library;
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:editor_canvas/editor_canvas.dart';
@@ -13,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:paint_dsl/paint_dsl.dart';
 import 'package:node_graph/node_graph.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
@@ -72,6 +74,16 @@ class StudioEditor extends ConsumerWidget {
             icon: const Icon(Icons.save),
             onPressed: () => _save(context, ref),
             tooltip: 'Save',
+          ),
+          IconButton(
+            icon: const Icon(Icons.download),
+            onPressed: () => _exportJson(context, ref),
+            tooltip: 'Export as .veschub.json',
+          ),
+          IconButton(
+            icon: const Icon(Icons.upload_file),
+            onPressed: () => _importJson(context, ref),
+            tooltip: 'Import .veschub.json',
           ),
           IconButton(
             icon: const Icon(Icons.settings),
@@ -180,6 +192,104 @@ class StudioEditor extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Save failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _exportJson(BuildContext context, WidgetRef ref) async {
+    final scene = ref.read(sceneModelProvider);
+    final name = ref.read(dashboardNameProvider);
+    final description = ref.read(dashboardDescriptionProvider);
+    final doc = documentFromScene(
+      scene: scene,
+      name: name,
+      description: description,
+      canvasSize: ref.read(canvasSizeProvider),
+      background: ref.read(backgroundProvider),
+      accent: ref.read(accentProvider),
+      graphs: ref.read(flowGraphsProvider),
+    );
+    final json = const JsonEncoder.withIndent('  ').convert(doc.toJson());
+    final dir = await getApplicationDocumentsDirectory();
+    final safeName = name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+    final file = File('${dir.path}/$safeName.veschub.json');
+    try {
+      await file.writeAsString(json);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Exported to ${file.path}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _importJson(BuildContext context, WidgetRef ref) async {
+    // Uses file_picker when available; falls back to listing .veschub.json
+    // files in the documents directory.
+    final dir = await getApplicationDocumentsDirectory();
+    final files = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.veschub.json'))
+        .toList();
+
+    if (!context.mounted) return;
+
+    if (files.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No .veschub.json files found in documents')),
+      );
+      return;
+    }
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Import .veschub.json'),
+        children: [
+          for (final f in files)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(ctx).pop(f.path),
+              child: Text(f.uri.pathSegments.last),
+            ),
+        ],
+      ),
+    );
+    if (selected == null || !context.mounted) return;
+
+    try {
+      final raw = await File(selected).readAsString();
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final migrated = migrate(json);
+      final doc = DashboardDocument.fromJson(migrated);
+
+      final db = ref.read(dashboardDatabaseProvider);
+      final id = await db.saveDashboard(doc.name, doc);
+      ref.invalidate(recentDashboardsProvider);
+
+      applyDocumentToEditor(
+        ref,
+        scene: ref.read(sceneModelProvider),
+        doc: doc,
+        id: id,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Imported "${doc.name}"')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Import failed: $e')),
         );
       }
     }

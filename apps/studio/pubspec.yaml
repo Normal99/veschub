@@ -33,6 +33,7 @@ dependencies:
     path: ../../packages/templates
   vesc_telemetry:
     path: ../../packages/vesc_telemetry
+  path_provider: ^2.1.3
 
 dev_dependencies:
   flutter_test:

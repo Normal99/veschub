@@ -8,10 +8,13 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:dashboard_storage/dashboard_storage.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:vesc_proto/vesc_proto.dart';
 import 'package:vesc_sim/vesc_sim.dart';
 import 'package:vesc_transport/vesc_transport.dart';
@@ -201,6 +204,74 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() {});
   }
 
+  Future<void> _exportDoc(DashboardDocument doc, BuildContext context) async {
+    final json = const JsonEncoder.withIndent('  ').convert(doc.toJson());
+    final dir = await getApplicationDocumentsDirectory();
+    final safeName = doc.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+    final file = File('${dir.path}/$safeName.veschub.json');
+    try {
+      await file.writeAsString(json);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Exported to ${file.path}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _importDoc(BuildContext context) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final files = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.veschub.json'))
+        .toList();
+
+    if (!context.mounted) return;
+
+    if (files.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No .veschub.json files found')),
+      );
+      return;
+    }
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Import .veschub.json'),
+        children: [
+          for (final f in files)
+            SimpleDialogOption(
+              onPressed: () => Navigator.of(ctx).pop(f.path),
+              child: Text(f.uri.pathSegments.last),
+            ),
+        ],
+      ),
+    );
+    if (selected == null || !context.mounted) return;
+
+    try {
+      final raw = await File(selected).readAsString();
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final migrated = migrate(json);
+      final doc = DashboardDocument.fromJson(migrated);
+      _loadDocument(doc);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Import failed: $e')),
+        );
+      }
+    }
+  }
+
   void _onPayload(List<int> payload) {
     try {
       final v = TelemetryValues.fromPayload(payload);
@@ -264,6 +335,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             icon: Icon(Icons.settings, color: fg),
             onPressed: () => Navigator.of(context).pushNamed('/settings'),
             tooltip: 'Settings',
+          ),
+          IconButton(
+            icon: Icon(Icons.download, color: fg),
+            onPressed: () => _exportDoc(doc, context),
+            tooltip: 'Export as .veschub.json',
+          ),
+          IconButton(
+            icon: Icon(Icons.upload_file, color: fg),
+            onPressed: () => _importDoc(context),
+            tooltip: 'Import .veschub.json',
           ),
         ],
       ),

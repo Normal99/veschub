@@ -28,6 +28,11 @@ jobs:
       - name: Melos bootstrap
         run: melos bootstrap
 
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
+
       - name: Check formatting
         run: melos run format
 
@@ -39,3 +44,23 @@ jobs:
 
       - name: Test
         run: melos run test
+
+      - name: Build dashboard (Linux)
+        run: flutter build linux --release
+        working-directory: apps/dashboard
+
+      - name: Build studio (Linux)
+        run: flutter build linux --release
+        working-directory: apps/studio
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-linux
+          path: apps/dashboard/build/linux/x64/release/bundle/
+
+      - name: Upload studio artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-linux
+          path: apps/studio/build/linux/x64/release/bundle/
