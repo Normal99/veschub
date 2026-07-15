@@ -27,6 +27,8 @@ class SettingsService extends ChangeNotifier {
   static const _keyTheme = 'settings.themeMode';
   static const _keyTransport = 'settings.transport';
   static const _keyOnboardingDone = 'settings.onboardingDone';
+  static const _keyAutoConnect = 'settings.autoConnect';
+  static const _keyDataRate = 'settings.dataRate';
 
   SharedPreferences? _prefs;
 
@@ -34,6 +36,8 @@ class SettingsService extends ChangeNotifier {
   ThemePreference _theme = ThemePreference.system;
   TransportPreference _transport = TransportPreference.auto;
   bool _onboardingDone = false;
+  bool _autoConnect = true;
+  int _dataRate = 10;
 
   /// Default capability level shown on first launch of the studio.
   CapabilityLevel get capabilityLevel => _capability;
@@ -47,6 +51,12 @@ class SettingsService extends ChangeNotifier {
   /// Whether first-run onboarding has been completed.
   bool get onboardingDone => _onboardingDone;
 
+  /// Auto-connect to the preferred transport on app launch.
+  bool get autoConnect => _autoConnect;
+
+  /// Maximum telemetry update frequency in Hz (5, 10, 20, or 50).
+  int get dataRate => _dataRate;
+
   /// Loads persisted values from `shared_preferences`. Safe to call from a
   /// provider's create function: returns a [Future] that resolves after the
   /// values are read, then notifies listeners so dependents rebuild.
@@ -56,6 +66,9 @@ class SettingsService extends ChangeNotifier {
     _theme = _decodeTheme(_prefs!.getString(_keyTheme));
     _transport = _decodeTransport(_prefs!.getString(_keyTransport));
     _onboardingDone = _prefs!.getBool(_keyOnboardingDone) ?? false;
+    _autoConnect = _prefs!.getBool(_keyAutoConnect) ?? true;
+    _dataRate = _prefs!.getInt(_keyDataRate) ?? 10;
+    if (_dataRate < 5 || _dataRate > 50) _dataRate = 10;
     notifyListeners();
   }
 
@@ -80,6 +93,18 @@ class SettingsService extends ChangeNotifier {
   Future<void> markOnboardingDone() async {
     _onboardingDone = true;
     await _prefs?.setBool(_keyOnboardingDone, true);
+    notifyListeners();
+  }
+
+  Future<void> setAutoConnect(bool v) async {
+    _autoConnect = v;
+    await _prefs?.setBool(_keyAutoConnect, v);
+    notifyListeners();
+  }
+
+  Future<void> setDataRate(int hz) async {
+    _dataRate = hz.clamp(5, 50);
+    await _prefs?.setInt(_keyDataRate, _dataRate);
     notifyListeners();
   }
 

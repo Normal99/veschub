@@ -14,15 +14,15 @@ import 'dart:io';
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:dashboard_storage/dashboard_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:settings/settings.dart';
 import 'package:vesc_proto/vesc_proto.dart';
 import 'package:vesc_sim/vesc_sim.dart';
 import 'package:vesc_transport/vesc_transport.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:settings/settings.dart';
 
 import 'onboarding/dashboard_onboarding.dart';
 import 'settings/dashboard_settings_screen.dart';
@@ -159,6 +159,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
   final Map<String, ResolvedProperties> _resolved = {};
   TransportState _linkState = TransportState.disconnected;
+  int _lastIngestTime = 0;
 
   @override
   void initState() {
@@ -166,7 +167,6 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _store = TelemetryStore();
     _runtime = DashboardRuntime(document: sampleDocument(), store: _store);
 
-    // Wire a mock VESC over a virtual transport.
     _pair = VirtualTransportPair();
     _sim = VescSim(_pair.a);
 
@@ -184,15 +184,23 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       });
     });
 
+    final settings = ref.read(settingsServiceProvider);
+    if (settings.autoConnect) {
+      _connect();
+    }
+
+    _runtime.start();
+  }
+
+  void _connect() {
     _pair.b.connect().then((_) => _sim.clientTransport.connect()).then((_) {
       if (!mounted) return;
       _sim.start();
-      _runtime.start();
     }).catchError((e) {
       if (mounted) {
         setState(() => _linkState = TransportState.error);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Connection failed: $e')),
+          SnackBar(content: Text('Connect failed: $e')),
         );
       }
     });
@@ -273,6 +281,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   void _onPayload(List<int> payload) {
+    final settings = ref.read(settingsServiceProvider);
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final interval = (1000 / settings.dataRate).round();
+    if (_lastIngestTime != 0 && now - _lastIngestTime < interval) return;
+    _lastIngestTime = now;
     try {
       final v = TelemetryValues.fromPayload(payload);
       _store.ingest({
@@ -326,6 +339,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               child: _LinkBadge(state: _linkState, fg: fg),
             ),
           ),
+          if (_linkState == TransportState.disconnected)
+            IconButton(
+              icon: Icon(Icons.bluetooth, color: fg),
+              onPressed: _connect,
+              tooltip: 'Connect',
+            ),
           IconButton(
             icon: Icon(Icons.folder_open, color: fg),
             onPressed: () => _showOpenDialog(context),
