@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
+import '../src/cosmetic_helpers.dart';
+
 /// Renders a `bar` widget from resolved properties:
 ///  * `value` — current value (num)
 ///  * `min`   — scale minimum (num, default 0)
@@ -24,20 +26,19 @@ class BarWidget extends StatelessWidget {
     final max = (properties['max'] as num?)?.toDouble() ?? 1;
     final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
     final vertical = properties['orientation'] == 'vertical';
-    final bgColor = (properties['backgroundColor'] as int?) ?? 0xFF111111;
     final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 6.0;
+    final radius = borderRadiusRaw.toDouble();
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     var t = (value - min) / span;
     t = t.clamp(0.0, 1.0);
-    final radius = borderRadiusRaw.toDouble();
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(bgColor),
-        borderRadius: BorderRadius.circular(radius),
-      ),
-      child: LayoutBuilder(
+    return applyOpacity(
+      Container(
+        decoration: resolveBoxDecoration(properties),
+        child: Padding(
+          padding: resolvePadding(properties),
+          child: LayoutBuilder(
         builder: (context, constraints) {
           final trackColor = color.withValues(alpha: 0.18);
           if (vertical) {
@@ -91,6 +92,9 @@ class BarWidget extends StatelessWidget {
           );
         },
       ),
+      ),
+    ),
+      properties,
     );
   }
 }

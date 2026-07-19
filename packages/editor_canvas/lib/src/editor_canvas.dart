@@ -37,6 +37,9 @@ class EditorCanvas extends StatefulWidget {
   /// be moved or resized beyond the canvas boundaries.
   final Size? canvasSize;
 
+  /// Whether to draw a grid overlay. Use with [gridSize] in [snapConfig].
+  final bool showGrid;
+
   const EditorCanvas({
     required this.scene,
     required this.selection,
@@ -48,6 +51,7 @@ class EditorCanvas extends StatefulWidget {
     this.onGuidesChanged,
     this.onCommandExecuted,
     this.canvasSize,
+    this.showGrid = false,
     super.key,
   });
 
@@ -125,6 +129,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
                     nodeHeight: widget.nodeHeight,
                     marquee: _marqueeRect(),
                     guides: _drag?.guides ?? const [],
+                    showGrid: widget.showGrid,
+                    gridSize: widget.snapConfig.gridSize,
+                    canvasSize: widget.canvasSize,
                   ),
                 ),
               ),
@@ -266,6 +273,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
       movingBounds: union.translate(-union.left, -union.top),
       otherBounds: otherBounds,
       config: widget.snapConfig,
+      canvasSize: widget.canvasSize,
     );
 
     // Apply the snapped delta directly to the scene (live preview; committed on end).
@@ -413,6 +421,9 @@ class _OverlayPainter extends CustomPainter {
   final double Function(CanvasNode) nodeHeight;
   final Rect? marquee;
   final List<GuideLine> guides;
+  final bool showGrid;
+  final double gridSize;
+  final Size? canvasSize;
 
   _OverlayPainter({
     required this.scene,
@@ -421,6 +432,9 @@ class _OverlayPainter extends CustomPainter {
     required this.nodeHeight,
     required this.marquee,
     required this.guides,
+    required this.showGrid,
+    required this.gridSize,
+    required this.canvasSize,
   });
 
   static final _selectPaint = Paint()
@@ -441,9 +455,18 @@ class _OverlayPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
     ..color = const Color(0xFFFF4081);
+  static final _gridPaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 0.5
+    ..color = const Color(0x20FFFFFF);
+  static final _centerPaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1.0
+    ..color = const Color(0x30FFFFFF);
 
   @override
   void paint(Canvas canvas, Size size) {
+    _drawGrid(canvas, size);
     // Selection outlines + handles.
     for (final id in selection) {
       final node = scene[id];
@@ -489,6 +512,24 @@ class _OverlayPainter extends CustomPainter {
   bool shouldRepaint(covariant _OverlayPainter old) =>
       old.marquee != marquee ||
       old.guides != guides ||
-      old.selection != selection ||
-      old.scene != scene;
+      old.showGrid != showGrid ||
+      old.gridSize != gridSize ||
+      old.scene != scene ||
+      old.selection != selection;
+
+  void _drawGrid(Canvas canvas, Size size) {
+    if (!showGrid || gridSize <= 0) return;
+    final w = canvasSize?.width ?? size.width;
+    final h = canvasSize?.height ?? size.height;
+    for (var x = 0.0; x <= w; x += gridSize) {
+      canvas.drawLine(Offset(x, 0), Offset(x, h), _gridPaint);
+    }
+    for (var y = 0.0; y <= h; y += gridSize) {
+      canvas.drawLine(Offset(0, y), Offset(w, y), _gridPaint);
+    }
+    if (canvasSize != null) {
+      canvas.drawLine(Offset(w / 2, 0), Offset(w / 2, h), _centerPaint);
+      canvas.drawLine(Offset(0, h / 2), Offset(w, h / 2), _centerPaint);
+    }
+  }
 }

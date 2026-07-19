@@ -16,7 +16,7 @@ class SnapConfig {
 
   const SnapConfig({
     this.gridSize = 8.0,
-    this.threshold = 4.0,
+    this.threshold = 8.0,
     this.enableGuides = true,
   });
 
@@ -43,29 +43,24 @@ class GuideLine {
 
 /// Snaps [rawDelta] (a proposed translation delta) for the moving node(s).
 ///
-/// Grid snapping rounds each axis to the nearest grid multiple. Guide snapping
-/// (when enabled) checks the moved node's edges/centre against every other
-/// node's edges/centre and snaps within [SnapConfig.threshold].
+/// Grid snapping snaps the moved widget's **edges** (left, center-x, right /
+/// top, center-y, bottom) to the nearest grid line — not just the origin.
+/// This makes snapping feel magnetic: any edge that comes within
+/// [SnapConfig.threshold] of a grid line pulls the widget into alignment.
+///
+/// Guide snapping (when enabled) aligns widget edges/centres with other nodes.
 SnapResult snapTranslation({
   required Offset origin,
   required Offset rawDelta,
   required Rect movingBounds,
   required Iterable<Rect> otherBounds,
   required SnapConfig config,
+  Size? canvasSize,
 }) {
   var delta = rawDelta;
 
-  // 1. Grid snap.
   if (config.gridSize > 0) {
-    final target = origin + rawDelta;
-    final sx = (target.dx / config.gridSize).round() * config.gridSize;
-    final sy = (target.dy / config.gridSize).round() * config.gridSize;
-    if ((target.dx - sx).abs() <= config.threshold) {
-      delta = Offset(sx - origin.dx, delta.dy);
-    }
-    if ((target.dy - sy).abs() <= config.threshold) {
-      delta = Offset(delta.dx, sy - origin.dy);
-    }
+    delta = _snapToGrid(delta, movingBounds, config, canvasSize);
   }
 
   if (!config.enableGuides || config.threshold <= 0) {
@@ -121,4 +116,88 @@ SnapResult snapTranslation({
   }
 
   return SnapResult(delta, guides);
+}
+
+/// Snaps widget edges (left, center-x, right / top, center-y, bottom) to the
+/// nearest grid line. Returns the adjusted delta.
+Offset _snapToGrid(Offset delta, Rect bounds, SnapConfig config, Size? canvasSize) {
+  final size = config.gridSize;
+  final threshold = config.threshold;
+
+  final snapX = <double>{};
+  final snapY = <double>{};
+
+  if (canvasSize != null) {
+    for (var x = 0.0; x <= canvasSize.width; x += size) {
+      snapX.add(x);
+    }
+    for (var y = 0.0; y <= canvasSize.height; y += size) {
+      snapY.add(y);
+    }
+    snapX.addAll([0, canvasSize.width, canvasSize.width / 2]);
+    snapY.addAll([0, canvasSize.height, canvasSize.height / 2]);
+  }
+
+  // Snap X: check left, center, right edges against all snap targets.
+  final left = bounds.left + delta.dx;
+  final cx = bounds.center.dx + delta.dx;
+  final right = bounds.right + delta.dx;
+  final edgesX = [left, cx, right];
+  double? bestAdjustX;
+  double? bestDistX;
+
+  if (snapX.isEmpty) {
+    for (final edge in edgesX) {
+      final snapped = (edge / size).round() * size;
+      final dist = (edge - snapped).abs();
+      if (dist <= threshold && (bestDistX == null || dist < bestDistX)) {
+        bestDistX = dist;
+        bestAdjustX = snapped - edge;
+      }
+    }
+  } else {
+    for (final edge in edgesX) {
+      for (final sx in snapX) {
+        final dist = (edge - sx).abs();
+        if (dist <= threshold && (bestDistX == null || dist < bestDistX)) {
+          bestDistX = dist;
+          bestAdjustX = sx - edge;
+        }
+      }
+    }
+  }
+
+  // Snap Y: check top, center, bottom edges.
+  final top = bounds.top + delta.dy;
+  final cy = bounds.center.dy + delta.dy;
+  final bottom = bounds.bottom + delta.dy;
+  final edgesY = [top, cy, bottom];
+  double? bestAdjustY;
+  double? bestDistY;
+
+  if (snapY.isEmpty) {
+    for (final edge in edgesY) {
+      final snapped = (edge / size).round() * size;
+      final dist = (edge - snapped).abs();
+      if (dist <= threshold && (bestDistY == null || dist < bestDistY)) {
+        bestDistY = dist;
+        bestAdjustY = snapped - edge;
+      }
+    }
+  } else {
+    for (final edge in edgesY) {
+      for (final sy in snapY) {
+        final dist = (edge - sy).abs();
+        if (dist <= threshold && (bestDistY == null || dist < bestDistY)) {
+          bestDistY = dist;
+          bestAdjustY = sy - edge;
+        }
+      }
+    }
+  }
+
+  return Offset(
+    bestAdjustX != null ? delta.dx + bestAdjustX : delta.dx,
+    bestAdjustY != null ? delta.dy + bestAdjustY : delta.dy,
+  );
 }

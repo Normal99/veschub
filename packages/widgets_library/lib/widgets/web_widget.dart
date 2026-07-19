@@ -10,6 +10,7 @@ import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:flutter/material.dart';
 
 import '../src/theme.dart';
+import '../src/cosmetic_helpers.dart';
 import 'web_widget_stub.dart' if (dart.library.io) 'web_widget_io.dart' as impl;
 
 /// Renders a `web` widget embedding a live web page.
@@ -30,21 +31,25 @@ class WebWidget extends StatelessWidget {
     final title = properties['title'] as String?;
     final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 8.0;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: impl.buildWebEmbed(url: url, jsEnabled: js),
-          ),
-          if (title != null)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _TitleBar(title: title),
+    return Container(
+      decoration: resolveBoxDecoration(properties),
+      padding: resolvePadding(properties),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: impl.buildWebEmbed(url: url, jsEnabled: js),
             ),
-        ],
+            if (title != null)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: _TitleBar(title: title),
+              ),
+          ],
+        ),
       ),
     );
   }

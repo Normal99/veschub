@@ -8,6 +8,7 @@ import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:flutter/material.dart';
 
 import '../src/theme.dart';
+import '../src/cosmetic_helpers.dart';
 
 /// Renders a `status` widget from resolved properties:
 ///  * `fault`   — fault code (int; 0 = none)
@@ -25,43 +26,53 @@ class StatusWidget extends StatelessWidget {
     final (severity, color) = _severity(fault, theme);
     final label = properties['label'] as String? ?? _faultLabel(fault);
     final value = properties['value']?.toString();
-    final bgColor = (properties['backgroundColor'] as int?) ?? 0x22111111;
-    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 24.0;
     final fontSizeRaw = (properties['fontSize'] as num?) ?? 14.0;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: Color(bgColor),
-        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(severity.icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final boxDeco = resolveBoxDecoration(properties).copyWith(
+      border: Border.all(color: color.withValues(alpha: 0.5)),
+    );
+
+    return applyOpacity(
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: boxDeco,
+        child: Padding(
+          padding: resolvePadding(properties),
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: fontSizeRaw.toDouble(),
-                  fontWeight: FontWeight.w600,
-                ),
+              Icon(severity.icon, color: color, size: 18),
+              const SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: applyTextStyle(
+                      TextStyle(
+                        color: color,
+                        fontSize: fontSizeRaw.toDouble(),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      properties,
+                    ),
+                  ),
+                  if (value != null)
+                    Text(
+                      value,
+                      style: TextStyle(
+                        color: theme.secondary,
+                        fontSize: (fontSizeRaw.toDouble() * 0.78).clamp(9, 14),
+                      ),
+                    ),
+                ],
               ),
-              if (value != null)
-                Text(
-                  value,
-                  style: TextStyle(color: theme.secondary, fontSize: (fontSizeRaw.toDouble() * 0.78).clamp(9, 14)),
-                ),
             ],
           ),
-        ],
+        ),
       ),
+      properties,
     );
   }
 

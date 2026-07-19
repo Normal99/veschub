@@ -67,6 +67,11 @@ final isDirtyProvider = StateProvider<bool>((ref) {
   return false;
 });
 
+/// Visibility of the grid overlay on the editor canvas.
+final gridVisibleProvider = StateProvider<bool>((ref) {
+  return false;
+});
+
 /// The name of the dashboard being edited (for save).
 final dashboardNameProvider = StateProvider<String>((ref) {
   return 'Untitled';

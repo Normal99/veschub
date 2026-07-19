@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
+import '../src/cosmetic_helpers.dart';
+
 /// Renders a `gauge` widget from resolved properties:
 ///  * `value`  — current value (num)
 ///  * `min`    — scale minimum (num, default 0)
@@ -30,51 +32,63 @@ class GaugeWidget extends StatelessWidget {
     final accent = Color((properties['accent'] as int?) ?? 0xFFFFFFFF);
     final label = properties['label'] as String?;
     final unit = properties['unit'] as String?;
-    final bgColor = (properties['backgroundColor'] as int?) ?? 0xFF111111;
-    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 0.0;
     final fontSizeRaw = (properties['fontSize'] as num?) ?? 32.0;
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     final t = ((value - min) / span).clamp(0.0, 1.0);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(bgColor),
-        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
-      ),
-      child: CustomPaint(
-        painter: _GaugePainter(
-          t: t,
-          color: color,
-          trackColor: color.withValues(alpha: 0.18),
-          accent: accent,
-        ),
+    return applyOpacity(
+      Container(
+        decoration: resolveBoxDecoration(properties),
         child: Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                _format(value),
-                style: TextStyle(
-                  color: color,
-                  fontSize: fontSizeRaw.toDouble(),
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
-              if (unit != null || label != null)
-                Text(
-                  [label, unit].whereType<String>().join(' · '),
-                  style: TextStyle(
-                    color: accent.withValues(alpha: 0.8),
-                    fontSize: (fontSizeRaw.toDouble() * 0.38).clamp(9, 14),
+          padding: resolvePadding(properties),
+          child: CustomPaint(
+            painter: _GaugePainter(
+              t: t,
+              color: color,
+              trackColor: color.withValues(alpha: 0.18),
+              accent: accent,
+              tickCount: (properties['tickCount'] as num?)?.toInt() ?? 10,
+              sweepAngle: (properties['sweepAngle'] as num?)?.toDouble() ?? 270,
+              startAngle: (properties['startAngle'] as num?)?.toDouble() ?? 135,
+              arcWidth: (properties['arcWidth'] as num?)?.toDouble() ?? 10,
+              needleStyle: properties['needleStyle'] as String? ?? 'arc',
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    _format(value),
+                    style: applyTextStyle(
+                      TextStyle(
+                        color: color,
+                        fontSize: fontSizeRaw.toDouble(),
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                      properties,
+                    ),
                   ),
-                ),
-            ],
+                  if (unit != null || label != null)
+                    Text(
+                      [label, unit].whereType<String>().join(' · '),
+                      style: applyTextStyle(
+                        TextStyle(
+                          color: accent.withValues(alpha: 0.8),
+                          fontSize: (fontSizeRaw.toDouble() * 0.38).clamp(9, 14),
+                        ),
+                        properties,
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
+      properties,
     );
   }
 
@@ -89,16 +103,23 @@ class _GaugePainter extends CustomPainter {
   final Color color;
   final Color trackColor;
   final Color accent;
+  final int tickCount;
+  final double sweepAngle;
+  final double startAngle;
+  final double arcWidth;
+  final String needleStyle;
 
   _GaugePainter({
     required this.t,
     required this.color,
     required this.trackColor,
     required this.accent,
+    required this.tickCount,
+    required this.sweepAngle,
+    required this.startAngle,
+    required this.arcWidth,
+    required this.needleStyle,
   });
-
-  static const _sweep = 270.0; // degrees of arc
-  static const _startAngle = 135.0; // bottom-left
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -107,36 +128,58 @@ class _GaugePainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: radius);
     final track = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
+      ..strokeWidth = arcWidth
       ..strokeCap = StrokeCap.round
       ..color = trackColor;
     final arc = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10
+      ..strokeWidth = arcWidth
       ..strokeCap = StrokeCap.round
       ..color = color;
 
-    const start = _startAngle * math.pi / 180;
-    const full = _sweep * math.pi / 180;
+    final start = (startAngle - 90) * math.pi / 180;
+    final full = sweepAngle * math.pi / 180;
     canvas.drawArc(rect, start, full, false, track);
     canvas.drawArc(rect, start, full * t, false, arc);
 
-    // Ticks
     final tick = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..color = accent.withValues(alpha: 0.6);
-    const steps = 10;
-    for (var i = 0; i <= steps; i++) {
-      final a = start + (full * i / steps);
-      final outer = center + Offset(math.cos(a) * radius, math.sin(a) * radius);
-      final inner = center +
-          Offset(math.cos(a) * (radius - 8), math.sin(a) * (radius - 8));
-      canvas.drawLine(inner, outer, tick);
+    if (tickCount > 1) {
+      for (var i = 0; i <= tickCount; i++) {
+        final a = start + (full * i / tickCount);
+        final outer = center + Offset(math.cos(a) * radius, math.sin(a) * radius);
+        final inner = center +
+            Offset(math.cos(a) * (radius - 8), math.sin(a) * (radius - 8));
+        canvas.drawLine(inner, outer, tick);
+      }
+    }
+
+    if (needleStyle == 'needle') {
+      final a = start + full * t;
+      final tip = center + Offset(math.cos(a) * (radius - 20), math.sin(a) * (radius - 20));
+      final needle = Paint()
+        ..style = PaintingStyle.fill
+        ..color = color;
+      final path = Path()
+        ..moveTo(tip.dx, tip.dy)
+        ..lineTo(center.dx - 4, center.dy)
+        ..lineTo(center.dx + 4, center.dy)
+        ..close();
+      canvas.drawPath(path, needle);
+      canvas.drawCircle(center, 4, Paint()..color = color);
     }
   }
 
   @override
   bool shouldRepaint(covariant _GaugePainter old) =>
-      old.t != t || old.color != color || old.accent != accent;
+      old.t != t ||
+      old.color != color ||
+      old.accent != accent ||
+      old.tickCount != tickCount ||
+      old.sweepAngle != sweepAngle ||
+      old.startAngle != startAngle ||
+      old.arcWidth != arcWidth ||
+      old.needleStyle != needleStyle;
 }

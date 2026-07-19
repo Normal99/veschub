@@ -5,6 +5,8 @@ library;
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:flutter/material.dart';
 
+import '../src/cosmetic_helpers.dart';
+
 /// Renders an `image` widget from resolved properties:
 ///  * `src`      — asset path or URL (String)
 ///  * `fit`      — BoxFit name (default 'contain')
@@ -49,7 +51,19 @@ class ImageWidget extends StatelessWidget {
         child: widget,
       );
     }
-    return widget;
+    return applyOpacity(
+      Container(
+        decoration: resolveBoxDecoration(properties).copyWith(
+          color: Colors.transparent,
+        ),
+        padding: resolvePadding(properties),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: widget,
+        ),
+      ),
+      properties,
+    );
   }
 
   BoxFit _boxFit(String? name) => switch (name) {

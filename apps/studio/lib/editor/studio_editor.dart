@@ -535,14 +535,6 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
   /// coordinate conversion that correctly accounts for FittedBox scaling.
   final _canvasKey = GlobalKey();
 
-  static const _aspectPresets = <String, CanvasSize>{
-    'HD': CanvasSize(width: 1280, height: 720),
-    'FHD': CanvasSize(width: 1920, height: 1080),
-    'QHD': CanvasSize(width: 2560, height: 1440),
-    '4:3': CanvasSize(width: 1024, height: 768),
-    '1:1': CanvasSize(width: 800, height: 800),
-  };
-
   Offset _toCanvasPosition(Offset globalPos) {
     final box = _canvasKey.currentContext?.findRenderObject() as RenderBox?;
     if (box == null) return globalPos;
@@ -560,30 +552,67 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-              for (final preset in _aspectPresets.entries)
-                Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: ActionChip(
-                    label: Text(preset.key, style: const TextStyle(fontSize: 10)),
-                    backgroundColor:
-                        canvasSize.width == preset.value.width &&
-                                canvasSize.height == preset.value.height
-                            ? Theme.of(context).colorScheme.primaryContainer
-                            : null,
-                    onPressed: () {
-                      ref.read(canvasSizeProvider.notifier).state = preset.value;
-                      ref.read(isDirtyProvider.notifier).state = true;
-                    },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 72,
+                child: TextField(
+                  controller: TextEditingController(
+                    text: canvasSize.width.toString(),
                   ),
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'W',
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    border: OutlineInputBorder(),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onSubmitted: (v) {
+                    final w = double.tryParse(v);
+                    if (w != null && w > 0) {
+                      ref.read(canvasSizeProvider.notifier).state =
+                          CanvasSize(width: w, height: canvasSize.height);
+                      ref.read(isDirtyProvider.notifier).state = true;
+                    }
+                  },
                 ),
-              const SizedBox(width: 12),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4),
+                child: Text('×', style: TextStyle(fontSize: 14)),
+              ),
+              SizedBox(
+                width: 72,
+                child: TextField(
+                  controller: TextEditingController(
+                    text: canvasSize.height.toString(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'H',
+                    isDense: true,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    border: OutlineInputBorder(),
+                  ),
+                  style: const TextStyle(fontSize: 12),
+                  onSubmitted: (v) {
+                    final h = double.tryParse(v);
+                    if (h != null && h > 0) {
+                      ref.read(canvasSizeProvider.notifier).state =
+                          CanvasSize(width: canvasSize.width, height: h);
+                      ref.read(isDirtyProvider.notifier).state = true;
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
               IconButton(
                 icon: const Icon(Icons.screen_rotation, size: 16),
-                tooltip: 'Swap orientation (landscape ↔ portrait)',
+                tooltip: 'Swap orientation',
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
@@ -595,13 +624,25 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                   ref.read(isDirtyProvider.notifier).state = true;
                 },
               ),
-              const SizedBox(width: 8),
-              Text(
-                '${canvasSize.width.toInt()}×${canvasSize.height.toInt()}',
-                style: const TextStyle(fontSize: 10),
+              const SizedBox(width: 4),
+              IconButton(
+                icon: Icon(
+                  Icons.grid_on,
+                  size: 16,
+                  color: ref.watch(gridVisibleProvider)
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                tooltip: 'Toggle grid',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                onPressed: () {
+                  ref.read(gridVisibleProvider.notifier).state =
+                      !ref.read(gridVisibleProvider);
+                },
               ),
             ],
-          ),
           ),
         ),
         Expanded(
@@ -648,6 +689,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                         selection: selection,
                         commands: commands,
                         canvasSize: Size(canvasSize.width, canvasSize.height),
+                        showGrid: ref.watch(gridVisibleProvider),
                         onCommandExecuted: (_) =>
                             ref.read(isDirtyProvider.notifier).state = true,
                         nodeBuilder: (node) {
@@ -658,8 +700,18 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                           final store = ref.read(canvasPreviewTelemetryProvider);
                           return buildWidget(w, _resolve(w, store));
                         },
-                        nodeWidth: (_) => kDefaultNodeWidth,
-                        nodeHeight: (_) => kDefaultNodeHeight,
+                        nodeWidth: (node) {
+                          final w = node.data as WidgetInstance?;
+                          final p = w?.properties['width']
+                              ?.mapOrNull(literal: (b) => b.value);
+                          return (p as num?)?.toDouble() ?? kDefaultNodeWidth;
+                        },
+                        nodeHeight: (node) {
+                          final h = node.data as WidgetInstance?;
+                          final p = h?.properties['height']
+                              ?.mapOrNull(literal: (b) => b.value);
+                          return (p as num?)?.toDouble() ?? kDefaultNodeHeight;
+                        },
                       ),
                     );
                   },

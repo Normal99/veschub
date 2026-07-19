@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
+import '../src/cosmetic_helpers.dart';
+
 /// Renders a `text` widget from resolved properties:
 ///  * `value`  — the bound value (num or String)
 ///  * `label`  — optional caption above the value
@@ -22,27 +24,28 @@ class TextWidget extends StatelessWidget {
     final label = properties['label'] as String?;
     final unit = properties['unit'] as String?;
     final color = (properties['color'] as int?) ?? 0xFFFFFFFF;
-    final bgColor = (properties['backgroundColor'] as int?) ?? 0xFF111111;
-    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 0.0;
     final fontSizeRaw = (properties['fontSize'] as num?) ?? 40.0;
 
     final text = _format(value);
-    final valueStyle = TextStyle(
+    final baseStyle = TextStyle(
       color: Color(color),
       fontSize: fontSizeRaw.toDouble(),
-      fontWeight: FontWeight.w600,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
-    final labelStyle = TextStyle(
-      color: Color(color).withValues(alpha: 0.7),
-      fontSize: (fontSizeRaw.toDouble() * 0.35).clamp(10, 18),
+    final valueStyle = applyTextStyle(
+      baseStyle.copyWith(fontWeight: FontWeight.w600),
+      properties,
+    );
+    final labelStyle = applyTextStyle(
+      TextStyle(
+        color: Color(color).withValues(alpha: 0.7),
+        fontSize: (fontSizeRaw.toDouble() * 0.35).clamp(10, 18),
+      ),
+      properties,
     );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(bgColor),
-        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
-      ),
+    final content = Padding(
+      padding: resolvePadding(properties),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -66,6 +69,14 @@ class TextWidget extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    return applyOpacity(
+      Container(
+        decoration: resolveBoxDecoration(properties),
+        child: content,
+      ),
+      properties,
     );
   }
 

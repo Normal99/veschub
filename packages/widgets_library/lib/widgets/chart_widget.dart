@@ -10,11 +10,11 @@ import 'dart:collection';
 import 'dart:math' as math;
 
 import 'package:dashboard_runtime/dashboard_runtime.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../src/format.dart';
 import '../src/theme.dart';
+import '../src/cosmetic_helpers.dart';
 
 /// Renders a `chart` widget from resolved properties:
 ///  * `value`   — current value (num); pushed into the history each repaint
@@ -47,8 +47,6 @@ class _ChartWidgetState extends State<ChartWidget> {
     final label = widget.properties['label'] as String?;
     final unit = widget.properties['unit'] as String?;
     final window = (widget.properties['window'] as num?)?.toInt() ?? 120;
-    final bgColor = (widget.properties['backgroundColor'] as int?) ?? 0xFF111111;
-    final borderRadiusRaw = (widget.properties['borderRadius'] as num?) ?? 0.0;
     final fontSizeRaw = (widget.properties['fontSize'] as num?) ?? 20.0;
     if (window != _maxSamples) _maxSamples = window;
 
@@ -67,44 +65,55 @@ class _ChartWidgetState extends State<ChartWidget> {
             ? 1
             : samples.reduce(math.max).toDouble().clamp(1e-9, double.infinity));
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Color(bgColor),
-        borderRadius: BorderRadius.circular(borderRadiusRaw.toDouble()),
-      ),
-      child: CustomPaint(
-        painter: _ChartPainter(
-          samples: samples,
-          min: yMin,
-          max: yMax,
-          color: color,
-          gridColor: theme.secondary.withValues(alpha: 0.2),
-        ),
+    return applyOpacity(
+      Container(
+        decoration: resolveBoxDecoration(widget.properties),
         child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (label != null)
-                Text(
-                  label,
-                  style: TextStyle(color: theme.secondary, fontSize: (fontSizeRaw.toDouble() * 0.6).clamp(9, 14)),
-                ),
-              const Spacer(),
-              if (value != null)
-                Text(
-                  '${formatNumber(value)}${unit != null ? ' $unit' : ''}',
-                  style: TextStyle(
-                    color: color,
-                    fontSize: fontSizeRaw.toDouble(),
-                    fontWeight: FontWeight.w600,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+          padding: resolvePadding(widget.properties),
+          child: CustomPaint(
+            painter: _ChartPainter(
+              samples: samples,
+              min: yMin,
+              max: yMax,
+              color: color,
+              gridColor: theme.secondary.withValues(alpha: 0.2),
+              lineWidth: (widget.properties['lineWidth'] as num?)?.toDouble() ?? 2,
+              showGrid: (widget.properties['showGrid'] as bool?) ?? true,
+              smoothCurve: (widget.properties['smoothCurve'] as bool?) ?? true,
+              fillArea: (widget.properties['fillArea'] as bool?) ?? false,
+              fillColor: (widget.properties['fillColor'] as int?) ?? 0x224FC3F7,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (label != null)
+                  Text(
+                    label,
+                    style: applyTextStyle(
+                      TextStyle(color: theme.secondary, fontSize: (fontSizeRaw.toDouble() * 0.6).clamp(9, 14)),
+                      widget.properties,
+                    ),
                   ),
-                ),
-            ],
+                const Spacer(),
+                if (value != null)
+                  Text(
+                    '${formatNumber(value)}${unit != null ? ' $unit' : ''}',
+                    style: applyTextStyle(
+                      TextStyle(
+                        color: color,
+                        fontSize: fontSizeRaw.toDouble(),
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                      widget.properties,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
+      widget.properties,
     );
   }
 }
@@ -115,6 +124,11 @@ class _ChartPainter extends CustomPainter {
   final double max;
   final Color color;
   final Color gridColor;
+  final double lineWidth;
+  final bool showGrid;
+  final bool smoothCurve;
+  final bool fillArea;
+  final int fillColor;
 
   _ChartPainter({
     required this.samples,
@@ -122,52 +136,64 @@ class _ChartPainter extends CustomPainter {
     required this.max,
     required this.color,
     required this.gridColor,
+    required this.lineWidth,
+    required this.showGrid,
+    required this.smoothCurve,
+    required this.fillArea,
+    required this.fillColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Grid: 4 horizontal lines.
-    final grid = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.5
-      ..color = gridColor;
-    for (var i = 0; i <= 4; i++) {
-      final y = size.height * i / 4;
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
+    if (showGrid) {
+      final grid = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.5
+        ..color = gridColor;
+      for (var i = 0; i <= 4; i++) {
+        final y = size.height * i / 4;
+        canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
+      }
     }
 
     if (samples.length < 2) return;
     final span = (max - min) == 0 ? 1.0 : (max - min);
 
-    // Fill under the line.
-    final fill = Paint()..color = color.withValues(alpha: 0.18);
-    final fillPath = Path();
-    final xStep = size.width / (samples.length - 1);
-    fillPath.moveTo(0, size.height);
-    for (var i = 0; i < samples.length; i++) {
-      final x = i * xStep;
-      final t = ((samples[i] - min) / span).clamp(0.0, 1.0);
-      final y = size.height * (1 - t);
-      fillPath.lineTo(x, y);
+    if (fillArea) {
+      final fill = Paint()..color = Color(fillColor);
+      final fillPath = Path();
+      final xStep = size.width / (samples.length - 1);
+      fillPath.moveTo(0, size.height);
+      for (var i = 0; i < samples.length; i++) {
+        final x = i * xStep;
+        final t = ((samples[i] - min) / span).clamp(0.0, 1.0);
+        final y = size.height * (1 - t);
+        fillPath.lineTo(x, y);
+      }
+      fillPath.lineTo(size.width, size.height);
+      fillPath.close();
+      canvas.drawPath(fillPath, fill);
     }
-    fillPath.lineTo(size.width, size.height);
-    fillPath.close();
-    canvas.drawPath(fillPath, fill);
 
-    // Line.
     final line = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
+      ..strokeWidth = lineWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..color = color;
     final linePath = Path();
+    final xStep = size.width / (samples.length - 1);
     for (var i = 0; i < samples.length; i++) {
       final x = i * xStep;
       final t = ((samples[i] - min) / span).clamp(0.0, 1.0);
       final y = size.height * (1 - t);
       if (i == 0) {
         linePath.moveTo(x, y);
+      } else if (smoothCurve && i > 1) {
+        final cx = (i - 1) * xStep;
+        final cy = size.height *
+            (1 - ((samples[i - 1] - min) / span).clamp(0.0, 1.0));
+        linePath.quadraticBezierTo(cx, cy, x, y);
       } else {
         linePath.lineTo(x, y);
       }
@@ -177,5 +203,14 @@ class _ChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _ChartPainter old) =>
-      !listEquals(old.samples, samples) || old.min != min || old.max != max;
+      old.samples != samples ||
+      old.min != min ||
+      old.max != max ||
+      old.color != color ||
+      old.gridColor != gridColor ||
+      old.lineWidth != lineWidth ||
+      old.showGrid != showGrid ||
+      old.smoothCurve != smoothCurve ||
+      old.fillArea != fillArea ||
+      old.fillColor != fillColor;
 }
