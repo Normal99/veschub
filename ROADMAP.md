@@ -48,21 +48,25 @@ Last updated: 2026-07-19
 ## Milestone 4: Dashboard Viewer Polish 🚧
 
 - [ ] [P1] Telemetry ingestion for remaining 4 keys (foc.id, foc.iq)
-- [ ] [P1] Per-widget size from document (schema v3 migration)
+- [x] [P1] Per-widget size from document (via properties approach, no schema migration)
 - [ ] [P2] Dark / light theme obeying widget background colors
 - [ ] [P2] Metric / imperial unit conversion (per-widget, not global)
 - [ ] [P3] Dashboard app display modes: fullscreen, splitscreen, Pi-optimized
 
 ## Milestone 5: Studio Polish 🚧
 
-- [ ] [P0] Grid layout + snap (toggleable grid overlay, snap-to-grid)
-- [ ] [P0] Canvas custom width/height input (replace HD/FHD/QHD presets)
-- [ ] [P0] Widgets opaque by default with configurable background color
-- [ ] [P1] Widget borders / shadows (property manifest extension)
-- [ ] [P1] More gauge properties: tick count, sweep angle, needle style, color stops
-- [ ] [P1] More font properties: fontWeight, fontFamily, letterSpacing, textAlign
+- [x] [P0] Grid layout + snap (toggleable grid overlay, magnetic edge snap to grid + canvas center/boundaries)
+- [x] [P0] Canvas custom width/height input (WxH text fields replace HD/FHD/QHD presets)
+- [x] [P0] Widgets opaque by default with configurable background color
+- [x] [P1] Widget borders / shadows (borderWidth, borderColor, shadowColor, shadowBlur, shadowOffsetY)
+- [x] [P1] More gauge properties: tickCount, sweepAngle, startAngle, arcWidth, needleStyle
+- [x] [P1] More chart properties: lineWidth, showGrid, gridColor, smoothCurve, fillArea, fillColor
+- [x] [P1] More font properties: fontWeight, letterSpacing
+- [x] [P1] More cosmetic: opacity, padding, width, height, visible — across all 7 widget kinds
+- [ ] [P1] Rotation handle on canvas + rotation property
+- [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
 - [ ] [P1] Multiple selection with group operations
-- [ ] [P2] Layer panel: reorder widgets by z-height, visibility toggle
+- [x] [P2] Layer panel: reorder widgets by z-height, visibility toggle
 - [ ] [P2] Cut / copy / paste between dashboards
 - [ ] [P2] Keyboard shortcuts (delete, copy, undo, redo)
 - [ ] [P3] Dashboard description rich text / markdown
