@@ -48,6 +48,7 @@ const List<PropertyMeta> _gauge = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _bar = [
@@ -68,6 +69,7 @@ const List<PropertyMeta> _bar = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _text = [
@@ -87,6 +89,7 @@ const List<PropertyMeta> _text = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _status = [
@@ -105,6 +108,7 @@ const List<PropertyMeta> _status = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _chart = [
@@ -133,6 +137,7 @@ const List<PropertyMeta> _chart = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _image = [
@@ -164,6 +169,7 @@ const List<PropertyMeta> _web = [
   PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
   PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
   PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
 const List<PropertyMeta> _paint = [

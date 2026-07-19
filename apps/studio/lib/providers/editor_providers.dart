@@ -72,6 +72,11 @@ final gridVisibleProvider = StateProvider<bool>((ref) {
   return false;
 });
 
+/// Toggles between the properties inspector and the layer panel.
+final layersVisibleProvider = StateProvider<bool>((ref) {
+  return false;
+});
+
 /// The name of the dashboard being edited (for save).
 final dashboardNameProvider = StateProvider<String>((ref) {
   return 'Untitled';

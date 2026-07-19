@@ -23,6 +23,7 @@ import '../providers/editor_providers.dart';
 import '../widgets/simple_color_picker.dart';
 import 'flow_mode.dart';
 import 'template_mode.dart';
+import 'layer_panel.dart';
 
 /// A starter paint program for newly dropped `paint` widgets: a fixed track
 /// circle with a filled circle whose radius is driven by the `$r` variable.
@@ -90,6 +91,16 @@ class StudioEditor extends ConsumerWidget {
             onPressed: () => Navigator.of(context).pushNamed('/settings'),
             tooltip: 'Settings',
           ),
+          IconButton(
+            icon: Icon(
+              ref.watch(layersVisibleProvider) ? Icons.layers_clear : Icons.layers,
+            ),
+            onPressed: () {
+              ref.read(layersVisibleProvider.notifier).state =
+                  !ref.read(layersVisibleProvider);
+            },
+            tooltip: 'Toggle layer panel',
+          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
@@ -133,9 +144,11 @@ class StudioEditor extends ConsumerWidget {
             children: [
               const _WidgetPalette(),
               Expanded(child: _CanvasArea()),
-              const SizedBox(
+              SizedBox(
                 width: 280,
-                child: _PropertiesInspector(),
+                child: ref.watch(layersVisibleProvider)
+                    ? const LayerPanel()
+                    : const _PropertiesInspector(),
               ),
             ],
           ),
