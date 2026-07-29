@@ -80,45 +80,45 @@ class _CarVizPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height * 0.6;
     final carWidth = size.width * 0.35;
-    final carHeight = size.height * 0.55;
+    final carHeight = size.height * 0.5;
 
-    // Draw lane lines (converging perspective)
+    // Draw lane lines (subtle converging perspective)
     final lanePaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = color.withValues(alpha: 0.3);
+      ..strokeWidth = 1.5
+      ..color = color.withValues(alpha: 0.25);
 
-    final laneOffset = carWidth * 3;
+    final laneOffset = carWidth * 2.5;
     canvas.drawLine(
-      Offset(cx - laneOffset, size.height * 0.95),
-      Offset(cx - laneOffset * 0.3, size.height * 0.05),
+      Offset(cx - laneOffset, size.height * 0.9),
+      Offset(cx - laneOffset * 0.6, size.height * 0.1),
       lanePaint,
     );
     canvas.drawLine(
-      Offset(cx + laneOffset, size.height * 0.95),
-      Offset(cx + laneOffset * 0.3, size.height * 0.05),
+      Offset(cx + laneOffset, size.height * 0.9),
+      Offset(cx + laneOffset * 0.6, size.height * 0.1),
       lanePaint,
     );
 
     if (laneLeft) {
       final lp = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
+        ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx - laneOffset, size.height * 0.95),
-        Offset(cx - laneOffset * 0.3, size.height * 0.05),
+        Offset(cx - laneOffset, size.height * 0.9),
+        Offset(cx - laneOffset * 0.6, size.height * 0.1),
         lp,
       );
     }
     if (laneRight) {
       final rp = Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
+        ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx + laneOffset, size.height * 0.95),
-        Offset(cx + laneOffset * 0.3, size.height * 0.05),
+        Offset(cx + laneOffset, size.height * 0.9),
+        Offset(cx + laneOffset * 0.6, size.height * 0.1),
         rp,
       );
     }
@@ -128,40 +128,40 @@ class _CarVizPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..color = color;
     
-    // Main body - rounded rectangle with Tesla-like shape (longer, sleeker)
+    // Main body - rounded rectangle with Tesla-like shape
     final bodyRect = RRect.fromRectAndCorners(
       Rect.fromCenter(center: Offset(cx, cy), width: carWidth, height: carHeight),
-      topLeft: const Radius.circular(20),
-      topRight: const Radius.circular(20),
-      bottomLeft: const Radius.circular(14),
-      bottomRight: const Radius.circular(14),
+      topLeft: const Radius.circular(18),
+      topRight: const Radius.circular(18),
+      bottomLeft: const Radius.circular(12),
+      bottomRight: const Radius.circular(12),
     );
     canvas.drawRRect(bodyRect, carPaint);
 
-    // Windshield (top section) - darker, larger for Tesla look
+    // Windshield (top section) - darker
     final windshieldPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF080808);
+      ..color = const Color(0xFF0a0a0a);
     final windshieldRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy - carHeight * 0.37),
-        width: carWidth * 0.95,
-        height: carHeight * 0.32,
+        center: Offset(cx, cy - carHeight * 0.35),
+        width: carWidth * 0.92,
+        height: carHeight * 0.28,
       ),
-      topLeft: const Radius.circular(12),
-      topRight: const Radius.circular(12),
+      topLeft: const Radius.circular(10),
+      topRight: const Radius.circular(10),
     );
     canvas.drawRRect(windshieldRect, windshieldPaint);
 
     // Rear window (bottom section) - darker
     final rearRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy + carHeight * 0.37),
-        width: carWidth * 0.95,
-        height: carHeight * 0.26,
+        center: Offset(cx, cy + carHeight * 0.35),
+        width: carWidth * 0.92,
+        height: carHeight * 0.24,
       ),
-      bottomLeft: const Radius.circular(10),
-      bottomRight: const Radius.circular(10),
+      bottomLeft: const Radius.circular(8),
+      bottomRight: const Radius.circular(8),
     );
     canvas.drawRRect(rearRect, windshieldPaint);
 
