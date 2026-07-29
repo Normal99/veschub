@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:paint_dsl/paint_dsl.dart';
 import 'package:node_graph/node_graph.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
@@ -244,41 +245,19 @@ class StudioEditor extends ConsumerWidget {
   }
 
   Future<void> _importJson(BuildContext context, WidgetRef ref) async {
-    // Uses file_picker when available; falls back to listing .veschub.json
-    // files in the documents directory.
-    final dir = await getApplicationDocumentsDirectory();
-    final files = dir
-        .listSync()
-        .whereType<File>()
-        .where((f) => f.path.endsWith('.veschub.json'))
-        .toList();
-
-    if (!context.mounted) return;
-
-    if (files.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No .veschub.json files found in documents')),
-      );
-      return;
-    }
-
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Import .veschub.json'),
-        children: [
-          for (final f in files)
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(ctx).pop(f.path),
-              child: Text(f.uri.pathSegments.last),
-            ),
-        ],
-      ),
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      allowMultiple: false,
     );
-    if (selected == null || !context.mounted) return;
+
+    if (result == null || result.files.isEmpty || !context.mounted) return;
+
+    final path = result.files.single.path;
+    if (path == null) return;
 
     try {
-      final raw = await File(selected).readAsString();
+      final raw = await File(path).readAsString();
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final migrated = migrate(json);
       final doc = DashboardDocument.fromJson(migrated);
