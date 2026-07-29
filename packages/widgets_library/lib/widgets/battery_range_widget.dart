@@ -22,8 +22,8 @@ class BatteryRangeWidget extends StatelessWidget {
     final unit = properties['unit'] as String? ?? 'km';
     final tempUnit = properties['tempUnit'] as String? ?? '°C';
 
-    final barWidth = 280.0;
-    final barHeight = 48.0;
+    final barWidth = 320.0;
+    final barHeight = 56.0;
     final filledWidth = barWidth * batteryLevel.clamp(0.0, 1.0);
 
     return applyOpacity(
@@ -39,7 +39,7 @@ class BatteryRangeWidget extends StatelessWidget {
                 height: barHeight,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -48,13 +48,13 @@ class BatteryRangeWidget extends StatelessWidget {
                     height: barHeight,
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
               ),
               if (showRange) ...[
-                const SizedBox(width: 28),
+                const SizedBox(width: 32),
                 Text(
                   '${range.round()} $unit',
                   style: TextStyle(
@@ -66,7 +66,7 @@ class BatteryRangeWidget extends StatelessWidget {
                 ),
               ],
               if (showTemperature && temperature != null) ...[
-                const SizedBox(width: 32),
+                const SizedBox(width: 36),
                 Text(
                   '${temperature.round()}$tempUnit',
                   style: TextStyle(
