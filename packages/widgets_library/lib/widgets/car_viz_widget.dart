@@ -1,6 +1,5 @@
 library;
 
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import '../src/cosmetic_helpers.dart';
@@ -79,24 +78,24 @@ class _CarVizPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height * 0.6;
-    final carWidth = size.width * 0.35;
-    final carHeight = size.height * 0.52;
+    final carWidth = size.width * 0.45;
+    final carHeight = size.height * 0.6;
 
-    // Draw lane lines (subtle converging perspective)
+    // Draw lane lines (subtle converging perspective) - only on left side
     final lanePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..color = color.withValues(alpha: 0.2);
 
-    final laneOffset = carWidth * 2.5;
+    final laneOffset = carWidth * 1.8;
     canvas.drawLine(
-      Offset(cx - laneOffset, size.height * 0.9),
-      Offset(cx - laneOffset * 0.6, size.height * 0.1),
+      Offset(cx - laneOffset, size.height * 0.85),
+      Offset(cx - laneOffset * 0.7, size.height * 0.15),
       lanePaint,
     );
     canvas.drawLine(
-      Offset(cx + laneOffset, size.height * 0.9),
-      Offset(cx + laneOffset * 0.6, size.height * 0.1),
+      Offset(cx + laneOffset, size.height * 0.85),
+      Offset(cx + laneOffset * 0.7, size.height * 0.15),
       lanePaint,
     );
 
@@ -106,8 +105,8 @@ class _CarVizPainter extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx - laneOffset, size.height * 0.9),
-        Offset(cx - laneOffset * 0.6, size.height * 0.1),
+        Offset(cx - laneOffset, size.height * 0.85),
+        Offset(cx - laneOffset * 0.7, size.height * 0.15),
         lp,
       );
     }
@@ -117,8 +116,8 @@ class _CarVizPainter extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx + laneOffset, size.height * 0.9),
-        Offset(cx + laneOffset * 0.6, size.height * 0.1),
+        Offset(cx + laneOffset, size.height * 0.85),
+        Offset(cx + laneOffset * 0.7, size.height * 0.15),
         rp,
       );
     }
@@ -131,37 +130,37 @@ class _CarVizPainter extends CustomPainter {
     // Main body - rounded rectangle with Tesla-like shape (longer, sleeker)
     final bodyRect = RRect.fromRectAndCorners(
       Rect.fromCenter(center: Offset(cx, cy), width: carWidth, height: carHeight),
-      topLeft: const Radius.circular(18),
-      topRight: const Radius.circular(18),
-      bottomLeft: const Radius.circular(12),
-      bottomRight: const Radius.circular(12),
+      topLeft: const Radius.circular(24),
+      topRight: const Radius.circular(24),
+      bottomLeft: const Radius.circular(18),
+      bottomRight: const Radius.circular(18),
     );
     canvas.drawRRect(bodyRect, carPaint);
 
     // Windshield (top section) - darker, larger for Tesla look
     final windshieldPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF060606);
+      ..color = const Color(0xFF020202);
     final windshieldRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy - carHeight * 0.35),
-        width: carWidth * 0.92,
-        height: carHeight * 0.28,
+        center: Offset(cx, cy - carHeight * 0.38),
+        width: carWidth * 0.96,
+        height: carHeight * 0.34,
       ),
-      topLeft: const Radius.circular(10),
-      topRight: const Radius.circular(10),
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
     );
     canvas.drawRRect(windshieldRect, windshieldPaint);
 
     // Rear window (bottom section) - darker
     final rearRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy + carHeight * 0.35),
-        width: carWidth * 0.92,
-        height: carHeight * 0.24,
+        center: Offset(cx, cy + carHeight * 0.38),
+        width: carWidth * 0.96,
+        height: carHeight * 0.3,
       ),
-      bottomLeft: const Radius.circular(8),
-      bottomRight: const Radius.circular(8),
+      bottomLeft: const Radius.circular(14),
+      bottomRight: const Radius.circular(14),
     );
     canvas.drawRRect(rearRect, windshieldPaint);
 
@@ -209,10 +208,10 @@ class _CarVizPainter extends CustomPainter {
           width: carWidth * 0.7,
           height: carHeight * 0.9,
         ),
-        topLeft: const Radius.circular(14),
-        topRight: const Radius.circular(14),
-        bottomLeft: const Radius.circular(10),
-        bottomRight: const Radius.circular(10),
+        topLeft: const Radius.circular(20),
+        topRight: const Radius.circular(20),
+        bottomLeft: const Radius.circular(16),
+        bottomRight: const Radius.circular(16),
       );
       canvas.drawRRect(aheadRect, aheadPaint);
     }
