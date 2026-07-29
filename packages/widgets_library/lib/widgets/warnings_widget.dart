@@ -62,13 +62,12 @@ class WarningsWidget extends StatelessWidget {
         'controller' || 'esc' => Icons.memory,
         'brake' => Icons.warning,
         'tire' || 'pressure' => Icons.tire_repair,
-        'belt' => Icons.settings,
+        'belt' || 'seatbelt' => Icons.airline_seat_recline_extra,
         'fault' || 'error' => Icons.error_outline,
         'signal' => Icons.signal_wifi_bad,
         'gps' => Icons.gps_off,
         'lights' => Icons.lightbulb_outline,
-        'door' => Icons.meeting_room,
-        'seatbelt' => Icons.airline_seat_recline_extra,
+        'door' => Icons.door_back_door,
         'oil' => Icons.oil_barrel,
         'engine' || 'check' => Icons.build_circle,
         _ => Icons.warning_amber,
@@ -77,6 +76,7 @@ class WarningsWidget extends StatelessWidget {
   Color _colorFor(String type, Color error, Color warning, Color info) {
     if (type == 'fault' || type == 'error' || type == 'motor' || type == 'brake') return error;
     if (type == 'temp' || type == 'battery' || type == 'oil' || type == 'engine') return warning;
+    if (type == 'door' || type == 'seatbelt' || type == 'belt') return info;
     return info;
   }
 }

@@ -27,33 +27,38 @@ class TripStatsWidget extends StatelessWidget {
     final columns = (properties['columns'] as num?)?.toInt() ?? 2;
     final fontSizeRaw = (properties['fontSize'] as num?) ?? 20.0;
 
-    final items = <_StatItem>[
-      _StatItem(label1, value1, unit1),
-      _StatItem(label2, value2, unit2),
-      _StatItem(label3, value3, unit3),
-      _StatItem(label4, value4, unit4),
-    ];
+    final items = <_StatItem>[];
+    if (label1.isNotEmpty) items.add(_StatItem(label1, value1, unit1));
+    if (label2.isNotEmpty) items.add(_StatItem(label2, value2, unit2));
+    if (label3.isNotEmpty) items.add(_StatItem(label3, value3, unit3));
+    if (label4.isNotEmpty) items.add(_StatItem(label4, value4, unit4));
 
     return applyOpacity(
       Container(
         decoration: resolveBoxDecoration(properties),
         child: Padding(
           padding: resolvePadding(properties),
-          child: GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: columns,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: columns == 2 ? 1.8 : 1.4,
-            children: items.map((item) => _StatTile(
-              label: item.label,
-              value: _format(item.value),
-              unit: item.unit,
-              color: color,
-              accent: accent,
-              fontSize: fontSizeRaw.toDouble(),
-              properties: properties,
-            )).toList(),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final itemHeight = constraints.maxHeight / ((items.length / columns).ceil());
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: items.map((item) => SizedBox(
+                  width: (constraints.maxWidth - 8) / columns,
+                  height: itemHeight - 8,
+                  child: _StatTile(
+                    label: item.label,
+                    value: _format(item.value),
+                    unit: item.unit,
+                    color: color,
+                    accent: accent,
+                    fontSize: fontSizeRaw.toDouble(),
+                    properties: properties,
+                  ),
+                )).toList(),
+              );
+            },
           ),
         ),
       ),

@@ -275,6 +275,7 @@ class _GaugePainter extends CustomPainter {
               style: TextStyle(color: tickLabelColor, fontSize: 9),
             ),
             textAlign: TextAlign.center,
+            textDirection: TextDirection.ltr,
           )..layout();
           text.paint(canvas, lp - Offset(text.width / 2, text.height / 2));
         }
