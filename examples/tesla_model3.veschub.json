@@ -27,9 +27,9 @@
         "showTickLabels": {"type": "literal", "value": true},
         "backgroundColor": {"type": "literal", "value": 0},
         "borderRadius": {"type": "literal", "value": 0},
-        "fontSize": {"type": "literal", "value": 280},
-        "padding": {"type": "literal", "value": 100},
-        "width": {"type": "literal", "value": 960},
+        "fontSize": {"type": "literal", "value": 360},
+        "padding": {"type": "literal", "value": 120},
+        "width": {"type": "literal", "value": 1000},
         "height": {"type": "literal", "value": 900}
       },
       "level": "basic"

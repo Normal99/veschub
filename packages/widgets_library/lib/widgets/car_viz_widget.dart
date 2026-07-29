@@ -80,13 +80,13 @@ class _CarVizPainter extends CustomPainter {
     final cx = size.width / 2;
     final cy = size.height * 0.6;
     final carWidth = size.width * 0.35;
-    final carHeight = size.height * 0.5;
+    final carHeight = size.height * 0.52;
 
     // Draw lane lines (subtle converging perspective)
     final lanePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
-      ..color = color.withValues(alpha: 0.25);
+      ..color = color.withValues(alpha: 0.2);
 
     final laneOffset = carWidth * 2.5;
     canvas.drawLine(
@@ -128,7 +128,7 @@ class _CarVizPainter extends CustomPainter {
       ..style = PaintingStyle.fill
       ..color = color;
     
-    // Main body - rounded rectangle with Tesla-like shape
+    // Main body - rounded rectangle with Tesla-like shape (longer, sleeker)
     final bodyRect = RRect.fromRectAndCorners(
       Rect.fromCenter(center: Offset(cx, cy), width: carWidth, height: carHeight),
       topLeft: const Radius.circular(18),
@@ -138,10 +138,10 @@ class _CarVizPainter extends CustomPainter {
     );
     canvas.drawRRect(bodyRect, carPaint);
 
-    // Windshield (top section) - darker
+    // Windshield (top section) - darker, larger for Tesla look
     final windshieldPaint = Paint()
       ..style = PaintingStyle.fill
-      ..color = const Color(0xFF0a0a0a);
+      ..color = const Color(0xFF060606);
     final windshieldRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
         center: Offset(cx, cy - carHeight * 0.35),

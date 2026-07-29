@@ -22,7 +22,7 @@ class BatteryRangeWidget extends StatelessWidget {
     final unit = properties['unit'] as String? ?? 'km';
     final tempUnit = properties['tempUnit'] as String? ?? '°C';
 
-    final barWidth = 320.0;
+    final barWidth = 360.0;
     final barHeight = 56.0;
     final filledWidth = barWidth * batteryLevel.clamp(0.0, 1.0);
 
@@ -39,7 +39,7 @@ class BatteryRangeWidget extends StatelessWidget {
                 height: barHeight,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Align(
                   alignment: Alignment.centerLeft,
@@ -48,7 +48,7 @@ class BatteryRangeWidget extends StatelessWidget {
                     height: barHeight,
                     decoration: BoxDecoration(
                       color: color,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                 ),
