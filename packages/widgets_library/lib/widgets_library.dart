@@ -9,13 +9,24 @@ import 'package:flutter/widgets.dart';
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
+import 'widgets/appgrid_widget.dart';
 import 'widgets/bar_widget.dart';
+import 'widgets/car_viz_widget.dart';
 import 'widgets/chart_widget.dart';
+import 'widgets/climate_widget.dart';
+import 'widgets/digitalspeed_widget.dart';
 import 'widgets/gauge_widget.dart';
 import 'widgets/image_widget.dart';
+import 'widgets/map_widget.dart';
+import 'widgets/minigauge_widget.dart';
+import 'widgets/music_widget.dart';
 import 'widgets/paint_widget.dart';
+import 'widgets/power_widget.dart';
 import 'widgets/status_widget.dart';
+import 'widgets/statusbar_widget.dart';
 import 'widgets/text_widget.dart';
+import 'widgets/tripstats_widget.dart';
+import 'widgets/warnings_widget.dart';
 import 'widgets/web_widget.dart';
 
 export 'src/format.dart';
@@ -76,6 +87,61 @@ final Map<String, WidgetKind> builtInWidgets = {
     id: 'paint',
     level: CapabilityLevel.expert,
     render: (p) => PaintWidget(properties: p),
+  ),
+  'digitalspeed': WidgetKind(
+    id: 'digitalspeed',
+    level: CapabilityLevel.basic,
+    render: (p) => DigitalSpeedWidget(properties: p),
+  ),
+  'music': WidgetKind(
+    id: 'music',
+    level: CapabilityLevel.basic,
+    render: (p) => MusicWidget(properties: p),
+  ),
+  'tripstats': WidgetKind(
+    id: 'tripstats',
+    level: CapabilityLevel.basic,
+    render: (p) => TripStatsWidget(properties: p),
+  ),
+  'power': WidgetKind(
+    id: 'power',
+    level: CapabilityLevel.basic,
+    render: (p) => PowerWidget(properties: p),
+  ),
+  'warnings': WidgetKind(
+    id: 'warnings',
+    level: CapabilityLevel.basic,
+    render: (p) => WarningsWidget(properties: p),
+  ),
+  'minigauge': WidgetKind(
+    id: 'minigauge',
+    level: CapabilityLevel.basic,
+    render: (p) => MiniGaugeWidget(properties: p),
+  ),
+  'appgrid': WidgetKind(
+    id: 'appgrid',
+    level: CapabilityLevel.basic,
+    render: (p) => AppGridWidget(properties: p),
+  ),
+  'statusbar': WidgetKind(
+    id: 'statusbar',
+    level: CapabilityLevel.basic,
+    render: (p) => StatusBarWidget(properties: p),
+  ),
+  'climate': WidgetKind(
+    id: 'climate',
+    level: CapabilityLevel.basic,
+    render: (p) => ClimateWidget(properties: p),
+  ),
+  'car_viz': WidgetKind(
+    id: 'car_viz',
+    level: CapabilityLevel.advanced,
+    render: (p) => CarVizWidget(properties: p),
+  ),
+  'map': WidgetKind(
+    id: 'map',
+    level: CapabilityLevel.advanced,
+    render: (p) => MapWidget(properties: p),
   ),
 };
 

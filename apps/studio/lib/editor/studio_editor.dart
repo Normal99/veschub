@@ -600,6 +600,138 @@ class _WidgetPalette extends ConsumerWidget {
         props: {},
       ),
     ],
+    'digitalspeed': [
+      (
+        name: 'Tesla Style',
+        icon: Icons.speed,
+        props: {'value': T('erpm'), 'unit': L('km/h'), 'fontSize': L(72), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'showUnit': L(true), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'padding': L(16), 'fontWeight': L('w200')},
+      ),
+      (
+        name: 'Compact',
+        icon: Icons.speed,
+        props: {'value': T('erpm'), 'unit': L('mph'), 'fontSize': L(48), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'showUnit': L(true), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(12)},
+      ),
+      (
+        name: 'With Sub',
+        icon: Icons.speed,
+        props: {'value': T('erpm'), 'unit': L('km/h'), 'fontSize': L(64), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'showUnit': L(true), 'subLabel': L('Range'), 'subValue': T('battery_pct'), 'backgroundColor': L(0xFF0A0A0A), 'borderRadius': L(0), 'padding': L(16)},
+      ),
+    ],
+    'music': [
+      (
+        name: 'Player',
+        icon: Icons.music_note,
+        props: {'title': L('Track Name'), 'artist': L('Artist'), 'progress': L(30), 'duration': L(180), 'showControls': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'albumColor': L(0xFF333333), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(12), 'padding': L(12)},
+      ),
+      (
+        name: 'Mini',
+        icon: Icons.music_note,
+        props: {'title': L('Now Playing'), 'artist': L('Artist'), 'showControls': L(false), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'albumColor': L(0xFF444444), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'padding': L(8)},
+      ),
+    ],
+    'tripstats': [
+      (
+        name: 'Trip Info',
+        icon: Icons.info_outline,
+        props: {'label1': L('Distance'), 'value1': T('trip_distance'), 'unit1': L('km'), 'label2': L('Time'), 'value2': T('trip_time'), 'unit2': L('min'), 'label3': L('Avg Speed'), 'value3': T('avg_speed'), 'unit3': L('km/h'), 'label4': L('Energy'), 'value4': T('energy_used'), 'unit4': L('Wh'), 'columns': L(2), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'fontSize': L(20), 'padding': L(12)},
+      ),
+      (
+        name: 'Compact',
+        icon: Icons.info_outline,
+        props: {'label1': L('ODO'), 'value1': T('odometer'), 'unit1': L('km'), 'label2': L('Trip'), 'value2': T('trip_distance'), 'unit2': L('km'), 'label3': L('Max'), 'value3': T('max_speed'), 'unit3': L('km/h'), 'label4': L('Avg'), 'value4': T('avg_speed'), 'unit4': L('km/h'), 'columns': L(2), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF0A0A14), 'borderRadius': L(6), 'fontSize': L(16), 'padding': L(8)},
+      ),
+    ],
+    'power': [
+      (
+        name: 'Power Meter',
+        icon: Icons.bolt,
+        props: {'power': T('power'), 'maxPower': L(10000), 'color': L(0xFF00FF88), 'regenColor': L(0xFF4488FF), 'accent': L(0xFF888888), 'showBars': L(true), 'label': L('Power'), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(28), 'padding': L(12)},
+      ),
+      (
+        name: 'Simple',
+        icon: Icons.bolt,
+        props: {'power': T('power'), 'maxPower': L(5000), 'color': L(0xFFFF9800), 'regenColor': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'showBars': L(false), 'label': L('Watts'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'fontSize': L(24), 'padding': L(8)},
+      ),
+    ],
+    'warnings': [
+      (
+        name: 'Warning Icons',
+        icon: Icons.warning,
+        props: {'activeWarnings': L('temp,battery'), 'color': L(0xFFFF4444), 'warningColor': L(0xFFFFAA00), 'infoColor': L(0xFF4488FF), 'iconSize': L(24), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(8), 'padding': L(8)},
+      ),
+      (
+        name: 'Status',
+        icon: Icons.check_circle,
+        props: {'activeWarnings': L(''), 'color': L(0xFF00CC66), 'warningColor': L(0xFFFFAA00), 'infoColor': L(0xFF4488FF), 'iconSize': L(20), 'backgroundColor': L(0x00000000), 'borderRadius': L(0), 'padding': L(4)},
+      ),
+    ],
+    'minigauge': [
+      (
+        name: 'Battery',
+        icon: Icons.battery_full,
+        props: {'value': T('battery_pct'), 'min': L(0), 'max': L(100), 'label': L('Battery'), 'unit': L('%'), 'icon': L('battery'), 'style': L('arc'), 'color': L(0xFF00CC66), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'fontSize': L(16), 'padding': L(8)},
+      ),
+      (
+        name: 'Temp Bar',
+        icon: Icons.thermostat,
+        props: {'value': T('temp.mosfet'), 'min': L(0), 'max': L(100), 'label': L('Temp'), 'unit': L('°C'), 'icon': L('temp'), 'style': L('bar'), 'color': L(0xFFFF5722), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(6), 'fontSize': L(14), 'padding': L(6)},
+      ),
+      (
+        name: 'Fuel',
+        icon: Icons.local_gas_station,
+        props: {'value': T('battery_pct'), 'min': L(0), 'max': L(100), 'label': L('Fuel'), 'unit': L('%'), 'icon': L('fuel'), 'style': L('arc'), 'color': L(0xFFFF9800), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(14), 'padding': L(8)},
+      ),
+    ],
+    'appgrid': [
+      (
+        name: 'CarPlay',
+        icon: Icons.apps,
+        props: {'apps': L('phone,music,maps,messages,settings,weather,clock,calculator'), 'columns': L(4), 'iconSize': L(28), 'showLabels': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'padding': L(16)},
+      ),
+      (
+        name: 'Compact',
+        icon: Icons.apps,
+        props: {'apps': L('phone,music,maps,settings'), 'columns': L(2), 'iconSize': L(24), 'showLabels': L(false), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(12)},
+      ),
+    ],
+    'statusbar': [
+      (
+        name: 'Top Bar',
+        icon: Icons.bar_chart,
+        props: {'time': L('12:34'), 'battery': L(0.85), 'signal': L(0.75), 'showTime': L(true), 'showBattery': L(true), 'showSignal': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'fontSize': L(13), 'padding': L(8)},
+      ),
+      (
+        name: 'Minimal',
+        icon: Icons.bar_chart,
+        props: {'time': L(''), 'battery': L(0.5), 'signal': L(0.5), 'showTime': L(false), 'showBattery': L(true), 'showSignal': L(false), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0x00000000), 'borderRadius': L(0), 'fontSize': L(12), 'padding': L(4)},
+      ),
+    ],
+    'climate': [
+      (
+        name: 'Temperature',
+        icon: Icons.thermostat,
+        props: {'temperature': L(22), 'targetTemp': L(23), 'fanSpeed': L(0.5), 'mode': L('auto'), 'unit': L('°C'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(12), 'fontSize': L(32), 'padding': L(16)},
+      ),
+      (
+        name: 'Compact',
+        icon: Icons.thermostat,
+        props: {'temperature': L(20), 'mode': L('cool'), 'unit': L('°F'), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(24), 'padding': L(12)},
+      ),
+    ],
+    'car_viz': [
+      (
+        name: 'Lane Assist',
+        icon: Icons.directions_car,
+        props: {'laneLeft': L(false), 'laneRight': L(false), 'carAhead': L(false), 'label': L('Lane Keep'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF4488FF), 'backgroundColor': L(0xFF0A0A14), 'borderRadius': L(8), 'padding': L(8)},
+      ),
+    ],
+    'map': [
+      (
+        name: 'Navigation',
+        icon: Icons.map,
+        props: {'label': L('Navigation'), 'eta': L('15 min'), 'distance': L('8.2 km'), 'nextTurn': L('Turn right'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF4488FF), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(8)},
+      ),
+    ],
   };
 
   /// Build a gauge template: dial geometry + container cosmetics.
@@ -621,10 +753,27 @@ class _WidgetPalette extends ConsumerWidget {
   };
 
   static IconData _kindIcon(String kind) => switch (kind) {
-    'gauge' => Icons.speed, 'bar' => Icons.bar_chart, 'text' => Icons.text_fields,
-    'chart' => Icons.show_chart, 'status' => Icons.info_outline, 'image' => Icons.image,
-    'web' => Icons.public, 'paint' => Icons.brush, _ => Icons.widgets,
-  };
+        'gauge' => Icons.speed,
+        'bar' => Icons.bar_chart,
+        'text' => Icons.text_fields,
+        'chart' => Icons.show_chart,
+        'status' => Icons.info_outline,
+        'image' => Icons.image,
+        'web' => Icons.public,
+        'paint' => Icons.brush,
+        'digitalspeed' => Icons.speed,
+        'music' => Icons.music_note,
+        'tripstats' => Icons.info_outline,
+        'power' => Icons.bolt,
+        'warnings' => Icons.warning,
+        'minigauge' => Icons.tune,
+        'appgrid' => Icons.apps,
+        'statusbar' => Icons.bar_chart,
+        'climate' => Icons.thermostat,
+        'car_viz' => Icons.directions_car,
+        'map' => Icons.map,
+        _ => Icons.widgets,
+      };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
