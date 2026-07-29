@@ -1,0 +1,204 @@
+{
+  "version": 2,
+  "name": "VESC Mobile",
+  "description": "Phone-sized VESC dashboard with gauges, bars, and charts for mobile viewing",
+  "canvas": {"width": 480.0, "height": 800.0},
+  "widgets": [
+    {
+      "id": "statusbar",
+      "kind": "statusbar",
+      "transform": [1, 0, 0, 1, 0, 0],
+      "z": 20,
+      "properties": {
+        "time": {"type": "literal", "value": "12:34"},
+        "battery": {"type": "literal", "value": 0.85},
+        "signal": {"type": "literal", "value": 0.75},
+        "showTime": {"type": "literal", "value": true},
+        "showBattery": {"type": "literal", "value": true},
+        "showSignal": {"type": "literal", "value": true},
+        "color": {"type": "literal", "value": 4294967295},
+        "accent": {"type": "literal", "value": 4286611584},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "fontSize": {"type": "literal", "value": 12},
+        "padding": {"type": "literal", "value": 6},
+        "width": {"type": "literal", "value": 480},
+        "height": {"type": "literal", "value": 28}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "speed",
+      "kind": "digitalspeed",
+      "transform": [1, 0, 0, 1, 40, 40],
+      "z": 10,
+      "properties": {
+        "value": {"type": "telemetry", "key": "erpm"},
+        "unit": {"type": "literal", "value": "km/h"},
+        "fontSize": {"type": "literal", "value": 64},
+        "color": {"type": "literal", "value": 4294967295},
+        "accent": {"type": "literal", "value": 4286611584},
+        "showUnit": {"type": "literal", "value": true},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 12},
+        "padding": {"type": "literal", "value": 16},
+        "fontWeight": {"type": "literal", "value": "w300"},
+        "width": {"type": "literal", "value": 400},
+        "height": {"type": "literal", "value": 120}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "rpm_gauge",
+      "kind": "gauge",
+      "transform": [1, 0, 0, 1, 40, 180],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "erpm"},
+        "min": {"type": "literal", "value": 0},
+        "max": {"type": "literal", "value": 30000},
+        "label": {"type": "literal", "value": "RPM"},
+        "color": {"type": "literal", "value": 4283712247},
+        "accent": {"type": "literal", "value": 4286611584},
+        "tickCount": {"type": "literal", "value": 10},
+        "sweepAngle": {"type": "literal", "value": 270},
+        "startAngle": {"type": "literal", "value": 135},
+        "arcWidth": {"type": "literal", "value": 8},
+        "needleStyle": {"type": "literal", "value": "arc"},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 12},
+        "fontSize": {"type": "literal", "value": 20},
+        "padding": {"type": "literal", "value": 12},
+        "width": {"type": "literal", "value": 190},
+        "height": {"type": "literal", "value": 200}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "battery_gauge",
+      "kind": "gauge",
+      "transform": [1, 0, 0, 1, 250, 180],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "battery_pct"},
+        "min": {"type": "literal", "value": 0},
+        "max": {"type": "literal", "value": 100},
+        "label": {"type": "literal", "value": "Battery"},
+        "unit": {"type": "literal", "value": "%"},
+        "color": {"type": "literal", "value": 4278255208},
+        "accent": {"type": "literal", "value": 4286611584},
+        "tickCount": {"type": "literal", "value": 10},
+        "sweepAngle": {"type": "literal", "value": 270},
+        "startAngle": {"type": "literal", "value": 135},
+        "arcWidth": {"type": "literal", "value": 8},
+        "needleStyle": {"type": "literal", "value": "arc"},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 12},
+        "fontSize": {"type": "literal", "value": 20},
+        "padding": {"type": "literal", "value": 12},
+        "width": {"type": "literal", "value": 190},
+        "height": {"type": "literal", "value": 200}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "duty_bar",
+      "kind": "bar",
+      "transform": [1, 0, 0, 1, 40, 400],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "duty"},
+        "min": {"type": "literal", "value": 0},
+        "max": {"type": "literal", "value": 1},
+        "color": {"type": "literal", "value": 4294953805},
+        "orientation": {"type": "literal", "value": "horizontal"},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 8},
+        "padding": {"type": "literal", "value": 8},
+        "width": {"type": "literal", "value": 400},
+        "height": {"type": "literal", "value": 40}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "voltage",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 40, 460],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "v_in"},
+        "label": {"type": "literal", "value": "Voltage"},
+        "unit": {"type": "literal", "value": "V"},
+        "fontSize": {"type": "literal", "value": 28},
+        "color": {"type": "literal", "value": 4289117569},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 8},
+        "padding": {"type": "literal", "value": 10},
+        "width": {"type": "literal", "value": 190},
+        "height": {"type": "literal", "value": 80}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "current",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 250, 460],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "current.motor"},
+        "label": {"type": "literal", "value": "Current"},
+        "unit": {"type": "literal", "value": "A"},
+        "fontSize": {"type": "literal", "value": 28},
+        "color": {"type": "literal", "value": 4293915472},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 8},
+        "padding": {"type": "literal", "value": 10},
+        "width": {"type": "literal", "value": 190},
+        "height": {"type": "literal", "value": 80}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "temp_chart",
+      "kind": "chart",
+      "transform": [1, 0, 0, 1, 40, 560],
+      "z": 5,
+      "properties": {
+        "value": {"type": "telemetry", "key": "temp.mosfet"},
+        "min": {"type": "literal", "value": 0},
+        "max": {"type": "literal", "value": 100},
+        "label": {"type": "literal", "value": "Temperature"},
+        "unit": {"type": "literal", "value": "°C"},
+        "color": {"type": "literal", "value": 4293915472},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 8},
+        "lineWidth": {"type": "literal", "value": 2},
+        "smoothCurve": {"type": "literal", "value": true},
+        "fillArea": {"type": "literal", "value": true},
+        "fillColor": {"type": "literal", "value": 286707408},
+        "padding": {"type": "literal", "value": 8},
+        "width": {"type": "literal", "value": 400},
+        "height": {"type": "literal", "value": 160}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "status",
+      "kind": "status",
+      "transform": [1, 0, 0, 1, 40, 740],
+      "z": 5,
+      "properties": {
+        "fault": {"type": "telemetry", "key": "fault"},
+        "backgroundColor": {"type": "literal", "value": 4279242768},
+        "borderRadius": {"type": "literal", "value": 20},
+        "fontSize": {"type": "literal", "value": 14},
+        "padding": {"type": "literal", "value": 10},
+        "width": {"type": "literal", "value": 400},
+        "height": {"type": "literal", "value": 40}
+      },
+      "level": "basic"
+    }
+  ],
+  "graphs": {},
+  "background": 4278190080,
+  "accent": 4294967295
+}
