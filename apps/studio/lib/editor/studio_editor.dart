@@ -455,50 +455,239 @@ extension on String {
 class _WidgetPalette extends ConsumerWidget {
   const _WidgetPalette();
 
+  static Binding T(String key) => Binding.telemetry(key: key);
+  static Binding L(Object v) => Binding.literal(value: v);
+
+  /// Per-template props — shape the widget itself, not just its container.
+  /// Each template has a name, icon, and a map of properties that make it
+  /// visually distinct (dial geometry, needle, ticks, colour scheme).
+
+  static final _templates = <String, List<({String name, IconData icon, Map<String, Binding> props})>>{
+    'gauge': [
+      // --- Car-inspired dial geometries ---
+      (
+        name: 'BMW Classic',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 20, arc: 8, colour: 0xFFFF4400, accent: 0xFFFFffff, bg: 0xFF0D0D0D, rad: 4, bw: 0),
+      ),
+      (
+        name: 'VW Digital',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 180, start: 180, ticks: 8, arc: 6, colour: 0xFF4FC3F7, accent: 0xFF888888, bg: 0xFF0A0A14, rad: 8, bw: 1, bc: 0x22222222),
+      ),
+      (
+        name: 'Mercedes',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 12, arc: 10, colour: 0xFFC0C0C0, accent: 0xFF808080, bg: 0xFF080808, rad: 12, bw: 1, bc: 0x22FFFFFF),
+      ),
+      (
+        name: 'Tesla S',
+        icon: Icons.speed,
+        props: _dial(needle: 'arc', sweep: 270, start: 135, ticks: 4, arc: 3, colour: 0xFFFFFFFF, accent: 0xFF444444, bg: 0xFF080808, rad: 0, bw: 0),
+      ),
+      (
+        name: 'Audi VC',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 24, arc: 6, colour: 0xFFF05030, accent: 0xFFEEEEEE, bg: 0xFF050510, rad: 6, bw: 0),
+      ),
+      (
+        name: 'Porsche',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 30, arc: 8, colour: 0xFF00CC66, accent: 0xFFCCCC00, bg: 0xFF0A0A0A, rad: 8, bw: 1, bc: 0x22FFD700),
+      ),
+      (
+        name: 'Rally Pod',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 360, start: 90, ticks: 20, arc: 12, colour: 0xFFFF4400, accent: 0xFF000000, bg: 0xFF000000, rad: 4, bw: 1, bc: 0x44FF4400),
+      ),
+      (
+        name: 'Classic',
+        icon: Icons.speed,
+        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 10, arc: 8, colour: 0xFFFFFFFF, accent: 0xFF888888, bg: 0xFF111111, rad: 8, bw: 1, bc: 0x22444444),
+      ),
+    ],
+    'bar': [
+      (
+        name: 'Horizontal',
+        icon: Icons.bar_chart,
+        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFF4FC3F7), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'padding': L(8), 'opacity': L(1.0)},
+      ),
+      (
+        name: 'Vertical',
+        icon: Icons.bar_chart,
+        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFF66BB6A), 'orientation': L('vertical'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'padding': L(8)},
+      ),
+      (
+        name: 'Thin',
+        icon: Icons.bar_chart,
+        props: {'value': T('current.motor'), 'min': L(0), 'max': L(100), 'color': L(0xFFEF5350), 'backgroundColor': L(0x00000000), 'borderRadius': L(2), 'padding': L(2), 'opacity': L(0.9)},
+      ),
+      (
+        name: 'Wide Card',
+        icon: Icons.bar_chart,
+        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFFFF9800), 'backgroundColor': L(0xFF1E1E2E), 'borderRadius': L(12), 'borderWidth': L(1), 'borderColor': L(0x33FFFFFF), 'padding': L(16)},
+      ),
+    ],
+    'text': [
+      (
+        name: 'Sans',
+        icon: Icons.text_fields,
+        props: {'value': T('v_in'), 'label': L('Voltage'), 'unit': L('V'), 'fontSize': L(40), 'color': L(0xFFFFFFFF), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(10)},
+      ),
+      (
+        name: 'Mono',
+        icon: Icons.text_fields,
+        props: {'value': T('erpm'), 'label': L('RPM'), 'fontSize': L(48), 'fontWeight': L('bold'), 'color': L(0xFF4FC3F7), 'backgroundColor': L(0x00000000), 'padding': L(8)},
+      ),
+      (
+        name: 'Compact',
+        icon: Icons.text_fields,
+        props: {'value': T('current.motor'), 'label': L('Motor'), 'unit': L('A'), 'fontSize': L(24), 'color': L(0xFF66BB6A), 'backgroundColor': L(0xFF1A1A2A), 'borderRadius': L(6), 'padding': L(6)},
+      ),
+    ],
+    'chart': [
+      (
+        name: 'Line Chart',
+        icon: Icons.show_chart,
+        props: {'value': T('erpm'), 'min': L(0), 'max': L(30000), 'label': L('RPM'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'lineWidth': L(2), 'smoothCurve': L(true), 'padding': L(8)},
+      ),
+      (
+        name: 'Area Chart',
+        icon: Icons.show_chart,
+        props: {'value': T('current.motor'), 'min': L(0), 'max': L(100), 'label': L('Motor A'), 'color': L(0xFF66BB6A), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fillArea': L(true), 'fillColor': L(0x1166BB6A), 'lineWidth': L(1.5), 'padding': L(8)},
+      ),
+      (
+        name: 'Bare Chart',
+        icon: Icons.show_chart,
+        props: {'value': T('erpm'), 'min': L(0), 'max': L(30000), 'backgroundColor': L(0x00000000), 'showGrid': L(false), 'lineWidth': L(3), 'borderRadius': L(0), 'padding': L(0)},
+      ),
+    ],
+    'status': [
+      (
+        name: 'Pill',
+        icon: Icons.warning,
+        props: {'fault': T('fault'), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(20), 'fontSize': L(14), 'padding': L(10)},
+      ),
+      (
+        name: 'Inline',
+        icon: Icons.warning,
+        props: {'fault': T('fault'), 'backgroundColor': L(0x00000000), 'borderRadius': L(4), 'fontSize': L(12), 'padding': L(4)},
+      ),
+    ],
+    'image': [
+      (
+        name: 'Rounded',
+        icon: Icons.image,
+        props: {'src': L('assets/images/placeholder.png'), 'borderRadius': L(12), 'borderWidth': L(1), 'borderColor': L(0x44FFFFFF)},
+      ),
+      (
+        name: 'Shadowed',
+        icon: Icons.image,
+        props: {'src': L('assets/images/placeholder.png'), 'borderRadius': L(8), 'shadowBlur': L(8), 'shadowColor': L(0x44000000), 'shadowOffsetY': L(4)},
+      ),
+    ],
+    'web': [
+      (
+        name: 'Page',
+        icon: Icons.public,
+        props: {'url': L('https://example.com'), 'title': L('Live page'), 'borderRadius': L(8), 'padding': L(4)},
+      ),
+    ],
+    'paint': [
+      (
+        name: 'Custom',
+        icon: Icons.brush,
+        props: {},
+      ),
+    ],
+  };
+
+  /// Build a gauge template: dial geometry + container cosmetics.
+  static Map<String, Binding> _dial({
+    required String needle,
+    required double sweep, required double start,
+    required int ticks, required double arc,
+    required int colour, required int accent,
+    required int bg, required double rad,
+    required double bw, int bc = 0,
+  }) => {
+    'value': T('erpm'), 'min': L(0), 'max': L(30000), 'label': L('RPM'),
+    'needleStyle': L(needle), 'sweepAngle': L(sweep), 'startAngle': L(start),
+    'tickCount': L(ticks), 'arcWidth': L(arc),
+    'color': L(colour), 'accent': L(accent),
+    'backgroundColor': L(bg), 'borderRadius': L(rad),
+    'borderWidth': L(bw), 'borderColor': L(bc),
+    'opacity': L(1.0), 'padding': L(12), 'fontSize': L(28),
+  };
+
+  static IconData _kindIcon(String kind) => switch (kind) {
+    'gauge' => Icons.speed, 'bar' => Icons.bar_chart, 'text' => Icons.text_fields,
+    'chart' => Icons.show_chart, 'status' => Icons.info_outline, 'image' => Icons.image,
+    'web' => Icons.public, 'paint' => Icons.brush, _ => Icons.widgets,
+  };
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final level = ref.watch(capabilityLevelProvider);
-    final available = builtInWidgets.entries
+    final kinds = builtInWidgets.entries
         .where((e) => level.includes(e.value.level))
+        .map((e) => e.key)
         .toList();
 
     return Container(
-      width: 180,
+      width: 200,
       color: Theme.of(context).colorScheme.surfaceContainerLow,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child:
-                Text('Widgets', style: Theme.of(context).textTheme.titleSmall),
+            child: Text('Widgets', style: Theme.of(context).textTheme.titleSmall),
           ),
           Expanded(
-            child: ListView(
-              children: [
-                for (final entry in available)
-                  Draggable<Map<String, dynamic>>(
-                    data: {'kind': entry.key},
-                    feedback: Material(
-                      elevation: 4,
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(8),
+            child: ListView.builder(
+              itemCount: kinds.length,
+              itemBuilder: (context, index) {
+                final kind = kinds[index];
+                final tpls = _templates[kind] ?? const [];
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  child: ExpansionTile(
+                    leading: Icon(_kindIcon(kind), size: 20),
+                    title: Text(kind.capitalize(), style: const TextStyle(fontSize: 13)),
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+                    childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 4),
+                    initiallyExpanded: index == 0,
+                    children: [
+                      for (final tpl in tpls)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 1),
+                          child: Draggable<Map<String, dynamic>>(
+                            data: {'kind': kind, 'props': tpl.props},
+                            feedback: Material(
+                              elevation: 4,
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(tpl.name,
+                                    style: const TextStyle(color: Colors.white, fontSize: 12)),
+                              ),
+                            ),
+                            childWhenDragging: Opacity(
+                              opacity: 0.3,
+                              child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                            ),
+                            child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                          ),
                         ),
-                        child: Text(entry.key,
-                            style: const TextStyle(color: Colors.white)),
-                      ),
-                    ),
-                    childWhenDragging: Opacity(
-                      opacity: 0.4,
-                      child: _PaletteTile(kind: entry.key),
-                    ),
-                    child: _PaletteTile(kind: entry.key),
+                    ],
                   ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -509,32 +698,22 @@ class _WidgetPalette extends ConsumerWidget {
 
 class _PaletteTile extends StatelessWidget {
   final String kind;
-  const _PaletteTile({required this.kind});
-
-  static const _icons = <String, IconData>{
-    'gauge': Icons.speed,
-    'bar': Icons.bar_chart,
-    'text': Icons.text_fields,
-    'chart': Icons.show_chart,
-    'status': Icons.info_outline,
-    'image': Icons.image,
-    'web': Icons.public,
-    'paint': Icons.brush,
-  };
+  final String? label;
+  final IconData? icon;
+  const _PaletteTile({required this.kind, this.label, this.icon});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListTile(
-        leading: Icon(_icons[kind] ?? Icons.widgets),
-        title: Text(kind),
-        dense: true,
-      ),
+    return ListTile(
+      leading: Icon(icon ?? Icons.widgets, size: 16),
+      title: Text(label ?? kind, style: const TextStyle(fontSize: 11)),
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      minLeadingWidth: 24,
     );
   }
 }
-
 /// The canvas area with drag-drop acceptance.
 class _CanvasArea extends ConsumerStatefulWidget {
   @override
@@ -671,6 +850,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                   key: _dropTargetKey,
                   onAcceptWithDetails: (details) {
                     final kind = details.data['kind'] as String;
+                    final tplProps = details.data['props'] as Map<String, Binding>?;
                     final id = ref.read(idGeneratorProvider).next();
                     final localPos = _toCanvasPosition(details.offset);
                     final node = CanvasNode(
@@ -679,7 +859,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                       data: WidgetInstance(
                         id: id,
                         kind: kind,
-                        properties: _defaultProperties(kind),
+                        properties: tplProps ?? _defaultProperties(kind),
                       ),
                     );
                     commands.execute(AddNodeCommand(node));
@@ -873,6 +1053,7 @@ class _PropertiesInspector extends ConsumerWidget {
     CapabilityLevel level,
   ) {
     if (widget.kind == 'paint') {
+      final entries = Map<String, Binding>.from(widget.properties);
       return [
         if (level.includes(CapabilityLevel.expert))
           _PaintProgramEditor(node: node, widget: widget)
@@ -884,9 +1065,12 @@ class _PropertiesInspector extends ConsumerWidget {
               style: TextStyle(fontSize: 11, color: Colors.orange),
             ),
           ),
-        for (final entry in widget.properties.entries)
-          if (entry.key != 'program')
-            _BindingField(node: node, widget: widget, name: entry.key, binding: entry.value),
+        for (final m in allProperties(widget.kind))
+          if (m.key != 'program')
+            _BindingField(
+              node: node, widget: widget, name: m.key,
+              binding: entries[m.key] ?? _defaultBinding(m),
+            ),
       ];
     }
 
@@ -898,16 +1082,20 @@ class _PropertiesInspector extends ConsumerWidget {
 
     return [
       for (final m in basic)
-        if (entries.containsKey(m.key))
-          _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+        _BindingField(
+          node: node, widget: widget, name: m.key,
+          binding: entries[m.key] ?? _defaultBinding(m),
+        ),
       if (advanced.isNotEmpty)
         _ExpandableSection(
           title: 'Advanced',
           initiallyExpanded: true,
           children: [
             for (final m in advanced)
-              if (entries.containsKey(m.key))
-                _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+              _BindingField(
+                node: node, widget: widget, name: m.key,
+                binding: entries[m.key] ?? _defaultBinding(m),
+              ),
           ],
         ),
       if (expert.isNotEmpty)
@@ -916,11 +1104,41 @@ class _PropertiesInspector extends ConsumerWidget {
           initiallyExpanded: false,
           children: [
             for (final m in expert)
-              if (entries.containsKey(m.key))
-                _BindingField(node: node, widget: widget, name: m.key, binding: entries[m.key]!),
+              _BindingField(
+                node: node, widget: widget, name: m.key,
+                binding: entries[m.key] ?? _defaultBinding(m),
+              ),
           ],
         ),
     ];
+  }
+
+  static Binding _defaultBinding(PropertyMeta m) {
+    // Provide sensible defaults so the property shows up editable.
+    if (m.key == 'visible') return const Binding.literal(value: true);
+    if (m.key == 'opacity') return const Binding.literal(value: 1.0);
+    if (m.key == 'padding') return const Binding.literal(value: 12);
+    if (m.key == 'width') return const Binding.literal(value: 300);
+    if (m.key == 'height') return const Binding.literal(value: 220);
+    if (m.key == 'orientation') return const Binding.literal(value: 'horizontal');
+    if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');
+    if (m.key == 'fontSize') return const Binding.literal(value: 20);
+    if (m.key == 'fontWeight') return const Binding.literal(value: 'bold');
+    if (m.key == 'sweepAngle') return const Binding.literal(value: 270.0);
+    if (m.key == 'startAngle') return const Binding.literal(value: 135.0);
+    if (m.key == 'tickCount') return const Binding.literal(value: 10);
+    if (m.key == 'arcWidth') return const Binding.literal(value: 10.0);
+    if (m.key == 'lineWidth') return const Binding.literal(value: 2.0);
+    if (m.key == 'showGrid') return const Binding.literal(value: true);
+    if (m.key == 'smoothCurve') return const Binding.literal(value: true);
+    if (m.key == 'fillArea') return const Binding.literal(value: false);
+    if (m.key == 'window') return const Binding.literal(value: 120);
+    if (m.key == 'js') return const Binding.literal(value: true);
+    final isColour = m.key == 'color' || m.key == 'accent' || m.key == 'backgroundColor' || m.key == 'borderColor' || m.key == 'shadowColor' || m.key == 'fillColor' || m.key == 'gridColor' || m.key == 'tint';
+    if (isColour) return const Binding.literal(value: 0xFFFFFFFF);
+    final isNum = m.key == 'min' || m.key == 'max' || m.key == 'borderRadius' || m.key == 'borderWidth' || m.key == 'shadowBlur' || m.key == 'shadowOffsetY' || m.key == 'letterSpacing' || m.key == 'barRadius';
+    if (isNum) return const Binding.literal(value: 0);
+    return const Binding.literal(value: 0);
   }
 }
 
