@@ -448,6 +448,76 @@ const List<PropertyMeta> _map = [
   PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
 ];
 
+const List<PropertyMeta> _gear_selector = [
+  PropertyMeta(key: 'currentGear', minLevel: CapabilityLevel.basic, label: 'Current gear', safe: true),
+  PropertyMeta(key: 'gears', minLevel: CapabilityLevel.basic, label: 'Gear list', safe: true),
+  PropertyMeta(key: 'color', minLevel: CapabilityLevel.basic, label: 'Colour', safe: true),
+  PropertyMeta(key: 'activeColor', minLevel: CapabilityLevel.basic, label: 'Active colour', safe: true),
+  PropertyMeta(key: 'inactiveColor', minLevel: CapabilityLevel.basic, label: 'Inactive colour', safe: true),
+  PropertyMeta(key: 'backgroundColor', minLevel: CapabilityLevel.basic, label: 'Background', safe: true),
+  PropertyMeta(key: 'borderRadius', minLevel: CapabilityLevel.advanced, label: 'Corner radius'),
+  PropertyMeta(key: 'fontSize', minLevel: CapabilityLevel.basic, label: 'Font size', safe: true),
+  PropertyMeta(key: 'borderWidth', minLevel: CapabilityLevel.advanced, label: 'Border width'),
+  PropertyMeta(key: 'borderColor', minLevel: CapabilityLevel.advanced, label: 'Border colour'),
+  PropertyMeta(key: 'shadowColor', minLevel: CapabilityLevel.advanced, label: 'Shadow colour'),
+  PropertyMeta(key: 'shadowBlur', minLevel: CapabilityLevel.advanced, label: 'Shadow blur'),
+  PropertyMeta(key: 'shadowOffsetY', minLevel: CapabilityLevel.advanced, label: 'Shadow offset Y'),
+  PropertyMeta(key: 'opacity', minLevel: CapabilityLevel.advanced, label: 'Opacity'),
+  PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
+  PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
+  PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
+];
+
+const List<PropertyMeta> _battery_range = [
+  PropertyMeta(key: 'batteryLevel', minLevel: CapabilityLevel.advanced, label: 'Battery level (0-1)'),
+  PropertyMeta(key: 'range', minLevel: CapabilityLevel.advanced, label: 'Range'),
+  PropertyMeta(key: 'temperature', minLevel: CapabilityLevel.advanced, label: 'Temperature'),
+  PropertyMeta(key: 'color', minLevel: CapabilityLevel.basic, label: 'Bar colour', safe: true),
+  PropertyMeta(key: 'textColor', minLevel: CapabilityLevel.basic, label: 'Text colour', safe: true),
+  PropertyMeta(key: 'accentColor', minLevel: CapabilityLevel.basic, label: 'Accent colour', safe: true),
+  PropertyMeta(key: 'showRange', minLevel: CapabilityLevel.basic, label: 'Show range', safe: true),
+  PropertyMeta(key: 'showTemperature', minLevel: CapabilityLevel.basic, label: 'Show temperature', safe: true),
+  PropertyMeta(key: 'unit', minLevel: CapabilityLevel.basic, label: 'Range unit', safe: true),
+  PropertyMeta(key: 'tempUnit', minLevel: CapabilityLevel.basic, label: 'Temp unit', safe: true),
+  PropertyMeta(key: 'backgroundColor', minLevel: CapabilityLevel.basic, label: 'Background', safe: true),
+  PropertyMeta(key: 'borderRadius', minLevel: CapabilityLevel.advanced, label: 'Corner radius'),
+  PropertyMeta(key: 'fontSize', minLevel: CapabilityLevel.basic, label: 'Font size', safe: true),
+  PropertyMeta(key: 'borderWidth', minLevel: CapabilityLevel.advanced, label: 'Border width'),
+  PropertyMeta(key: 'borderColor', minLevel: CapabilityLevel.advanced, label: 'Border colour'),
+  PropertyMeta(key: 'shadowColor', minLevel: CapabilityLevel.advanced, label: 'Shadow colour'),
+  PropertyMeta(key: 'shadowBlur', minLevel: CapabilityLevel.advanced, label: 'Shadow blur'),
+  PropertyMeta(key: 'shadowOffsetY', minLevel: CapabilityLevel.advanced, label: 'Shadow offset Y'),
+  PropertyMeta(key: 'opacity', minLevel: CapabilityLevel.advanced, label: 'Opacity'),
+  PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
+  PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
+  PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
+];
+
+const List<PropertyMeta> _power_flow = [
+  PropertyMeta(key: 'power', minLevel: CapabilityLevel.advanced, label: 'Power'),
+  PropertyMeta(key: 'maxPower', minLevel: CapabilityLevel.basic, label: 'Max power', safe: true),
+  PropertyMeta(key: 'color', minLevel: CapabilityLevel.basic, label: 'Bar colour', safe: true),
+  PropertyMeta(key: 'accent', minLevel: CapabilityLevel.basic, label: 'Accent colour', safe: true),
+  PropertyMeta(key: 'label', minLevel: CapabilityLevel.basic, label: 'Label', safe: true),
+  PropertyMeta(key: 'barWidth', minLevel: CapabilityLevel.advanced, label: 'Bar width'),
+  PropertyMeta(key: 'barHeight', minLevel: CapabilityLevel.advanced, label: 'Bar height'),
+  PropertyMeta(key: 'backgroundColor', minLevel: CapabilityLevel.basic, label: 'Background', safe: true),
+  PropertyMeta(key: 'borderRadius', minLevel: CapabilityLevel.advanced, label: 'Corner radius'),
+  PropertyMeta(key: 'fontSize', minLevel: CapabilityLevel.basic, label: 'Font size', safe: true),
+  PropertyMeta(key: 'borderWidth', minLevel: CapabilityLevel.advanced, label: 'Border width'),
+  PropertyMeta(key: 'borderColor', minLevel: CapabilityLevel.advanced, label: 'Border colour'),
+  PropertyMeta(key: 'shadowColor', minLevel: CapabilityLevel.advanced, label: 'Shadow colour'),
+  PropertyMeta(key: 'shadowBlur', minLevel: CapabilityLevel.advanced, label: 'Shadow blur'),
+  PropertyMeta(key: 'shadowOffsetY', minLevel: CapabilityLevel.advanced, label: 'Shadow offset Y'),
+  PropertyMeta(key: 'opacity', minLevel: CapabilityLevel.advanced, label: 'Opacity'),
+  PropertyMeta(key: 'padding', minLevel: CapabilityLevel.basic, label: 'Padding', safe: true),
+  PropertyMeta(key: 'width', minLevel: CapabilityLevel.basic, label: 'Width', safe: true),
+  PropertyMeta(key: 'height', minLevel: CapabilityLevel.basic, label: 'Height', safe: true),
+  PropertyMeta(key: 'visible', minLevel: CapabilityLevel.basic, label: 'Visible', safe: true),
+];
+
 const Map<String, List<PropertyMeta>> propertyManifest = {
   'gauge': _gauge,
   'bar': _bar,
@@ -468,6 +538,9 @@ const Map<String, List<PropertyMeta>> propertyManifest = {
   'climate': _climate,
   'car_viz': _car_viz,
   'map': _map,
+  'gear_selector': _gear_selector,
+  'battery_range': _battery_range,
+  'power_flow': _power_flow,
 };
 
 List<PropertyMeta> visibleProperties(String widgetKind, CapabilityLevel level) {

@@ -11,16 +11,19 @@ import 'package:dashboard_runtime/dashboard_runtime.dart';
 
 import 'widgets/appgrid_widget.dart';
 import 'widgets/bar_widget.dart';
+import 'widgets/battery_range_widget.dart';
 import 'widgets/car_viz_widget.dart';
 import 'widgets/chart_widget.dart';
 import 'widgets/climate_widget.dart';
 import 'widgets/digitalspeed_widget.dart';
 import 'widgets/gauge_widget.dart';
+import 'widgets/gear_selector_widget.dart';
 import 'widgets/image_widget.dart';
 import 'widgets/map_widget.dart';
 import 'widgets/minigauge_widget.dart';
 import 'widgets/music_widget.dart';
 import 'widgets/paint_widget.dart';
+import 'widgets/power_flow_widget.dart';
 import 'widgets/power_widget.dart';
 import 'widgets/status_widget.dart';
 import 'widgets/statusbar_widget.dart';
@@ -142,6 +145,21 @@ final Map<String, WidgetKind> builtInWidgets = {
     id: 'map',
     level: CapabilityLevel.advanced,
     render: (p) => MapWidget(properties: p),
+  ),
+  'gear_selector': WidgetKind(
+    id: 'gear_selector',
+    level: CapabilityLevel.basic,
+    render: (p) => GearSelectorWidget(properties: p),
+  ),
+  'battery_range': WidgetKind(
+    id: 'battery_range',
+    level: CapabilityLevel.basic,
+    render: (p) => BatteryRangeWidget(properties: p),
+  ),
+  'power_flow': WidgetKind(
+    id: 'power_flow',
+    level: CapabilityLevel.basic,
+    render: (p) => PowerFlowWidget(properties: p),
   ),
 };
 
