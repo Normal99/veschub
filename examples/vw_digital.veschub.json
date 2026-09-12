@@ -50,7 +50,7 @@
     {
       "id": "left_trip_info",
       "kind": "tripstats",
-      "transform": [1, 0, 0, 1, 220, 220],
+      "transform": [1, 0, 0, 1, 210, 390],
       "z": 15,
       "properties": {
         "label1": {"type": "literal", "value": "Since start"},
@@ -59,10 +59,10 @@
         "color": {"type": "literal", "value": 4294967295},
         "accent": {"type": "literal", "value": 4289836757},
         "backgroundColor": {"type": "literal", "value": 0},
-        "fontSize": {"type": "literal", "value": 24},
+        "fontSize": {"type": "literal", "value": 18},
         "padding": {"type": "literal", "value": 8},
-        "width": {"type": "literal", "value": 240},
-        "height": {"type": "literal", "value": 240}
+        "width": {"type": "literal", "value": 260},
+        "height": {"type": "literal", "value": 110}
       },
       "level": "basic"
     },
@@ -92,7 +92,7 @@
     {
       "id": "right_range_info",
       "kind": "tripstats",
-      "transform": [1, 0, 0, 1, 1460, 220],
+      "transform": [1, 0, 0, 1, 1450, 390],
       "z": 15,
       "properties": {
         "label1": {"type": "literal", "value": "Driving range"},
@@ -101,10 +101,10 @@
         "color": {"type": "literal", "value": 4294967295},
         "accent": {"type": "literal", "value": 4289836757},
         "backgroundColor": {"type": "literal", "value": 0},
-        "fontSize": {"type": "literal", "value": 24},
+        "fontSize": {"type": "literal", "value": 18},
         "padding": {"type": "literal", "value": 8},
-        "width": {"type": "literal", "value": 240},
-        "height": {"type": "literal", "value": 240}
+        "width": {"type": "literal", "value": 260},
+        "height": {"type": "literal", "value": 110}
       },
       "level": "basic"
     },
