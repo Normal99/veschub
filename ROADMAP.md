@@ -10,6 +10,23 @@ Last updated: 2026-09-13 (Studio UX audit findings updated same day)
 - `[P3]` — Future / deferred
 - `[SIDETRACKED]` — Intentionally paused; pick up later, not blocking anything below it
 
+## Guiding principle (2026-09-13)
+
+**People create dashboards using Studio's own tools — not by hand-editing
+JSON, and not by asking an AI to do it for them.** Every fix in this project
+should ultimately show up as something a human can do themselves in the
+Studio UI (drag, resize, snap, pick from a categorized property panel).
+When a bug is found in example-dashboard JSON, fixing the JSON directly is
+fine for that one file, but it doesn't count as "done" unless the underlying
+Studio tool (canvas snapping, resize handles, overlap awareness, property
+inspector, etc.) would let a real user fix or avoid the same problem without
+touching JSON. This is also why the AI Dashboard Assistant (Milestone 9)
+stays deprioritized: it's the opposite direction from this goal. At the same
+time, remember not everyone wants a maximalist car-cluster replica — some
+users want a dashboard with only the 2-3 numbers they care about, so
+"simple" needs to be a first-class, easy-to-reach outcome, not just
+"advanced" templates with fewer widgets on them.
+
 ## Current priority order (revised 2026-09-13)
 
 Milestone numbers below are historical, not priority order. The AI assistant
@@ -19,6 +36,8 @@ amateur or a professional can freely build dashboards like the real-world
 references in `/home/volkan/Pictures/AIdashboards` (Tesla, Porsche Taycan,
 BMW, Audi, VW, Ford, CarPlay, Android Auto, and the existing VESC Tool /
 Kukirin mobile dashboard) — without the tool itself getting in the way.
+Also keep SimHub in mind as a UX bar: a beginner-friendly tool with simple,
+clean default widgets and properties that are easy to find and adjust.
 
 1. **Milestone 5 + 10** — Studio Polish & Independent Creation/Ease of Use
    (merged in practice — see "Studio UX audit findings" below for what's
@@ -66,6 +85,45 @@ main editor file), compared against the reference dashboards.
       the bar can't tell them apart at a glance; consider a labeled overflow
       menu for the less-frequent ones (export, settings) and keep only
       undo/redo/save as bare icons.
+
+## Widget rendering audit (2026-09-13)
+
+Rendered all 9 example dashboards through `tools/dashboard_renderer`
+(build it once with `flutter build linux --release` in that directory,
+then run the compiled binary directly — `flutter run` mangles CLI args
+passed to the app, treating the first one as a `--target` override).
+
+- [x] **FIXED — major**: **Gauge needle collided with the centered digital
+      readout, rendering as a "horrendous" white teardrop blob.** Every
+      needle-style gauge (BMW Amber, Audi Sport, Porsche Green, and any
+      plain gauge with `showCenterText: true`) drew a wide needle base +
+      two-circle hub from dead-center, landing directly under the big
+      number. Fixed in `gauge_widget.dart` (`avoidCenter` on
+      `_GaugePainter`): the needle now starts partway out and skips the
+      hub when a digital readout owns the center. This alone fixed the
+      dominant visual defect across nearly every rendered example.
+- [x] **FIXED**: `vw_digital.veschub.json`'s two trip-info pods were
+      centered on the exact same point as their gauge's own center-value
+      text — moved and shrunk to sit below the readout instead.
+- [ ] [P1] **Canvas needs overlap awareness.** The VW bug (two widgets
+      authored with identical centers) is a symptom of a general gap: the
+      canvas has grid/edge/center snapping but nothing warns when one
+      widget is dropped or resized on top of another. Per the guiding
+      principle above, this should be a *Studio tool* (visual overlap
+      highlight, maybe a "widgets overlap" indicator in the layer panel)
+      — not something to catch by manually reviewing JSON.
+- [ ] [P2] Other widgets not yet individually audited for rendering
+      quality: minigauge, power, warnings, appgrid, statusbar, climate,
+      battery_range, power_flow, gear_selector, digitalspeed, car_viz,
+      map, bar, chart — the 9 example dashboards exercise most of these
+      and looked clean in this pass, but none were reviewed as closely as
+      gauge was.
+- [ ] [P2] **Need genuinely minimal starter widgets, not just car-brand
+      replicas.** Current templates lean toward maximalist car-cluster
+      looks. Add plain/minimal variants (e.g. a bare "just the number"
+      text style, an undecorated thin-bar) for users who want a dashboard
+      with only the 2-3 values they care about — a SimHub-style simple
+      option alongside the styled ones, not a replacement for them.
 
 ---
 
