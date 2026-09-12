@@ -22,11 +22,11 @@ class StatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = DashboardThemeProvider.of(context);
-    final fault = (properties['fault'] as num?)?.toInt() ?? 0;
+    final fault = propInt(properties, 'fault', 0);
     final (severity, color) = _severity(fault, theme);
-    final label = properties['label'] as String? ?? _faultLabel(fault);
+    final label = (properties['label'] is String ? properties['label'] as String : null) ?? _faultLabel(fault);
     final value = properties['value']?.toString();
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 14.0;
+    final fontSizeRaw = propDouble(properties, 'fontSize', 14.0);
 
     final boxDeco = resolveBoxDecoration(properties).copyWith(
       border: Border.all(color: color.withValues(alpha: 0.5)),
@@ -43,30 +43,36 @@ class StatusWidget extends StatelessWidget {
             children: [
               Icon(severity.icon, color: color, size: 18),
               const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: applyTextStyle(
-                      TextStyle(
-                        color: color,
-                        fontSize: fontSizeRaw.toDouble(),
-                        fontWeight: FontWeight.w600,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: applyTextStyle(
+                          TextStyle(
+                            color: color,
+                            fontSize: fontSizeRaw.toDouble(),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          properties,
+                        ),
                       ),
-                      properties,
-                    ),
+                      if (value != null)
+                        Text(
+                          value,
+                          style: TextStyle(
+                            color: theme.secondary,
+                            fontSize: (fontSizeRaw.toDouble() * 0.78).clamp(9, 14),
+                          ),
+                        ),
+                    ],
                   ),
-                  if (value != null)
-                    Text(
-                      value,
-                      style: TextStyle(
-                        color: theme.secondary,
-                        fontSize: (fontSizeRaw.toDouble() * 0.78).clamp(9, 14),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ],
           ),

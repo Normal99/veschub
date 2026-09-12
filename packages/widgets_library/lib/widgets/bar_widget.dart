@@ -21,13 +21,12 @@ class BarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = (properties['value'] as num?)?.toDouble() ?? 0;
-    final min = (properties['min'] as num?)?.toDouble() ?? 0;
-    final max = (properties['max'] as num?)?.toDouble() ?? 1;
-    final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
+    final value = propDouble(properties, 'value', 0.0);
+    final min = propDouble(properties, 'min', 0.0);
+    final max = propDouble(properties, 'max', 1.0);
+    final color = propColor(properties, 'color', 0xFFFFFFFF);
     final vertical = properties['orientation'] == 'vertical';
-    final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 6.0;
-    final radius = borderRadiusRaw.toDouble();
+    final radius = propDouble(properties, 'borderRadius', 6.0);
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     var t = (value - min) / span;

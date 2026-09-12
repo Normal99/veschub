@@ -21,6 +21,8 @@ dependencies:
     path: ../../packages/settings
   widgets_library:
     path: ../../packages/widgets_library
+  templates:
+    path: ../../packages/templates
   vesc_proto:
     path: ../../packages/vesc_proto
   vesc_transport:
@@ -37,3 +39,6 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^4.0.0
   shared_preferences: ^2.2.3
+
+flutter:
+  uses-material-design: true

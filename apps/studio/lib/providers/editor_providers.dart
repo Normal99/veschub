@@ -72,6 +72,11 @@ final gridVisibleProvider = StateProvider<bool>((ref) {
   return false;
 });
 
+/// Toggles centre-line snapping (vertical + horizontal canvas centre).
+final centerSnapEnabledProvider = StateProvider<bool>((ref) {
+  return true;
+});
+
 /// Toggles between the properties inspector and the layer panel.
 final layersVisibleProvider = StateProvider<bool>((ref) {
   return false;

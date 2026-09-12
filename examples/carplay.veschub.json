@@ -1,121 +1,214 @@
 {
   "version": 2,
-  "name": "CarPlay",
-  "description": "Apple CarPlay-inspired dashboard with app grid and media focus",
-  "canvas": {"width": 800.0, "height": 480.0},
+  "name": "Apple CarPlay Dashboard",
+  "description": "Apple CarPlay dashboard layout with left vertical dock and app icon grid",
+  "canvas": {"width": 1920.0, "height": 1080.0},
   "widgets": [
     {
-      "id": "statusbar",
-      "kind": "statusbar",
-      "transform": [1, 0, 0, 1, 0, 0],
-      "z": 20,
+      "id": "left_dock",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 30, 30],
+      "z": 10,
       "properties": {
-        "time": {"type": "literal", "value": "14:32"},
-        "battery": {"type": "literal", "value": 0.92},
-        "signal": {"type": "literal", "value": 0.8},
-        "showTime": {"type": "literal", "value": true},
-        "showBattery": {"type": "literal", "value": true},
-        "showSignal": {"type": "literal", "value": true},
+        "value": {"type": "literal", "value": "09:41\n📶 4G\n\n\n🗺️\n\n🎵\n\n⚙️\n\n\n\n\n\n🔲"},
+        "fontSize": {"type": "literal", "value": 26},
         "color": {"type": "literal", "value": 4294967295},
-        "accent": {"type": "literal", "value": 4286611584},
-        "backgroundColor": {"type": "literal", "value": 4278190080},
-        "fontSize": {"type": "literal", "value": 12},
-        "padding": {"type": "literal", "value": 6},
-        "width": {"type": "literal", "value": 800},
-        "height": {"type": "literal", "value": 28}
-      },
-      "level": "basic"
-    },
-    {
-      "id": "appgrid",
-      "kind": "appgrid",
-      "transform": [1, 0, 0, 1, 20, 36],
-      "z": 5,
-      "properties": {
-        "apps": {"type": "literal", "value": "phone,music,maps,messages,podcasts,audiobooks,settings,weather,clock,calculator,photos,camera"},
-        "columns": {"type": "literal", "value": 4},
-        "iconSize": {"type": "literal", "value": 32},
-        "showLabels": {"type": "literal", "value": true},
-        "color": {"type": "literal", "value": 4294967295},
-        "accent": {"type": "literal", "value": 4286611584},
-        "backgroundColor": {"type": "literal", "value": 4278190080},
-        "borderRadius": {"type": "literal", "value": 0},
-        "padding": {"type": "literal", "value": 20},
-        "width": {"type": "literal", "value": 500},
-        "height": {"type": "literal", "value": 420}
-      },
-      "level": "basic"
-    },
-    {
-      "id": "music",
-      "kind": "music",
-      "transform": [1, 0, 0, 1, 540, 36],
-      "z": 5,
-      "properties": {
-        "title": {"type": "literal", "value": "Blinding Lights"},
-        "artist": {"type": "literal", "value": "The Weeknd"},
-        "album": {"type": "literal", "value": "After Hours"},
-        "progress": {"type": "literal", "value": 120},
-        "duration": {"type": "literal", "value": 200},
-        "showControls": {"type": "literal", "value": true},
-        "color": {"type": "literal", "value": 4294967295},
-        "accent": {"type": "literal", "value": 4286611584},
-        "albumColor": {"type": "literal", "value": 4283712247},
-        "backgroundColor": {"type": "literal", "value": 4279242768},
-        "borderRadius": {"type": "literal", "value": 16},
+        "backgroundColor": {"type": "literal", "value": 4279834905},
+        "borderRadius": {"type": "literal", "value": 28},
         "padding": {"type": "literal", "value": 16},
-        "width": {"type": "literal", "value": 240},
-        "height": {"type": "literal", "value": 280}
+        "width": {"type": "literal", "value": 120},
+        "height": {"type": "literal", "value": 1020}
       },
       "level": "basic"
     },
     {
-      "id": "now_playing_speed",
-      "kind": "digitalspeed",
-      "transform": [1, 0, 0, 1, 540, 330],
+      "id": "app_phone",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 200, 80],
       "z": 5,
       "properties": {
-        "value": {"type": "telemetry", "key": "erpm"},
-        "unit": {"type": "literal", "value": "km/h"},
-        "fontSize": {"type": "literal", "value": 36},
+        "value": {"type": "literal", "value": "📞\n\nPhone"},
+        "fontSize": {"type": "literal", "value": 24},
         "color": {"type": "literal", "value": 4294967295},
-        "accent": {"type": "literal", "value": 4286611584},
-        "showUnit": {"type": "literal", "value": true},
-        "backgroundColor": {"type": "literal", "value": 4279242768},
-        "borderRadius": {"type": "literal", "value": 12},
-        "padding": {"type": "literal", "value": 12},
-        "fontWeight": {"type": "literal", "value": "w300"},
-        "width": {"type": "literal", "value": 240},
-        "height": {"type": "literal", "value": 80}
+        "backgroundColor": {"type": "literal", "value": 4281519411},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
       },
       "level": "basic"
     },
     {
-      "id": "battery_mini",
-      "kind": "minigauge",
-      "transform": [1, 0, 0, 1, 540, 420],
+      "id": "app_music",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 530, 80],
       "z": 5,
       "properties": {
-        "value": {"type": "telemetry", "key": "battery_pct"},
-        "min": {"type": "literal", "value": 0},
-        "max": {"type": "literal", "value": 100},
-        "label": {"type": "literal", "value": "Battery"},
-        "unit": {"type": "literal", "value": "%"},
-        "icon": {"type": "literal", "value": "battery"},
-        "style": {"type": "literal", "value": "bar"},
-        "color": {"type": "literal", "value": 4278255208},
-        "accent": {"type": "literal", "value": 4286611584},
-        "backgroundColor": {"type": "literal", "value": 4279242768},
-        "borderRadius": {"type": "literal", "value": 8},
-        "fontSize": {"type": "literal", "value": 14},
-        "padding": {"type": "literal", "value": 8},
-        "width": {"type": "literal", "value": 240},
+        "value": {"type": "literal", "value": "🎵\n\nMusic"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4294908976},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_maps",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 860, 80],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "🗺️\n\nMaps"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4283818318},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_messages",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 1190, 80],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "💬\n\nMessages"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4281519411},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_now_playing",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 1520, 80],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "📊\n\nNow Playing"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4278190080},
+        "backgroundColor": {"type": "literal", "value": 4294967295},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_podcasts",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 200, 520],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "🎙️\n\nPodcasts"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4287840476},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_audiobooks",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 530, 520],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "📚\n\nAudiobooks"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4294931456},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_weather",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 860, 520],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "🌤️\n\nWeather"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4280475118},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_calendar",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 1190, 520],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "📅\n\nCalendar"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4278190080},
+        "backgroundColor": {"type": "literal", "value": 4294967295},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "app_settings",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 1520, 520],
+      "z": 5,
+      "properties": {
+        "value": {"type": "literal", "value": "⚙️\n\nSettings"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 4284572005},
+        "borderRadius": {"type": "literal", "value": 36},
+        "padding": {"type": "literal", "value": 24},
+        "width": {"type": "literal", "value": 300},
+        "height": {"type": "literal", "value": 400}
+      },
+      "level": "basic"
+    },
+    {
+      "id": "page_dots",
+      "kind": "text",
+      "transform": [1, 0, 0, 1, 940, 980],
+      "z": 15,
+      "properties": {
+        "value": {"type": "literal", "value": "●   ○   ○   ○"},
+        "fontSize": {"type": "literal", "value": 24},
+        "color": {"type": "literal", "value": 4294967295},
+        "backgroundColor": {"type": "literal", "value": 0},
+        "padding": {"type": "literal", "value": 4},
+        "width": {"type": "literal", "value": 200},
         "height": {"type": "literal", "value": 40}
       },
       "level": "basic"
     }
   ],
   "graphs": {},
-  "background": 4278190080,
+  "background": 4278523955,
   "accent": 4294967295
 }

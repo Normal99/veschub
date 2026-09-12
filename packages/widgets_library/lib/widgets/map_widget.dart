@@ -16,22 +16,42 @@ class MapWidget extends StatelessWidget {
     final eta = properties['eta'] as String?;
     final distance = properties['distance'] as String?;
     final nextTurn = properties['nextTurn'] as String?;
+    final showMapGraphic = properties['showMapGraphic'] as bool? ?? true;
+    final mapStyle = properties['mapStyle'] as String? ?? 'vector';
+
+    final width = (properties['width'] as num?)?.toDouble();
+    final height = (properties['height'] as num?)?.toDouble();
 
     return applyOpacity(
-      Container(
-        decoration: resolveBoxDecoration(properties),
-        child: Stack(
+      SizedBox(
+        width: width,
+        height: height,
+        child: Container(
+          decoration: resolveBoxDecoration(properties),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+          fit: StackFit.expand,
           children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.map, color: color.withValues(alpha: 0.3), size: 48),
-                  const SizedBox(height: 8),
-                  Text(label, style: TextStyle(color: color.withValues(alpha: 0.5), fontSize: 14)),
-                ],
+            if (showMapGraphic)
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _MapCanvasPainter(
+                    accentColor: accent,
+                    style: mapStyle,
+                  ),
+                ),
               ),
-            ),
+            if (!showMapGraphic)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.map, color: color.withValues(alpha: 0.3), size: 48),
+                    const SizedBox(height: 8),
+                    Text(label, style: TextStyle(color: color.withValues(alpha: 0.5), fontSize: 14)),
+                  ],
+                ),
+              ),
             if (nextTurn != null || eta != null)
               Positioned(
                 top: 8,
@@ -42,13 +62,14 @@ class MapWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: const Color(0xCC000000),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: accent.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
                       if (nextTurn != null) ...[
                         Icon(Icons.navigation, color: accent, size: 16),
                         const SizedBox(width: 6),
-                        Expanded(child: Text(nextTurn, style: const TextStyle(color: Colors.white, fontSize: 13))),
+                        Expanded(child: Text(nextTurn, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold))),
                       ],
                       if (eta != null)
                         Text(eta, style: TextStyle(color: accent, fontSize: 13, fontWeight: FontWeight.w600)),
@@ -64,7 +85,97 @@ class MapWidget extends StatelessWidget {
           ],
         ),
       ),
+    ),
       properties,
     );
   }
+}
+
+class _MapCanvasPainter extends CustomPainter {
+  final Color accentColor;
+  final String style;
+  _MapCanvasPainter({required this.accentColor, required this.style});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final isSatellite = style == 'satellite';
+    final bgPaint = Paint()..color = isSatellite ? const Color(0xFF15221B) : const Color(0xFF0F141C);
+    canvas.drawRect(Offset.zero & size, bgPaint);
+
+    // Terrain/Parks
+    final parkPaint = Paint()..color = isSatellite ? const Color(0xFF1C2E24) : const Color(0xFF141D18);
+    final parkPath = Path()
+      ..moveTo(size.width * 0.1, 0)
+      ..lineTo(size.width * 0.4, 0)
+      ..lineTo(size.width * 0.35, size.height * 0.4)
+      ..lineTo(size.width * 0.05, size.height * 0.3)
+      ..close();
+    canvas.drawPath(parkPath, parkPaint);
+
+    // Minor Roads
+    final minorRoadPaint = Paint()
+      ..color = isSatellite ? const Color(0xFF2C3E35) : const Color(0xFF1E2836)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3;
+
+    final minorPath = Path();
+    for (double y = 40; y < size.height; y += 70) {
+      minorPath.moveTo(0, y);
+      minorPath.lineTo(size.width, y + 20);
+    }
+    for (double x = 60; x < size.width; x += 110) {
+      minorPath.moveTo(x, 0);
+      minorPath.lineTo(x - 30, size.height);
+    }
+    canvas.drawPath(minorPath, minorRoadPaint);
+
+    // Major Highway
+    final majorRoadPaint = Paint()
+      ..color = const Color(0xFF2E3B4E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10;
+    final highwayPath = Path()
+      ..moveTo(size.width * 0.2, size.height)
+      ..cubicTo(size.width * 0.3, size.height * 0.6, size.width * 0.4, size.height * 0.4, size.width * 0.8, 0);
+    canvas.drawPath(highwayPath, majorRoadPaint);
+
+    // Active Navigation Route Line (Cyan/Accent)
+    final routeGlow = Paint()
+      ..color = accentColor.withValues(alpha: 0.4)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+    final routePaint = Paint()
+      ..color = accentColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round;
+
+    final routePath = Path()
+      ..moveTo(size.width * 0.5, size.height * 0.85)
+      ..lineTo(size.width * 0.5, size.height * 0.5)
+      ..cubicTo(size.width * 0.5, size.height * 0.35, size.width * 0.6, size.height * 0.3, size.width * 0.75, size.height * 0.2);
+    canvas.drawPath(routePath, routeGlow);
+    canvas.drawPath(routePath, routePaint);
+
+    // Location Arrow (Vehicle position)
+    final arrowCenter = Offset(size.width * 0.5, size.height * 0.85);
+    final arrowPaint = Paint()..color = const Color(0xFF00E5FF);
+    final arrowPath = Path()
+      ..moveTo(arrowCenter.dx, arrowCenter.dy - 12)
+      ..lineTo(arrowCenter.dx + 9, arrowCenter.dy + 10)
+      ..lineTo(arrowCenter.dx, arrowCenter.dy + 5)
+      ..lineTo(arrowCenter.dx - 9, arrowCenter.dy + 10)
+      ..close();
+
+    // Pulse halo around location arrow
+    final haloPaint = Paint()
+      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.3)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(arrowCenter, 18, haloPaint);
+    canvas.drawPath(arrowPath, arrowPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

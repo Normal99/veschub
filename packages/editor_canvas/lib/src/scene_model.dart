@@ -131,11 +131,15 @@ class SceneModel extends ChangeNotifier {
   void upsert(CanvasNode node) {
     final i = _nodes.indexWhere((n) => n.id == node.id);
     if (i >= 0) {
+      final old = _nodes[i];
       _nodes[i] = node;
+      if (old.z != node.z) {
+        _nodes.sort((a, b) => a.z.compareTo(b.z));
+      }
     } else {
       _nodes.add(node);
+      _nodes.sort((a, b) => a.z.compareTo(b.z));
     }
-    _nodes.sort((a, b) => a.z.compareTo(b.z));
     notifyListeners();
   }
 

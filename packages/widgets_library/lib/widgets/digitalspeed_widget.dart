@@ -30,10 +30,13 @@ class DigitalSpeedWidget extends StatelessWidget {
       ),
       properties,
     );
-    final unitStyle = TextStyle(
-      color: accent,
-      fontSize: (fontSizeRaw.toDouble() * 0.22).clamp(10, 20),
-      fontWeight: FontWeight.w400,
+    final unitStyle = applyTextStyle(
+      TextStyle(
+        color: accent,
+        fontSize: (fontSizeRaw.toDouble() * 0.22).clamp(10, 20),
+        fontWeight: FontWeight.w400,
+      ),
+      properties,
     );
 
     return applyOpacity(

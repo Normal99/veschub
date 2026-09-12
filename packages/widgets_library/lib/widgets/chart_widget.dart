@@ -12,9 +12,9 @@ import 'dart:math' as math;
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:flutter/material.dart';
 
+import '../src/cosmetic_helpers.dart';
 import '../src/format.dart';
 import '../src/theme.dart';
-import '../src/cosmetic_helpers.dart';
 
 /// Renders a `chart` widget from resolved properties:
 ///  * `value`   — current value (num); pushed into the history each repaint
@@ -40,14 +40,14 @@ class _ChartWidgetState extends State<ChartWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = DashboardThemeProvider.of(context);
-    final value = (widget.properties['value'] as num?)?.toDouble();
-    final min = (widget.properties['min'] as num?)?.toDouble();
-    final max = (widget.properties['max'] as num?)?.toDouble();
-    final color = Color((widget.properties['color'] as int?) ?? 0xFF4FC3F7);
+    final value = propDoubleOpt(widget.properties, 'value');
+    final min = propDoubleOpt(widget.properties, 'min');
+    final max = propDoubleOpt(widget.properties, 'max');
+    final color = Color(propInt(widget.properties, 'color', 0xFF4FC3F7));
     final label = widget.properties['label'] as String?;
     final unit = widget.properties['unit'] as String?;
-    final window = (widget.properties['window'] as num?)?.toInt() ?? 120;
-    final fontSizeRaw = (widget.properties['fontSize'] as num?) ?? 20.0;
+    final window = propInt(widget.properties, 'window', 120);
+    final fontSizeRaw = propDouble(widget.properties, 'fontSize', 20.0);
     if (window != _maxSamples) _maxSamples = window;
 
     // Push the latest sample.
@@ -78,9 +78,9 @@ class _ChartWidgetState extends State<ChartWidget> {
               color: color,
               gridColor: theme.secondary.withValues(alpha: 0.2),
               lineWidth: (widget.properties['lineWidth'] as num?)?.toDouble() ?? 2,
-              showGrid: (widget.properties['showGrid'] as bool?) ?? true,
-              smoothCurve: (widget.properties['smoothCurve'] as bool?) ?? true,
-              fillArea: (widget.properties['fillArea'] as bool?) ?? false,
+              showGrid: propBool(widget.properties, 'showGrid', fallback: true),
+              smoothCurve: propBool(widget.properties, 'smoothCurve', fallback: true),
+              fillArea: propBool(widget.properties, 'fillArea'),
               fillColor: (widget.properties['fillColor'] as int?) ?? 0x224FC3F7,
             ),
             child: Column(

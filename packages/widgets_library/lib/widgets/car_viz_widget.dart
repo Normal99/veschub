@@ -1,5 +1,6 @@
 library;
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import '../src/cosmetic_helpers.dart';
@@ -10,14 +11,20 @@ class CarVizWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
-    final accent = Color((properties['accent'] as int?) ?? 0xFF4488FF);
-    final doorLeft = properties['doorLeft'] as bool? ?? false;
-    final doorRight = properties['doorRight'] as bool? ?? false;
-    final laneLeft = properties['laneLeft'] as bool? ?? false;
-    final laneRight = properties['laneRight'] as bool? ?? false;
-    final carAhead = properties['carAhead'] as bool? ?? false;
-    final label = properties['label'] as String?;
+    final colorVal = properties['color'];
+    final color = Color(colorVal is int ? colorVal : 0xFFFFFFFF);
+    final accentVal = properties['accent'];
+    final accent = Color(accentVal is int ? accentVal : 0xFF4488FF);
+    final doorLeft = properties['doorLeft'] == true;
+    final doorRight = properties['doorRight'] == true;
+    final laneLeft = properties['laneLeft'] == true;
+    final laneRight = properties['laneRight'] == true;
+    final carAhead = properties['carAhead'] == true;
+    final showRing = properties['showRing'] == true;
+    final showLabels = properties['showLabels'] == true;
+    final label = properties['label']?.toString();
+    final fontSizeVal = properties['fontSize'];
+    final fontSize = (fontSizeVal is num ? fontSizeVal.toDouble() : null) ?? 14.0;
 
     return applyOpacity(
       Container(
@@ -37,14 +44,31 @@ class CarVizWidget extends StatelessWidget {
                     laneLeft: laneLeft,
                     laneRight: laneRight,
                     carAhead: carAhead,
+                    showRing: showRing,
+                    showLabels: showLabels,
                   ),
                   child: const SizedBox.expand(),
                 ),
               ),
               if (label != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(label, style: TextStyle(color: accent, fontSize: 11)),
+                  padding: const EdgeInsets.only(top: 6),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: applyTextStyle(
+                        TextStyle(
+                          color: accent,
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        properties,
+                      ),
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -63,6 +87,8 @@ class _CarVizPainter extends CustomPainter {
   final bool laneLeft;
   final bool laneRight;
   final bool carAhead;
+  final bool showRing;
+  final bool showLabels;
 
   _CarVizPainter({
     required this.color,
@@ -72,32 +98,74 @@ class _CarVizPainter extends CustomPainter {
     required this.laneLeft,
     required this.laneRight,
     required this.carAhead,
+    required this.showRing,
+    required this.showLabels,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
-    final cy = size.height * 0.6;
-    final carWidth = size.width * 0.55;
-    final carHeight = size.height * 0.7;
+    final cy = size.height * 0.5;
+    final carWidth = size.width * 0.38;
+    final carHeight = size.height * 0.65;
 
-    // Draw lane lines (subtle converging perspective)
-    final lanePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
-      ..color = color.withValues(alpha: 0.2);
+    if (showRing) {
+      final center = Offset(cx, cy);
+      final radius = (math.min(size.width, size.height) / 2) - 4;
 
-    final laneOffset = carWidth * 1.4;
-    canvas.drawLine(
-      Offset(cx - laneOffset, size.height * 0.85),
-      Offset(cx - laneOffset * 0.8, size.height * 0.15),
-      lanePaint,
-    );
-    canvas.drawLine(
-      Offset(cx + laneOffset, size.height * 0.85),
-      Offset(cx + laneOffset * 0.8, size.height * 0.15),
-      lanePaint,
-    );
+      final outerRing = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..color = const Color(0xFF6B6699).withValues(alpha: 0.6);
+
+      final innerRing = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = const Color(0xFF9995C8).withValues(alpha: 0.4);
+
+      canvas.drawCircle(center, radius, outerRing);
+      canvas.drawCircle(center, radius - 8, innerRing);
+
+      if (showLabels) {
+        final textPainterFront = TextPainter(
+          text: const TextSpan(
+            text: 'Front',
+            style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        textPainterFront.paint(canvas, Offset(cx + carWidth * 0.65, cy - carHeight * 0.25));
+
+        final textPainterRear = TextPainter(
+          text: const TextSpan(
+            text: 'Rear',
+            style: TextStyle(color: Color(0xFFCCCCCC), fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        textPainterRear.paint(canvas, Offset(cx + carWidth * 0.65, cy + carHeight * 0.25));
+      }
+    }
+
+    // Draw lane lines
+    if (!showRing) {
+      final lanePaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = color.withValues(alpha: 0.2);
+
+      final laneOffset = carWidth * 1.5;
+      canvas.drawLine(
+        Offset(cx - laneOffset, size.height * 0.85),
+        Offset(cx - laneOffset * 0.75, size.height * 0.15),
+        lanePaint,
+      );
+      canvas.drawLine(
+        Offset(cx + laneOffset, size.height * 0.85),
+        Offset(cx + laneOffset * 0.75, size.height * 0.15),
+        lanePaint,
+      );
+    }
 
     if (laneLeft) {
       final lp = Paint()
@@ -105,8 +173,8 @@ class _CarVizPainter extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx - laneOffset, size.height * 0.85),
-        Offset(cx - laneOffset * 0.8, size.height * 0.15),
+        Offset(cx - carWidth * 1.5, size.height * 0.85),
+        Offset(cx - carWidth * 1.1, size.height * 0.15),
         lp,
       );
     }
@@ -116,55 +184,51 @@ class _CarVizPainter extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = accent;
       canvas.drawLine(
-        Offset(cx + laneOffset, size.height * 0.85),
-        Offset(cx + laneOffset * 0.8, size.height * 0.15),
+        Offset(cx + carWidth * 1.5, size.height * 0.85),
+        Offset(cx + carWidth * 1.1, size.height * 0.15),
         rp,
       );
     }
 
-    // Draw car body (top-down view) - Tesla Model 3-like proportions
+    // Draw car body (top-down view)
     final carPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = color;
-    
-    // Main body - rounded rectangle with Tesla-like shape (longer, sleeker)
+
     final bodyRect = RRect.fromRectAndCorners(
       Rect.fromCenter(center: Offset(cx, cy), width: carWidth, height: carHeight),
-      topLeft: const Radius.circular(32),
-      topRight: const Radius.circular(32),
-      bottomLeft: const Radius.circular(24),
-      bottomRight: const Radius.circular(24),
+      topLeft: const Radius.circular(36),
+      topRight: const Radius.circular(36),
+      bottomLeft: const Radius.circular(28),
+      bottomRight: const Radius.circular(28),
     );
     canvas.drawRRect(bodyRect, carPaint);
 
-    // Windshield (top section) - slightly lighter than background for visibility
     final windshieldPaint = Paint()
       ..style = PaintingStyle.fill
       ..color = const Color(0xFF111111);
     final windshieldRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy - carHeight * 0.4),
-        width: carWidth * 0.98,
-        height: carHeight * 0.38,
+        center: Offset(cx, cy - carHeight * 0.15),
+        width: carWidth * 0.82,
+        height: carHeight * 0.4,
       ),
-      topLeft: const Radius.circular(20),
-      topRight: const Radius.circular(20),
+      topLeft: const Radius.circular(22),
+      topRight: const Radius.circular(22),
     );
     canvas.drawRRect(windshieldRect, windshieldPaint);
 
-    // Rear window (bottom section) - slightly lighter than background
     final rearRect = RRect.fromRectAndCorners(
       Rect.fromCenter(
-        center: Offset(cx, cy + carHeight * 0.4),
-        width: carWidth * 0.98,
-        height: carHeight * 0.34,
+        center: Offset(cx, cy + carHeight * 0.32),
+        width: carWidth * 0.82,
+        height: carHeight * 0.28,
       ),
-      bottomLeft: const Radius.circular(18),
-      bottomRight: const Radius.circular(18),
+      bottomLeft: const Radius.circular(20),
+      bottomRight: const Radius.circular(20),
     );
     canvas.drawRRect(rearRect, windshieldPaint);
 
-    // Draw door indicators (orange highlight on sides when open)
     if (doorLeft) {
       final doorPaint = Paint()
         ..style = PaintingStyle.fill
@@ -197,7 +261,6 @@ class _CarVizPainter extends CustomPainter {
       canvas.drawRRect(doorRect, doorPaint);
     }
 
-    // Draw car ahead (smaller, faded version)
     if (carAhead) {
       final aheadPaint = Paint()
         ..style = PaintingStyle.fill
@@ -208,10 +271,10 @@ class _CarVizPainter extends CustomPainter {
           width: carWidth * 0.7,
           height: carHeight * 0.9,
         ),
-        topLeft: const Radius.circular(24),
-        topRight: const Radius.circular(24),
-        bottomLeft: const Radius.circular(20),
-        bottomRight: const Radius.circular(20),
+        topLeft: const Radius.circular(26),
+        topRight: const Radius.circular(26),
+        bottomLeft: const Radius.circular(22),
+        bottomRight: const Radius.circular(22),
       );
       canvas.drawRRect(aheadRect, aheadPaint);
     }
@@ -223,5 +286,7 @@ class _CarVizPainter extends CustomPainter {
       old.doorRight != doorRight ||
       old.laneLeft != laneLeft ||
       old.laneRight != laneRight ||
-      old.carAhead != carAhead;
+      old.carAhead != carAhead ||
+      old.showRing != showRing ||
+      old.showLabels != showLabels;
 }

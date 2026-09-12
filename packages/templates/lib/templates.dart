@@ -2,3 +2,4 @@
 library;
 
 export 'src/built_in_templates.dart';
+export 'src/advanced_templates.dart';

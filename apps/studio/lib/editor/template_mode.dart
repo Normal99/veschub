@@ -36,6 +36,22 @@ final previewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.tempMotor: 55.0,
     TelemetryKey.currentMotor: 18.5,
     TelemetryKey.fault: 0,
+    TelemetryKey.tachometer: 403438,
+    TelemetryKey.tachometerAbs: 403438,
+    TelemetryKey.ampHoursDischarged: 12.5,
+    TelemetryKey.wattHoursDischarged: 600,
+    TelemetryKey.gpsSpeed: 0.0,
+    // Custom keys used by advanced example dashboards.
+    'speed': 0.0,
+    'battery_pct': 85.0,
+    'range': 270.0,
+    'power': 0.0,
+    'odometer': 403.438,
+    'trip_distance': 45.2,
+    'trip_time': 78.0,
+    'avg_speed': 35.0,
+    'energy_used': 12.5,
+    'duty_cycle': 0.0,
   });
   ref.onDispose(store.dispose);
   return store;
@@ -55,12 +71,20 @@ class TemplateMode extends ConsumerWidget {
   }
 }
 
-/// The gallery grid of starter templates.
+/// The gallery grid of starter templates, grouped by category.
 class _TemplateGallery extends ConsumerWidget {
   const _TemplateGallery();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final allTemplates = [...builtInTemplates, ...advancedDashboardTemplates];
+    final categories = <String, List<DashboardTemplate>>{};
+    for (final t in allTemplates) {
+      categories.putIfAbsent(t.category, () => []).add(t);
+    }
+    final orderedCategories = categories.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -76,14 +100,52 @@ class _TemplateGallery extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: GridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.4,
-              children: [
-                for (final t in builtInTemplates) _TemplateCard(template: t),
-              ],
+            child: ListView.builder(
+              itemCount: orderedCategories.length,
+              itemBuilder: (context, index) {
+                final entry = orderedCategories[index];
+                return _CategorySection(
+                  category: entry.key,
+                  templates: entry.value,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySection extends StatelessWidget {
+  final String category;
+  final List<DashboardTemplate> templates;
+  const _CategorySection({required this.category, required this.templates});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            category,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 260,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: templates.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
+              itemBuilder: (context, index) => SizedBox(
+                width: 340,
+                child: _TemplateCard(template: templates[index]),
+              ),
             ),
           ),
         ],
@@ -151,6 +213,15 @@ class _TemplateCard extends ConsumerWidget {
         'performance' => Icons.bolt,
         'commuter' => Icons.directions_car,
         'offroad' => Icons.terrain,
+        'tesla-model3' => Icons.electric_car,
+        'porsche-taycan' => Icons.sports_motorsports,
+        'bmw-classic' => Icons.precision_manufacturing,
+        'audi-virtual-cockpit' => Icons.flight,
+        'vesc-mobile' => Icons.sensors,
+        'android-auto' => Icons.android,
+        'carplay' => Icons.phone_iphone,
+        'ford-digital' => Icons.local_shipping,
+        'vw-digital' => Icons.airport_shuttle,
         _ => Icons.dashboard,
       };
 }

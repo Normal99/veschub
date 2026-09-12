@@ -46,6 +46,7 @@ class DashboardTemplate {
   final String id;
   final String name;
   final String description;
+  final String category;
   final CapabilityLevel level;
 
   /// The base document. Knob edits are applied on top of this.
@@ -58,6 +59,7 @@ class DashboardTemplate {
     required this.id,
     required this.name,
     required this.description,
+    this.category = '',
     required this.level,
     required this.document,
     required this.knobs,

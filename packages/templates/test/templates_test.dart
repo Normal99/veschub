@@ -46,6 +46,12 @@ void main() {
         'image',
         'web',
         'paint',
+        'battery_range',
+        'tripstats',
+        'car_viz',
+        'power_flow',
+        'gear_selector',
+        'minigauge',
       };
       for (final t in builtInTemplates) {
         for (final w in t.document.widgets) {

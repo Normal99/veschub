@@ -67,6 +67,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
   // Active drag state for the current gesture.
   _DragSession? _drag;
 
+  // Live drag transforms — bypasses scene.upsert for smooth 60 fps.
+  final Map<String, Matrix4> _dragTransforms = {};
+
   @override
   void initState() {
     super.initState();
@@ -101,6 +104,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final dragIds = _dragTransforms.keys.toSet();
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
           onPanStart: _onPanStart,
@@ -109,16 +113,35 @@ class _EditorCanvasState extends State<EditorCanvas> {
           child: Stack(
             clipBehavior: Clip.hardEdge,
             children: [
-              // Nodes (back to front).
-              for (final node in widget.scene.nodes)
-                Transform(
-                  transform: node.transform,
-                  child: SizedBox(
-                    width: widget.nodeWidth(node),
-                    height: widget.nodeHeight(node),
-                    child: widget.nodeBuilder(node),
+              // Nodes (back to front) — use live drag transforms when dragging.
+              for (final node in widget.scene.nodes) ...[
+                if (dragIds.contains(node.id))
+                  // Dragged node: just the Transform with no scene sync.
+                  Transform(
+                    key: ValueKey(node.id),
+                    transform: _dragTransforms[node.id]!,
+                    child: RepaintBoundary(
+                      key: ValueKey('${node.id}_inner'),
+                      child: SizedBox(
+                        width: widget.nodeWidth(node),
+                        height: widget.nodeHeight(node),
+                        child: widget.nodeBuilder(node),
+                      ),
+                    ),
+                  )
+                else
+                  RepaintBoundary(
+                    key: ValueKey(node.id),
+                    child: Transform(
+                      transform: node.transform,
+                      child: SizedBox(
+                        width: widget.nodeWidth(node),
+                        height: widget.nodeHeight(node),
+                        child: widget.nodeBuilder(node),
+                      ),
+                    ),
                   ),
-                ),
+              ],
               // Selection handles + marquee overlay.
               Positioned.fill(
                 child: CustomPaint(
@@ -128,10 +151,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
                     nodeWidth: widget.nodeWidth,
                     nodeHeight: widget.nodeHeight,
                     marquee: _marqueeRect(),
+                    dragTransforms: _dragTransforms,
                     guides: _drag?.guides ?? const [],
-                    showGrid: widget.showGrid,
-                    gridSize: widget.snapConfig.gridSize,
-                    canvasSize: widget.canvasSize,
                   ),
                 ),
               ),
@@ -140,7 +161,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
         );
       },
     );
-  }
+}
 
   Rect? _marqueeRect() {
     if (_marqueeStart == null || _marqueeCurrent == null) return null;
@@ -215,12 +236,19 @@ class _EditorCanvasState extends State<EditorCanvas> {
 
   void _onPanEnd(DragEndDetails details) {
     if (_drag != null) {
-      // Commit the transform as a single undoable command.
+      // Commit transforms from drag map to scene model + command stack.
       final changes = <String, (Matrix4, Matrix4)>{};
       for (final entry in _drag!.startTransforms.entries) {
-        final current = widget.scene[entry.key]?.transform;
-        if (current != null && !_matrixEq(current, entry.value)) {
-          changes[entry.key] = (entry.value.clone(), current.clone());
+        final finalTransform = _dragTransforms[entry.key];
+        if (finalTransform != null &&
+            !_matrixEq(finalTransform, entry.value)) {
+          changes[entry.key] =
+              (entry.value.clone(), finalTransform.clone());
+          widget.scene.upsert(
+            widget.scene[entry.key]!.copyWith(
+              transform: finalTransform,
+            ),
+          );
         }
       }
       if (changes.isNotEmpty) {
@@ -230,6 +258,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
       }
       widget.onGuidesChanged?.call(const []);
       _drag = null;
+      _dragTransforms.clear();
     }
     _marqueeStart = null;
     _marqueeCurrent = null;
@@ -241,7 +270,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
     if (drag == null) return;
     final delta = p - drag.origin;
 
-    // Compute moving bounds (union) for guide snapping.
+    // Compute moving bounds for guide snapping.
     final movingBounds = <Rect>[];
     for (final id in drag.startTransforms.keys) {
       final node = widget.scene[id];
@@ -258,8 +287,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
     final otherBounds = widget.scene.nodes
         .where((n) => !drag.startTransforms.containsKey(n.id))
         .map(
-          (n) =>
-              transformedBounds(n, widget.nodeWidth(n), widget.nodeHeight(n)),
+          (n) => transformedBounds(
+              n, widget.nodeWidth(n), widget.nodeHeight(n)),
         )
         .toList();
 
@@ -276,26 +305,27 @@ class _EditorCanvasState extends State<EditorCanvas> {
       canvasSize: widget.canvasSize,
     );
 
-    // Apply the snapped delta directly to the scene (live preview; committed on end).
+    // Update drag transforms directly — NO scene.upsert, NO notifyListeners.
     for (final entry in drag.startTransforms.entries) {
       final node = widget.scene[entry.key];
       if (node != null) {
         final snapped = snap.adjustedOffset;
         final t = Matrix4.translationValues(snapped.dx, snapped.dy, 0)
           ..multiply(entry.value);
-        final cmat = _clampTransform(t, node);
-        widget.scene.upsert(node.copyWith(transform: cmat));
+        _dragTransforms[entry.key] = _clampTransform(t, node);
       }
     }
     drag.guides = snap.guides;
     widget.onGuidesChanged?.call(snap.guides);
+    setState(() {});
   }
 
   void _applyResize(Offset current) {
     assert(_drag != null && _drag!.isResize);
     final drag = _drag!;
     final newDist = (current - drag.resizeAnchor).distance;
-    final scale = drag.initialScale > 0 ? newDist / drag.initialScale : 1.0;
+    final scale =
+        drag.initialScale > 0 ? newDist / drag.initialScale : 1.0;
     final clamped = scale.clamp(0.2, 5.0);
     final anchor = drag.resizeAnchor;
     for (final entry in drag.startTransforms.entries) {
@@ -306,9 +336,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
         ..scaleByDouble(clamped, clamped, 1.0, 1)
         ..translateByDouble(-anchor.dx, -anchor.dy, 0, 1)
         ..multiply(entry.value);
-      final cmat = _clampTransform(t, node);
-      widget.scene.upsert(node.copyWith(transform: cmat));
+      _dragTransforms[entry.key] = _clampTransform(t, node);
     }
+    setState(() {});
   }
 
   Matrix4 _clampTransform(Matrix4 transform, CanvasNode node) {
@@ -420,10 +450,8 @@ class _OverlayPainter extends CustomPainter {
   final double Function(CanvasNode) nodeWidth;
   final double Function(CanvasNode) nodeHeight;
   final Rect? marquee;
+  final Map<String, Matrix4>? dragTransforms;
   final List<GuideLine> guides;
-  final bool showGrid;
-  final double gridSize;
-  final Size? canvasSize;
 
   _OverlayPainter({
     required this.scene,
@@ -431,11 +459,13 @@ class _OverlayPainter extends CustomPainter {
     required this.nodeWidth,
     required this.nodeHeight,
     required this.marquee,
-    required this.guides,
-    required this.showGrid,
-    required this.gridSize,
-    required this.canvasSize,
+    this.dragTransforms,
+    this.guides = const [],
   });
+
+  Matrix4 _currentTransform(CanvasNode node) {
+    return dragTransforms?[node.id] ?? node.transform;
+  }
 
   static final _selectPaint = Paint()
     ..style = PaintingStyle.stroke
@@ -455,23 +485,18 @@ class _OverlayPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
     ..color = const Color(0xFFFF4081);
-  static final _gridPaint = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 0.5
-    ..color = const Color(0x20FFFFFF);
-  static final _centerPaint = Paint()
-    ..style = PaintingStyle.stroke
-    ..strokeWidth = 1.0
-    ..color = const Color(0x30FFFFFF);
 
   @override
   void paint(Canvas canvas, Size size) {
-    _drawGrid(canvas, size);
-    // Selection outlines + handles.
     for (final id in selection) {
       final node = scene[id];
       if (node == null) continue;
-      final bounds = transformedBounds(node, nodeWidth(node), nodeHeight(node));
+      final tempNode = CanvasNode(
+        id: node.id,
+        transform: _currentTransform(node),
+      );
+      final bounds = transformedBounds(
+          tempNode, nodeWidth(node), nodeHeight(node));
       canvas.drawRect(bounds.inflate(2), _selectPaint);
       for (final corner in [
         bounds.topLeft,
@@ -484,7 +509,6 @@ class _OverlayPainter extends CustomPainter {
       }
     }
 
-    // Marquee.
     if (marquee != null) {
       canvas.drawRect(marquee!, _marqueeFill);
       canvas.drawRect(marquee!, _marqueePaint);
@@ -512,24 +536,7 @@ class _OverlayPainter extends CustomPainter {
   bool shouldRepaint(covariant _OverlayPainter old) =>
       old.marquee != marquee ||
       old.guides != guides ||
-      old.showGrid != showGrid ||
-      old.gridSize != gridSize ||
       old.scene != scene ||
-      old.selection != selection;
-
-  void _drawGrid(Canvas canvas, Size size) {
-    if (!showGrid || gridSize <= 0) return;
-    final w = canvasSize?.width ?? size.width;
-    final h = canvasSize?.height ?? size.height;
-    for (var x = 0.0; x <= w; x += gridSize) {
-      canvas.drawLine(Offset(x, 0), Offset(x, h), _gridPaint);
-    }
-    for (var y = 0.0; y <= h; y += gridSize) {
-      canvas.drawLine(Offset(0, y), Offset(w, y), _gridPaint);
-    }
-    if (canvasSize != null) {
-      canvas.drawLine(Offset(w / 2, 0), Offset(w / 2, h), _centerPaint);
-      canvas.drawLine(Offset(0, h / 2), Offset(w, h / 2), _centerPaint);
-    }
-  }
+      old.selection != selection ||
+      old.dragTransforms != dragTransforms;
 }

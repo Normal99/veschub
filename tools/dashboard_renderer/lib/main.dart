@@ -7,7 +7,6 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
@@ -259,27 +258,31 @@ class _DashboardRendererState extends State<DashboardRenderer> {
       );
     }
 
+    final canvasW = _document!.canvas.width;
+    final canvasH = _document!.canvas.height;
+
     return Scaffold(
       backgroundColor: Color(_document!.background),
-      body: RepaintBoundary(
-        child: Stack(
-          children: [
-            // Render all widgets
-            for (final widget in _document!.widgets)
-              if (_resolved.containsKey(widget.id))
-                _buildWidget(widget, _resolved[widget.id]!),
-            
-            // Screenshot button (top-right)
-            Positioned(
-              top: 10,
-              right: 10,
-              child: IconButton(
-                icon: const Icon(Icons.camera_alt, color: Colors.white54),
-                onPressed: _takeScreenshot,
-                tooltip: 'Take screenshot',
+      body: Center(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: canvasW,
+            height: canvasH,
+            child: RepaintBoundary(
+              child: Container(
+                color: Color(_document!.background),
+                child: Stack(
+                  children: [
+                    // Render all widgets
+                    for (final widget in _document!.widgets)
+                      if (_resolved.containsKey(widget.id))
+                        _buildWidget(widget, _resolved[widget.id]!),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

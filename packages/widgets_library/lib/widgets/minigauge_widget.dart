@@ -11,19 +11,24 @@ class MiniGaugeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = (properties['value'] as num?)?.toDouble() ?? 0;
-    final min = (properties['min'] as num?)?.toDouble() ?? 0;
-    final max = (properties['max'] as num?)?.toDouble() ?? 1;
-    final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
+    final value = propDouble(properties, 'value', 0.0);
+    final min = propDouble(properties, 'min', 0.0);
+    final max = propDouble(properties, 'max', 1.0);
+    final color = propColor(properties, 'color', 0xFFFFFFFF);
     final accent = Color((properties['accent'] as int?) ?? 0xFF888888);
     final label = properties['label'] as String?;
     final unit = properties['unit'] as String?;
     final icon = properties['icon'] as String?;
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 16.0;
+    final fontSizeRaw = propDouble(properties, 'fontSize', 16.0);
     final style = properties['style'] as String? ?? 'arc';
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     final t = ((value - min) / span).clamp(0.0, 1.0);
+
+    final isVertical = (properties['orientation'] == 'vertical') ||
+        (properties['width'] != null &&
+            properties['height'] != null &&
+            (properties['height'] as num) > (properties['width'] as num) * 1.5);
 
     return applyOpacity(
       Container(
@@ -31,7 +36,9 @@ class MiniGaugeWidget extends StatelessWidget {
         child: Padding(
           padding: resolvePadding(properties),
           child: style == 'bar'
-              ? _buildBar(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble())
+              ? (isVertical
+                  ? _buildVerticalBar(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble())
+                  : _buildBar(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble()))
               : _buildArc(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble()),
         ),
       ),
@@ -116,6 +123,43 @@ class MiniGaugeWidget extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation(color),
             minHeight: 4,
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVerticalBar(double t, double value, Color color, Color accent, String? label, String? unit, String? icon, double fontSize) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (icon != null || label != null)
+          Column(
+            children: [
+              if (icon != null) Icon(_iconFor(icon), color: accent, size: fontSize * 0.9),
+              if (label != null) Text(label, style: TextStyle(color: accent, fontSize: fontSize * 0.65, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: RotatedBox(
+              quarterTurns: 3,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: t,
+                  backgroundColor: color.withValues(alpha: 0.15),
+                  valueColor: AlwaysStoppedAnimation(color),
+                  minHeight: 12,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Text(
+          unit != null ? '$unit ${_format(value)}' : _format(value),
+          style: TextStyle(color: color, fontSize: fontSize * 0.75, fontWeight: FontWeight.bold),
         ),
       ],
     );

@@ -1,11 +1,8 @@
 library;
 
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
-
 import 'package:dashboard_runtime/dashboard_runtime.dart';
-
 import '../src/cosmetic_helpers.dart';
 
 class GaugeWidget extends StatelessWidget {
@@ -15,42 +12,44 @@ class GaugeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = (properties['value'] as num?)?.toDouble() ?? 0;
-    final min = (properties['min'] as num?)?.toDouble() ?? 0;
-    final max = (properties['max'] as num?)?.toDouble() ?? 1;
-    final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
-    final accent = Color((properties['accent'] as int?) ?? 0xFFFFFFFF);
-    final label = properties['label'] as String?;
-    final unit = properties['unit'] as String?;
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 32.0;
+    final value = propDouble(properties, 'value', 0.0);
+    final min = propDouble(properties, 'min', 0.0);
+    final max = propDouble(properties, 'max', 1.0);
+    final color = propColor(properties, 'color', 0xFFFFFFFF);
+    final accent = propColor(properties, 'accent', 0xFFFFFFFF);
+    final label = properties['label'] is String ? properties['label'] as String : null;
+    final unit = properties['unit'] is String ? properties['unit'] as String : null;
+    final fontSizeRaw = propDouble(properties, 'fontSize', 32.0);
 
-    final centerValue = (properties['centerValue'] as num?)?.toDouble() ?? value;
-    final centerUnit = properties['centerUnit'] as String? ?? unit;
-    final subLabel = properties['subLabel'] as String?;
-    final showCenterText = properties['showCenterText'] as bool? ?? false;
-    final showTickLabels = properties['showTickLabels'] as bool? ?? false;
+    final centerValue = propDouble(properties, 'centerValue', value);
+    final centerUnit = (properties['centerUnit'] is String ? properties['centerUnit'] as String : null) ?? unit;
+    final subLabel = properties['subLabel'] is String ? properties['subLabel'] as String : null;
+    final showCenterText = propBool(properties, 'showCenterText');
+    final showTickLabels = propBool(properties, 'showTickLabels');
 
-    final innerValue = (properties['innerValue'] as num?)?.toDouble();
-    final innerMin = (properties['innerMin'] as num?)?.toDouble() ?? 0;
-    final innerMax = (properties['innerMax'] as num?)?.toDouble() ?? 1;
-    final innerColor = Color((properties['innerColor'] as int?) ?? 0xFF888888);
-    final innerArcWidth = (properties['innerArcWidth'] as num?)?.toDouble() ?? 4;
+    final innerValue = propDoubleOpt(properties, 'innerValue');
+    final innerMin = propDouble(properties, 'innerMin', 0.0);
+    final innerMax = propDouble(properties, 'innerMax', 1.0);
+    final innerColor = propColor(properties, 'innerColor', 0xFF888888);
+    final innerArcWidth = propDouble(properties, 'innerArcWidth', 4.0);
     final showInnerRing = innerValue != null;
 
-    final redlineStart = (properties['redlineStart'] as num?)?.toDouble();
-    final redlineColor = Color((properties['redlineColor'] as int?) ?? 0xFFFF0000);
+    final redlineStart = propDoubleOpt(properties, 'redlineStart');
+    final redlineColor = propColor(properties, 'redlineColor', 0xFFFF0000);
     final showRedline = redlineStart != null;
 
     final span = (max - min) == 0 ? 1.0 : (max - min);
     final t = ((value - min) / span).clamp(0.0, 1.0);
     final innerT = showInnerRing
-        ? (((innerValue! - innerMin) / ((innerMax - innerMin) == 0 ? 1.0 : (innerMax - innerMin))).clamp(0.0, 1.0))
+        ? (((innerValue - innerMin) /
+                ((innerMax - innerMin) == 0 ? 1.0 : (innerMax - innerMin)))
+            .clamp(0.0, 1.0))
         : 0.0;
 
     final sweepAngle = (properties['sweepAngle'] as num?)?.toDouble() ?? 270;
     final startAngle = (properties['startAngle'] as num?)?.toDouble() ?? 135;
     final arcWidth = (properties['arcWidth'] as num?)?.toDouble() ?? 10;
-    final needleStyle = properties['needleStyle'] as String? ?? 'arc';
+    final needleStyle = properties['needleStyle'] as String? ?? 'needle';
     final tickCount = (properties['tickCount'] as num?)?.toInt() ?? 10;
 
     return applyOpacity(
@@ -81,6 +80,7 @@ class GaugeWidget extends StatelessWidget {
               min: min,
               max: max,
               tickLabelColor: accent.withValues(alpha: 0.7),
+              fontFamily: properties['fontFamily'] as String?,
             ),
             child: showCenterText
                 ? Center(
@@ -93,18 +93,23 @@ class GaugeWidget extends StatelessWidget {
                             TextStyle(
                               color: color,
                               fontSize: fontSizeRaw.toDouble(),
-                              fontWeight: FontWeight.w600,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontWeight: FontWeight.w500,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                             properties,
                           ),
                         ),
                         if (centerUnit != null || subLabel != null)
                           Text(
-                            [centerUnit, subLabel].whereType<String>().join(' '),
+                            [centerUnit, subLabel]
+                                .whereType<String>()
+                                .join(' '),
                             style: TextStyle(
                               color: accent.withValues(alpha: 0.7),
-                              fontSize: (fontSizeRaw.toDouble() * 0.35).clamp(9, 14),
+                              fontSize:
+                                  math.max(16.0, fontSizeRaw.toDouble() * 0.15),
                             ),
                           ),
                       ],
@@ -122,7 +127,9 @@ class GaugeWidget extends StatelessWidget {
                               color: color,
                               fontSize: fontSizeRaw.toDouble(),
                               fontWeight: FontWeight.w600,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
                             ),
                             properties,
                           ),
@@ -133,7 +140,8 @@ class GaugeWidget extends StatelessWidget {
                             style: applyTextStyle(
                               TextStyle(
                                 color: accent.withValues(alpha: 0.8),
-                                fontSize: (fontSizeRaw.toDouble() * 0.38).clamp(9, 14),
+                                fontSize: (fontSizeRaw.toDouble() * 0.38)
+                                    .clamp(9, 14),
                               ),
                               properties,
                             ),
@@ -176,6 +184,7 @@ class _GaugePainter extends CustomPainter {
   final double min;
   final double max;
   final Color tickLabelColor;
+  final String? fontFamily;
 
   _GaugePainter({
     required this.t,
@@ -199,6 +208,7 @@ class _GaugePainter extends CustomPainter {
     required this.min,
     required this.max,
     required this.tickLabelColor,
+    this.fontFamily,
   });
 
   @override
@@ -206,6 +216,7 @@ class _GaugePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.max(0.0, (size.shortestSide / 2) - 8);
     final rect = Rect.fromCircle(center: center, radius: radius);
+
     final start = (startAngle - 90) * math.pi / 180;
     final full = sweepAngle * math.pi / 180;
 
@@ -260,18 +271,22 @@ class _GaugePainter extends CustomPainter {
     if (tickCount > 1) {
       for (var i = 0; i <= tickCount; i++) {
         final a = start + (full * i / tickCount);
-        final outer = center + Offset(math.cos(a) * radius, math.sin(a) * radius);
+        final outer =
+            center + Offset(math.cos(a) * radius, math.sin(a) * radius);
         final inner = center +
             Offset(math.cos(a) * (radius - 8), math.sin(a) * (radius - 8));
         canvas.drawLine(inner, outer, tick);
 
         if (showTickLabels) {
           final labelR = radius - 18;
-          final lp = center + Offset(math.cos(a) * labelR, math.sin(a) * labelR);
+          final lp =
+              center + Offset(math.cos(a) * labelR, math.sin(a) * labelR);
           final v = min + (max - min) * i / tickCount;
           final text = TextPainter(
             text: TextSpan(
-              text: v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1),
+              text: v == v.roundToDouble()
+                  ? v.toStringAsFixed(0)
+                  : v.toStringAsFixed(1),
               style: TextStyle(color: tickLabelColor, fontSize: 9),
             ),
             textAlign: TextAlign.center,
@@ -284,35 +299,27 @@ class _GaugePainter extends CustomPainter {
 
     if (needleStyle == 'needle') {
       final a = start + full * t;
-      final tip = center + Offset(math.cos(a) * (radius - 20), math.sin(a) * (radius - 20));
+      final tip = center +
+          Offset(math.cos(a) * (radius - 16), math.sin(a) * (radius - 16));
       final needle = Paint()
         ..style = PaintingStyle.fill
         ..color = color;
+      final perpAngle = a + math.pi / 2;
+      final base1 =
+          center + Offset(math.cos(perpAngle) * 5, math.sin(perpAngle) * 5);
+      final base2 =
+          center - Offset(math.cos(perpAngle) * 5, math.sin(perpAngle) * 5);
       final path = Path()
         ..moveTo(tip.dx, tip.dy)
-        ..lineTo(center.dx - 4, center.dy)
-        ..lineTo(center.dx + 4, center.dy)
+        ..lineTo(base1.dx, base1.dy)
+        ..lineTo(base2.dx, base2.dy)
         ..close();
       canvas.drawPath(path, needle);
-      canvas.drawCircle(center, 4, Paint()..color = color);
+      canvas.drawCircle(center, 10, Paint()..color = const Color(0xFF1E1E1E));
+      canvas.drawCircle(center, 5, Paint()..color = accent);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _GaugePainter old) =>
-      old.t != t ||
-      old.innerT != innerT ||
-      old.color != color ||
-      old.accent != accent ||
-      old.innerColor != innerColor ||
-      old.tickCount != tickCount ||
-      old.sweepAngle != sweepAngle ||
-      old.startAngle != startAngle ||
-      old.arcWidth != arcWidth ||
-      old.innerArcWidth != innerArcWidth ||
-      old.needleStyle != needleStyle ||
-      old.showInnerRing != showInnerRing ||
-      old.showRedline != showRedline ||
-      old.redlineStart != redlineStart ||
-      old.showTickLabels != showTickLabels;
+  bool shouldRepaint(covariant _GaugePainter old) => true;
 }

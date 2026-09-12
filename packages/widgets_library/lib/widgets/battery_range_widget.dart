@@ -10,17 +10,17 @@ class BatteryRangeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final batteryLevel = (properties['batteryLevel'] as num?)?.toDouble() ?? 0.0;
-    final range = (properties['range'] as num?)?.toDouble() ?? 0;
-    final temperature = (properties['temperature'] as num?)?.toDouble();
-    final color = Color((properties['color'] as int?) ?? 0xFF00FF00);
-    final textColor = Color((properties['textColor'] as int?) ?? 0xFFFFFFFF);
-    final accentColor = Color((properties['accentColor'] as int?) ?? 0xFF888888);
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 16.0;
-    final showRange = properties['showRange'] as bool? ?? true;
-    final showTemperature = properties['showTemperature'] as bool? ?? true;
-    final unit = properties['unit'] as String? ?? 'km';
-    final tempUnit = properties['tempUnit'] as String? ?? '°C';
+    final batteryLevel = propDouble(properties, 'batteryLevel', 0.0);
+    final range = propDouble(properties, 'range', 0.0);
+    final temperature = propDoubleOpt(properties, 'temperature');
+    final color = propColor(properties, 'color', 0xFF00FF00);
+    final textColor = propColor(properties, 'textColor', 0xFFFFFFFF);
+    final accentColor = propColor(properties, 'accentColor', 0xFF888888);
+    final fontSizeRaw = propDouble(properties, 'fontSize', 16.0);
+    final showRange = propBool(properties, 'showRange', fallback: true);
+    final showTemperature = propBool(properties, 'showTemperature', fallback: true);
+    final unit = properties['unit'] is String ? properties['unit'] as String : 'km';
+    final tempUnit = properties['tempUnit'] is String ? properties['tempUnit'] as String : '°C';
 
     final barWidth = 360.0;
     final barHeight = 56.0;
@@ -31,51 +31,71 @@ class BatteryRangeWidget extends StatelessWidget {
         decoration: resolveBoxDecoration(properties),
         child: Padding(
           padding: resolvePadding(properties),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: barWidth,
-                height: barHeight,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final availW = constraints.maxWidth.isFinite ? constraints.maxWidth : 400.0;
+              final barH = (constraints.maxHeight.isFinite ? constraints.maxHeight - 16 : 48.0).clamp(20.0, 56.0);
+              final barW = (showRange ? (availW * 0.45) : availW * 0.85).clamp(80.0, 360.0);
+              final filledW = barW * batteryLevel.clamp(0.0, 1.0);
+
+              final textStyle = applyTextStyle(
+                TextStyle(
+                  color: textColor,
+                  fontSize: fontSizeRaw,
+                  fontWeight: FontWeight.w700,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    width: filledWidth,
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(10),
+                properties,
+              );
+
+              final tempStyle = applyTextStyle(
+                TextStyle(
+                  color: accentColor,
+                  fontSize: fontSizeRaw,
+                  fontWeight: FontWeight.w500,
+                ),
+                properties,
+              );
+
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: barW,
+                      height: barH,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(barH * 0.25),
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: filledW,
+                          height: barH,
+                          decoration: BoxDecoration(
+                            color: color,
+                            borderRadius: BorderRadius.circular(barH * 0.25),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (showRange) ...[
+                      const SizedBox(width: 16),
+                      Text('${range.round()} $unit', style: textStyle),
+                    ],
+                    if (showTemperature && temperature != null) ...[
+                      const SizedBox(width: 16),
+                      Text('${temperature.round()}$tempUnit', style: tempStyle),
+                    ],
+                  ],
                 ),
-              ),
-              if (showRange) ...[
-                const SizedBox(width: 32),
-                Text(
-                  '${range.round()} $unit',
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: fontSizeRaw.toDouble(),
-                    fontWeight: FontWeight.w700,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-              if (showTemperature && temperature != null) ...[
-                const SizedBox(width: 36),
-                Text(
-                  '${temperature.round()}$tempUnit',
-                  style: TextStyle(
-                    color: accentColor,
-                    fontSize: fontSizeRaw.toDouble(),
-                  ),
-                ),
-              ],
-            ],
+              );
+            },
           ),
         ),
       ),

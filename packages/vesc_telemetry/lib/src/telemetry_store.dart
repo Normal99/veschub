@@ -35,6 +35,13 @@ class TelemetryStore {
     _controllerFor(key).add(value);
   }
 
+  /// Updates all entries in [map] and notifies subscribers.
+  void updateFromMap(Map<String, dynamic> map) {
+    for (final entry in map.entries) {
+      update(entry.key, entry.value);
+    }
+  }
+
   /// Removes [key] and closes its stream (if any).
   void remove(String key) {
     if (_disposed) return;

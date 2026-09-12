@@ -21,15 +21,15 @@ class TextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final value = properties['value'];
-    final label = properties['label'] as String?;
-    final unit = properties['unit'] as String?;
-    final color = (properties['color'] as int?) ?? 0xFFFFFFFF;
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 40.0;
+    final label = properties['label'] is String ? properties['label'] as String : null;
+    final unit = properties['unit'] is String ? properties['unit'] as String : null;
+    final color = propInt(properties, 'color', 0xFFFFFFFF);
+    final fontSizeRaw = propDouble(properties, 'fontSize', 40.0);
 
     final text = _format(value);
     final baseStyle = TextStyle(
       color: Color(color),
-      fontSize: fontSizeRaw.toDouble(),
+      fontSize: fontSizeRaw,
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final valueStyle = applyTextStyle(

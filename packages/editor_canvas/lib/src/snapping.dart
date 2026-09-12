@@ -14,14 +14,18 @@ class SnapConfig {
   /// Enable alignment-guide snapping to other nodes' edges/centres.
   final bool enableGuides;
 
+  /// Enable snapping to the canvas centre lines (vertical + horizontal).
+  final bool enableCenterSnap;
+
   const SnapConfig({
     this.gridSize = 8.0,
     this.threshold = 8.0,
     this.enableGuides = true,
+    this.enableCenterSnap = true,
   });
 
   static const disabled =
-      SnapConfig(gridSize: 0, threshold: 0, enableGuides: false);
+      SnapConfig(gridSize: 0, threshold: 0, enableGuides: false, enableCenterSnap: false);
 }
 
 /// The result of a snap operation: the adjusted delta and any guides drawn.
@@ -63,11 +67,17 @@ SnapResult snapTranslation({
     delta = _snapToGrid(delta, movingBounds, config, canvasSize);
   }
 
-  if (!config.enableGuides || config.threshold <= 0) {
-    return SnapResult(delta, const []);
+  // Centre-line snapping (canvas vertical / horizontal centre lines).
+  final guides = <GuideLine>[];
+  if (config.enableCenterSnap && canvasSize != null) {
+    delta = _snapToCenter(delta, movingBounds, config, canvasSize, guides);
   }
 
-  final guides = <GuideLine>[];
+  if (!config.enableGuides || config.threshold <= 0) {
+    return SnapResult(delta, guides);
+  }
+
+  // Alignment-guide snapping to other nodes.
   final moved = movingBounds.shift(delta);
 
   // Candidate x lines: moving left/centre/right vs other left/centre/right.
@@ -200,4 +210,74 @@ Offset _snapToGrid(Offset delta, Rect bounds, SnapConfig config, Size? canvasSiz
     bestAdjustX != null ? delta.dx + bestAdjustX : delta.dx,
     bestAdjustY != null ? delta.dy + bestAdjustY : delta.dy,
   );
+}
+
+/// Snaps widget edges (left, center, right / top, center, bottom) to the
+/// canvas centre lines (vertical at canvasWidth/2, horizontal at
+/// canvasHeight/2). Returns the adjusted delta and appends guides to [out].
+Offset _snapToCenter(
+  Offset delta,
+  Rect bounds,
+  SnapConfig config,
+  Size canvasSize,
+  List<GuideLine> out,
+) {
+  final threshold = config.threshold;
+  final centerX = canvasSize.width / 2;
+  final centerY = canvasSize.height / 2;
+
+  // Snap X: check left, center, right edges against vertical centre line.
+  final left = bounds.left + delta.dx;
+  final cx = bounds.center.dx + delta.dx;
+  final right = bounds.right + delta.dx;
+  final edgesX = [left, cx, right];
+  double? bestDistX;
+  for (final edge in edgesX) {
+    final dist = (edge - centerX).abs();
+    if (dist <= threshold && (bestDistX == null || dist < bestDistX)) {
+      bestDistX = dist;
+    }
+  }
+  if (bestDistX != null) {
+    // Snap whichever edge is closest to the centre line.
+    final leftDist = (left - centerX).abs();
+    final rightDist = (right - centerX).abs();
+    final cxDist = (cx - centerX).abs();
+    var bestAdjustX = centerX - cx;
+    if (leftDist <= threshold && (bestAdjustX == centerX - cx || leftDist < cxDist)) {
+      bestAdjustX = centerX - left;
+    } else if (rightDist <= threshold && (bestAdjustX == centerX - cx || rightDist < cxDist)) {
+      bestAdjustX = centerX - right;
+    }
+    delta = Offset(delta.dx + bestAdjustX, delta.dy);
+    out.add(GuideLine.vertical(centerX));
+  }
+
+  // Snap Y: check top, center, bottom edges against horizontal centre line.
+  final top = bounds.top + delta.dy;
+  final cy = bounds.center.dy + delta.dy;
+  final bottom = bounds.bottom + delta.dy;
+  final edgesY = [top, cy, bottom];
+  double? bestDistY;
+  for (final edge in edgesY) {
+    final dist = (edge - centerY).abs();
+    if (dist <= threshold && (bestDistY == null || dist < bestDistY)) {
+      bestDistY = dist;
+    }
+  }
+  if (bestDistY != null) {
+    final topDist = (top - centerY).abs();
+    final bottomDist = (bottom - centerY).abs();
+    final cyDist = (cy - centerY).abs();
+    var bestAdjustY = centerY - cy;
+    if (topDist <= threshold && (bestAdjustY == centerY - cy || topDist < cyDist)) {
+      bestAdjustY = centerY - top;
+    } else if (bottomDist <= threshold && (bestAdjustY == centerY - cy || bottomDist < cyDist)) {
+      bestAdjustY = centerY - bottom;
+    }
+    delta = Offset(delta.dx, delta.dy + bestAdjustY);
+    out.add(GuideLine.horizontal(centerY));
+  }
+
+  return delta;
 }

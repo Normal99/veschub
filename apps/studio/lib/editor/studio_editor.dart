@@ -41,10 +41,15 @@ const PaintProgram _samplePaintProgram = PaintProgram(ops: [
 class StudioEditor extends ConsumerWidget {
   const StudioEditor({super.key});
 
+  static Map<String, Binding> defaultProperties(String kind) =>
+      _CanvasAreaState.defaultProperties(kind);
+
+  static int? parseHexColor(String input) =>
+      _LiteralEditorState.parseHexColor(input);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(editorModeProvider);
-    final level = ref.watch(capabilityLevelProvider);
     final commands = ref.watch(commandStackProvider);
 
     return Scaffold(
@@ -94,7 +99,9 @@ class StudioEditor extends ConsumerWidget {
           ),
           IconButton(
             icon: Icon(
-              ref.watch(layersVisibleProvider) ? Icons.layers_clear : Icons.layers,
+              ref.watch(layersVisibleProvider)
+                  ? Icons.layers_clear
+                  : Icons.layers,
             ),
             onPressed: () {
               ref.read(layersVisibleProvider.notifier).state =
@@ -122,18 +129,6 @@ class StudioEditor extends ConsumerWidget {
                       ref.read(editorModeProvider.notifier).state = s.first,
                 ),
                 const SizedBox(width: 16),
-                DropdownButton<CapabilityLevel>(
-                  value: level,
-                  items: CapabilityLevel.values
-                      .map((l) => DropdownMenuItem(
-                            value: l,
-                            child: Text(l.name.capitalize()),
-                          ))
-                      .toList(),
-                  onChanged: (l) => ref
-                      .read(capabilityLevelProvider.notifier)
-                      .state = l ?? level,
-                ),
               ],
             ),
           ),
@@ -226,7 +221,8 @@ class StudioEditor extends ConsumerWidget {
     );
     final json = const JsonEncoder.withIndent('  ').convert(doc.toJson());
     final dir = await getApplicationDocumentsDirectory();
-    final safeName = name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+    final safeName =
+        name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
     final file = File('${dir.path}/$safeName.veschub.json');
     try {
       await file.writeAsString(json);
@@ -441,135 +437,393 @@ class _WidgetPalette extends ConsumerWidget {
   /// Each template has a name, icon, and a map of properties that make it
   /// visually distinct (dial geometry, needle, ticks, colour scheme).
 
-  static final _templates = <String, List<({String name, IconData icon, Map<String, Binding> props})>>{
+  static final _templates = <String,
+      List<({String name, IconData icon, Map<String, Binding> props})>>{
     'gauge': [
-      // --- Car-inspired dial geometries ---
       (
-        name: 'BMW Classic',
+        name: 'Speedometer',
         icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 20, arc: 8, colour: 0xFFFF4400, accent: 0xFFFFffff, bg: 0xFF0D0D0D, rad: 4, bw: 0),
+        props: _dial(
+            sweep: 270,
+            ticks: 10,
+            arc: 10,
+            colour: 0xFFFFFFFF,
+            accent: 0xFF888888,
+            unit: 'km/h',
+            fSize: 48,
+            w: 300,
+            h: 300),
       ),
       (
-        name: 'VW Digital',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 180, start: 180, ticks: 8, arc: 6, colour: 0xFF4FC3F7, accent: 0xFF888888, bg: 0xFF0A0A14, rad: 8, bw: 1, bc: 0x22222222),
+        name: 'Tachometer',
+        icon: Icons.show_chart,
+        props: _dial(
+            sweep: 270,
+            ticks: 8,
+            arc: 8,
+            colour: 0xFFEF5350,
+            accent: 0xFFFF8A80,
+            unit: 'RPM',
+            fSize: 36,
+            w: 280,
+            h: 280),
       ),
       (
-        name: 'Mercedes',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 12, arc: 10, colour: 0xFFC0C0C0, accent: 0xFF808080, bg: 0xFF080808, rad: 12, bw: 1, bc: 0x22FFFFFF),
+        name: 'Battery %',
+        icon: Icons.battery_full,
+        props: _dial(
+            sweep: 180,
+            ticks: 5,
+            arc: 8,
+            colour: 0xFF66BB6A,
+            accent: 0xFF4FC3F7,
+            unit: '%',
+            fSize: 40,
+            w: 240,
+            h: 240),
       ),
       (
-        name: 'Tesla S',
-        icon: Icons.speed,
-        props: _dial(needle: 'arc', sweep: 270, start: 135, ticks: 4, arc: 3, colour: 0xFFFFFFFF, accent: 0xFF444444, bg: 0xFF080808, rad: 0, bw: 0),
+        name: 'Tesla Style',
+        icon: Icons.electric_car,
+        props: {
+          'value': T('speed'),
+          'min': L(0),
+          'max': L(320),
+          'needleStyle': L('arc'),
+          'sweepAngle': L(360),
+          'startAngle': L(270),
+          'tickCount': L(16),
+          'arcWidth': L(3),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF666666),
+          'showCenterText': L(true),
+          'centerValue': T('speed'),
+          'centerUnit': L('km/h'),
+          'showTickLabels': L(true),
+          'fontSize': L(80),
+          'backgroundColor': L(0x00000000),
+          'borderRadius': L(0),
+          'padding': L(24),
+          'width': L(320),
+          'height': L(320),
+        },
       ),
       (
-        name: 'Audi VC',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 24, arc: 6, colour: 0xFFF05030, accent: 0xFFEEEEEE, bg: 0xFF050510, rad: 6, bw: 0),
+        name: 'BMW Amber',
+        icon: Icons.directions_car,
+        props: {
+          'value': T('speed'),
+          'min': L(0),
+          'max': L(260),
+          'needleStyle': L('needle'),
+          'sweepAngle': L(270),
+          'startAngle': L(135),
+          'tickCount': L(13),
+          'arcWidth': L(8),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFFFFA500),
+          'label': L('km/h'),
+          'showCenterText': L(true),
+          'centerValue': T('speed'),
+          'showTickLabels': L(true),
+          'fontSize': L(48),
+          'backgroundColor': L(0xFF0A0A0A),
+          'borderRadius': L(120),
+          'padding': L(16),
+          'width': L(320),
+          'height': L(320),
+        },
       ),
       (
-        name: 'Porsche',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 30, arc: 8, colour: 0xFF00CC66, accent: 0xFFCCCC00, bg: 0xFF0A0A0A, rad: 8, bw: 1, bc: 0x22FFD700),
+        name: 'Audi Sport',
+        icon: Icons.auto_awesome,
+        props: {
+          'value': T('erpm'),
+          'min': L(0),
+          'max': L(8000),
+          'needleStyle': L('needle'),
+          'sweepAngle': L(270),
+          'startAngle': L(135),
+          'tickCount': L(8),
+          'arcWidth': L(6),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF4488FF),
+          'label': L('1/min x1000'),
+          'showCenterText': L(true),
+          'centerValue': T('erpm'),
+          'centerUnit': L('rpm'),
+          'showTickLabels': L(true),
+          'redlineStart': L(0.82),
+          'redlineColor': L(0xFFFF0000),
+          'fontSize': L(48),
+          'backgroundColor': L(0xFF050510),
+          'borderRadius': L(12),
+          'padding': L(16),
+          'width': L(320),
+          'height': L(320),
+        },
       ),
       (
-        name: 'Rally Pod',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 360, start: 90, ticks: 20, arc: 12, colour: 0xFFFF4400, accent: 0xFF000000, bg: 0xFF000000, rad: 4, bw: 1, bc: 0x44FF4400),
+        name: 'Porsche Green',
+        icon: Icons.sports_motorsports,
+        props: {
+          'value': T('speed'),
+          'min': L(0),
+          'max': L(340),
+          'needleStyle': L('needle'),
+          'sweepAngle': L(270),
+          'startAngle': L(135),
+          'tickCount': L(12),
+          'arcWidth': L(8),
+          'color': L(0xFF00CC66),
+          'accent': L(0xFF888888),
+          'label': L('mph'),
+          'showCenterText': L(true),
+          'centerValue': T('speed'),
+          'centerUnit': L('mph'),
+          'showTickLabels': L(true),
+          'fontSize': L(56),
+          'backgroundColor': L(0xFF0A0A0A),
+          'borderRadius': L(120),
+          'padding': L(16),
+          'width': L(320),
+          'height': L(320),
+        },
       ),
       (
-        name: 'Classic',
-        icon: Icons.speed,
-        props: _dial(needle: 'needle', sweep: 270, start: 135, ticks: 10, arc: 8, colour: 0xFFFFFFFF, accent: 0xFF888888, bg: 0xFF111111, rad: 8, bw: 1, bc: 0x22444444),
+        name: 'Minimal Arc',
+        icon: Icons.circle_outlined,
+        props: _dial(
+            sweep: 180,
+            ticks: 5,
+            arc: 4,
+            colour: 0xFFFFFFFF,
+            accent: 0x66333333,
+            unit: '',
+            fSize: 36,
+            w: 240,
+            h: 180),
       ),
     ],
     'bar': [
       (
         name: 'Horizontal',
         icon: Icons.bar_chart,
-        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFF4FC3F7), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'padding': L(8), 'opacity': L(1.0)},
+        props: {
+          'value': T('duty'),
+          'min': L(0),
+          'max': L(1),
+          'color': L(0xFF4FC3F7),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(6),
+          'padding': L(8),
+          'width': L(300),
+          'height': L(80)
+        },
       ),
       (
         name: 'Vertical',
         icon: Icons.bar_chart,
-        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFF66BB6A), 'orientation': L('vertical'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'padding': L(8)},
+        props: {
+          'value': T('duty'),
+          'min': L(0),
+          'max': L(1),
+          'color': L(0xFF66BB6A),
+          'orientation': L('vertical'),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(6),
+          'padding': L(8),
+          'width': L(80),
+          'height': L(300)
+        },
       ),
       (
         name: 'Thin',
         icon: Icons.bar_chart,
-        props: {'value': T('current.motor'), 'min': L(0), 'max': L(100), 'color': L(0xFFEF5350), 'backgroundColor': L(0x00000000), 'borderRadius': L(2), 'padding': L(2), 'opacity': L(0.9)},
+        props: {
+          'value': T('current.motor'),
+          'min': L(0),
+          'max': L(100),
+          'color': L(0xFFEF5350),
+          'backgroundColor': L(0x00000000),
+          'borderRadius': L(2),
+          'padding': L(2),
+          'width': L(300),
+          'height': L(60)
+        },
       ),
       (
         name: 'Wide Card',
         icon: Icons.bar_chart,
-        props: {'value': T('duty'), 'min': L(0), 'max': L(1), 'color': L(0xFFFF9800), 'backgroundColor': L(0xFF1E1E2E), 'borderRadius': L(12), 'borderWidth': L(1), 'borderColor': L(0x33FFFFFF), 'padding': L(16)},
+        props: {
+          'value': T('duty'),
+          'min': L(0),
+          'max': L(1),
+          'color': L(0xFFFF9800),
+          'backgroundColor': L(0xFF1E1E2E),
+          'borderRadius': L(12),
+          'borderWidth': L(1),
+          'borderColor': L(0x33FFFFFF),
+          'padding': L(16),
+          'width': L(380),
+          'height': L(100)
+        },
       ),
     ],
     'text': [
       (
         name: 'Sans',
         icon: Icons.text_fields,
-        props: {'value': T('v_in'), 'label': L('Voltage'), 'unit': L('V'), 'fontSize': L(40), 'color': L(0xFFFFFFFF), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(10)},
+        props: {
+          'value': T('v_in'),
+          'label': L('Voltage'),
+          'unit': L('V'),
+          'fontSize': L(40),
+          'color': L(0xFFFFFFFF),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'padding': L(10),
+          'width': L(200),
+          'height': L(100)
+        },
       ),
       (
         name: 'Mono',
         icon: Icons.text_fields,
-        props: {'value': T('erpm'), 'label': L('RPM'), 'fontSize': L(48), 'fontWeight': L('bold'), 'color': L(0xFF4FC3F7), 'backgroundColor': L(0x00000000), 'padding': L(8)},
+        props: {
+          'value': T('erpm'),
+          'label': L('RPM'),
+          'fontSize': L(48),
+          'fontWeight': L('bold'),
+          'color': L(0xFF4FC3F7),
+          'backgroundColor': L(0x00000000),
+          'padding': L(8),
+          'width': L(220),
+          'height': L(100)
+        },
       ),
       (
         name: 'Compact',
         icon: Icons.text_fields,
-        props: {'value': T('current.motor'), 'label': L('Motor'), 'unit': L('A'), 'fontSize': L(24), 'color': L(0xFF66BB6A), 'backgroundColor': L(0xFF1A1A2A), 'borderRadius': L(6), 'padding': L(6)},
+        props: {
+          'value': T('current.motor'),
+          'label': L('Motor'),
+          'unit': L('A'),
+          'fontSize': L(24),
+          'color': L(0xFF66BB6A),
+          'backgroundColor': L(0xFF1A1A2A),
+          'borderRadius': L(6),
+          'padding': L(6),
+          'width': L(160),
+          'height': L(70)
+        },
       ),
     ],
     'chart': [
       (
         name: 'Line Chart',
         icon: Icons.show_chart,
-        props: {'value': T('erpm'), 'min': L(0), 'max': L(30000), 'label': L('RPM'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'lineWidth': L(2), 'smoothCurve': L(true), 'padding': L(8)},
+        props: {
+          'value': T('erpm'),
+          'min': L(0),
+          'max': L(30000),
+          'label': L('RPM'),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'lineWidth': L(2),
+          'smoothCurve': L(true),
+          'padding': L(8)
+        },
       ),
       (
         name: 'Area Chart',
         icon: Icons.show_chart,
-        props: {'value': T('current.motor'), 'min': L(0), 'max': L(100), 'label': L('Motor A'), 'color': L(0xFF66BB6A), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fillArea': L(true), 'fillColor': L(0x1166BB6A), 'lineWidth': L(1.5), 'padding': L(8)},
+        props: {
+          'value': T('current.motor'),
+          'min': L(0),
+          'max': L(100),
+          'label': L('Motor A'),
+          'color': L(0xFF66BB6A),
+          'backgroundColor': L(0xFF0D0D1A),
+          'borderRadius': L(8),
+          'fillArea': L(true),
+          'fillColor': L(0x1166BB6A),
+          'lineWidth': L(1.5),
+          'padding': L(8)
+        },
       ),
       (
         name: 'Bare Chart',
         icon: Icons.show_chart,
-        props: {'value': T('erpm'), 'min': L(0), 'max': L(30000), 'backgroundColor': L(0x00000000), 'showGrid': L(false), 'lineWidth': L(3), 'borderRadius': L(0), 'padding': L(0)},
+        props: {
+          'value': T('erpm'),
+          'min': L(0),
+          'max': L(30000),
+          'backgroundColor': L(0x00000000),
+          'showGrid': L(false),
+          'lineWidth': L(3),
+          'borderRadius': L(0),
+          'padding': L(0)
+        },
       ),
     ],
     'status': [
       (
         name: 'Pill',
         icon: Icons.warning,
-        props: {'fault': T('fault'), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(20), 'fontSize': L(14), 'padding': L(10)},
+        props: {
+          'fault': T('fault'),
+          'backgroundColor': L(0xFF1A1A2E),
+          'borderRadius': L(20),
+          'fontSize': L(14),
+          'padding': L(10)
+        },
       ),
       (
         name: 'Inline',
         icon: Icons.warning,
-        props: {'fault': T('fault'), 'backgroundColor': L(0x00000000), 'borderRadius': L(4), 'fontSize': L(12), 'padding': L(4)},
+        props: {
+          'fault': T('fault'),
+          'backgroundColor': L(0x00000000),
+          'borderRadius': L(4),
+          'fontSize': L(12),
+          'padding': L(4)
+        },
       ),
     ],
     'image': [
       (
         name: 'Rounded',
         icon: Icons.image,
-        props: {'src': L('assets/images/placeholder.png'), 'borderRadius': L(12), 'borderWidth': L(1), 'borderColor': L(0x44FFFFFF)},
+        props: {
+          'src': L('assets/images/placeholder.png'),
+          'borderRadius': L(12),
+          'borderWidth': L(1),
+          'borderColor': L(0x44FFFFFF)
+        },
       ),
       (
         name: 'Shadowed',
         icon: Icons.image,
-        props: {'src': L('assets/images/placeholder.png'), 'borderRadius': L(8), 'shadowBlur': L(8), 'shadowColor': L(0x44000000), 'shadowOffsetY': L(4)},
+        props: {
+          'src': L('assets/images/placeholder.png'),
+          'borderRadius': L(8),
+          'shadowBlur': L(8),
+          'shadowColor': L(0x44000000),
+          'shadowOffsetY': L(4)
+        },
       ),
     ],
     'web': [
       (
         name: 'Page',
         icon: Icons.public,
-        props: {'url': L('https://example.com'), 'title': L('Live page'), 'borderRadius': L(8), 'padding': L(4)},
+        props: {
+          'url': L('https://example.com'),
+          'title': L('Live page'),
+          'borderRadius': L(8),
+          'padding': L(4)
+        },
       ),
     ],
     'paint': [
@@ -583,153 +837,509 @@ class _WidgetPalette extends ConsumerWidget {
       (
         name: 'Tesla Style',
         icon: Icons.speed,
-        props: {'value': T('erpm'), 'unit': L('km/h'), 'fontSize': L(72), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'showUnit': L(true), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'padding': L(16), 'fontWeight': L('w200')},
+        props: {
+          'value': T('erpm'),
+          'unit': L('km/h'),
+          'fontSize': L(72),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'showUnit': L(true),
+          'backgroundColor': L(0xFF000000),
+          'borderRadius': L(0),
+          'padding': L(16),
+          'fontWeight': L('w200'),
+          'width': L(280),
+          'height': L(140)
+        },
       ),
       (
         name: 'Compact',
         icon: Icons.speed,
-        props: {'value': T('erpm'), 'unit': L('mph'), 'fontSize': L(48), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'showUnit': L(true), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(12)},
+        props: {
+          'value': T('erpm'),
+          'unit': L('mph'),
+          'fontSize': L(48),
+          'color': L(0xFF4FC3F7),
+          'accent': L(0xFF666666),
+          'showUnit': L(true),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'padding': L(12),
+          'width': L(240),
+          'height': L(110)
+        },
       ),
       (
         name: 'With Sub',
         icon: Icons.speed,
-        props: {'value': T('erpm'), 'unit': L('km/h'), 'fontSize': L(64), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'showUnit': L(true), 'subLabel': L('Range'), 'subValue': T('battery_pct'), 'backgroundColor': L(0xFF0A0A0A), 'borderRadius': L(0), 'padding': L(16)},
+        props: {
+          'value': T('erpm'),
+          'unit': L('km/h'),
+          'fontSize': L(64),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'showUnit': L(true),
+          'subLabel': L('Range'),
+          'subValue': T('battery_pct'),
+          'backgroundColor': L(0xFF0A0A0A),
+          'borderRadius': L(0),
+          'padding': L(16),
+          'width': L(260),
+          'height': L(160)
+        },
       ),
     ],
     'music': [
       (
         name: 'Player',
         icon: Icons.music_note,
-        props: {'title': L('Track Name'), 'artist': L('Artist'), 'progress': L(30), 'duration': L(180), 'showControls': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'albumColor': L(0xFF333333), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(12), 'padding': L(12)},
+        props: {
+          'title': L('Track Name'),
+          'artist': L('Artist'),
+          'progress': L(30),
+          'duration': L(180),
+          'showControls': L(true),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'albumColor': L(0xFF333333),
+          'backgroundColor': L(0xFF1A1A2E),
+          'borderRadius': L(12),
+          'padding': L(12)
+        },
       ),
       (
         name: 'Mini',
         icon: Icons.music_note,
-        props: {'title': L('Now Playing'), 'artist': L('Artist'), 'showControls': L(false), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'albumColor': L(0xFF444444), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'padding': L(8)},
+        props: {
+          'title': L('Now Playing'),
+          'artist': L('Artist'),
+          'showControls': L(false),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'albumColor': L(0xFF444444),
+          'backgroundColor': L(0xFF0D0D1A),
+          'borderRadius': L(8),
+          'padding': L(8)
+        },
       ),
     ],
     'tripstats': [
       (
         name: 'Trip Info',
         icon: Icons.info_outline,
-        props: {'label1': L('Distance'), 'value1': T('trip_distance'), 'unit1': L('km'), 'label2': L('Time'), 'value2': T('trip_time'), 'unit2': L('min'), 'label3': L('Avg Speed'), 'value3': T('avg_speed'), 'unit3': L('km/h'), 'label4': L('Energy'), 'value4': T('energy_used'), 'unit4': L('Wh'), 'columns': L(2), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'fontSize': L(20), 'padding': L(12)},
+        props: {
+          'label1': L('Distance'),
+          'value1': T('trip_distance'),
+          'unit1': L('km'),
+          'label2': L('Time'),
+          'value2': T('trip_time'),
+          'unit2': L('min'),
+          'label3': L('Avg Speed'),
+          'value3': T('avg_speed'),
+          'unit3': L('km/h'),
+          'label4': L('Energy'),
+          'value4': T('energy_used'),
+          'unit4': L('Wh'),
+          'columns': L(2),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'fontSize': L(20),
+          'padding': L(12),
+          'width': L(300),
+          'height': L(200)
+        },
       ),
       (
         name: 'Compact',
         icon: Icons.info_outline,
-        props: {'label1': L('ODO'), 'value1': T('odometer'), 'unit1': L('km'), 'label2': L('Trip'), 'value2': T('trip_distance'), 'unit2': L('km'), 'label3': L('Max'), 'value3': T('max_speed'), 'unit3': L('km/h'), 'label4': L('Avg'), 'value4': T('avg_speed'), 'unit4': L('km/h'), 'columns': L(2), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF0A0A14), 'borderRadius': L(6), 'fontSize': L(16), 'padding': L(8)},
+        props: {
+          'label1': L('ODO'),
+          'value1': T('odometer'),
+          'unit1': L('km'),
+          'label2': L('Trip'),
+          'value2': T('trip_distance'),
+          'unit2': L('km'),
+          'label3': L('Avg'),
+          'value3': T('avg_speed'),
+          'unit3': L('km/h'),
+          'columns': L(2),
+          'color': L(0xFF4FC3F7),
+          'accent': L(0xFF666666),
+          'backgroundColor': L(0xFF0A0A14),
+          'borderRadius': L(6),
+          'fontSize': L(16),
+          'padding': L(8),
+          'width': L(280),
+          'height': L(140)
+        },
       ),
     ],
     'power': [
       (
         name: 'Power Meter',
         icon: Icons.bolt,
-        props: {'power': T('power'), 'maxPower': L(10000), 'color': L(0xFF00FF88), 'regenColor': L(0xFF4488FF), 'accent': L(0xFF888888), 'showBars': L(true), 'label': L('Power'), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(28), 'padding': L(12)},
+        props: {
+          'power': T('power'),
+          'maxPower': L(10000),
+          'color': L(0xFF00FF88),
+          'regenColor': L(0xFF4488FF),
+          'accent': L(0xFF888888),
+          'showBars': L(true),
+          'label': L('Power'),
+          'backgroundColor': L(0xFF0D0D1A),
+          'borderRadius': L(8),
+          'fontSize': L(28),
+          'padding': L(12)
+        },
       ),
       (
         name: 'Simple',
         icon: Icons.bolt,
-        props: {'power': T('power'), 'maxPower': L(5000), 'color': L(0xFFFF9800), 'regenColor': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'showBars': L(false), 'label': L('Watts'), 'backgroundColor': L(0xFF111122), 'borderRadius': L(6), 'fontSize': L(24), 'padding': L(8)},
+        props: {
+          'power': T('power'),
+          'maxPower': L(5000),
+          'color': L(0xFFFF9800),
+          'regenColor': L(0xFF4FC3F7),
+          'accent': L(0xFF666666),
+          'showBars': L(false),
+          'label': L('Watts'),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(6),
+          'fontSize': L(24),
+          'padding': L(8)
+        },
       ),
     ],
     'warnings': [
       (
         name: 'Warning Icons',
         icon: Icons.warning,
-        props: {'activeWarnings': L('temp,battery'), 'color': L(0xFFFF4444), 'warningColor': L(0xFFFFAA00), 'infoColor': L(0xFF4488FF), 'iconSize': L(24), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(8), 'padding': L(8)},
+        props: {
+          'activeWarnings': L('temp,battery'),
+          'color': L(0xFFFF4444),
+          'warningColor': L(0xFFFFAA00),
+          'infoColor': L(0xFF4488FF),
+          'iconSize': L(24),
+          'backgroundColor': L(0xFF1A1A2E),
+          'borderRadius': L(8),
+          'padding': L(8)
+        },
       ),
       (
         name: 'Status',
         icon: Icons.check_circle,
-        props: {'activeWarnings': L(''), 'color': L(0xFF00CC66), 'warningColor': L(0xFFFFAA00), 'infoColor': L(0xFF4488FF), 'iconSize': L(20), 'backgroundColor': L(0x00000000), 'borderRadius': L(0), 'padding': L(4)},
+        props: {
+          'activeWarnings': L(''),
+          'color': L(0xFF00CC66),
+          'warningColor': L(0xFFFFAA00),
+          'infoColor': L(0xFF4488FF),
+          'iconSize': L(20),
+          'backgroundColor': L(0x00000000),
+          'borderRadius': L(0),
+          'padding': L(4)
+        },
       ),
     ],
     'minigauge': [
       (
         name: 'Battery',
         icon: Icons.battery_full,
-        props: {'value': T('battery_pct'), 'min': L(0), 'max': L(100), 'label': L('Battery'), 'unit': L('%'), 'icon': L('battery'), 'style': L('arc'), 'color': L(0xFF00CC66), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'fontSize': L(16), 'padding': L(8)},
+        props: {
+          'value': T('battery_pct'),
+          'min': L(0),
+          'max': L(100),
+          'label': L('Battery'),
+          'unit': L('%'),
+          'icon': L('battery'),
+          'style': L('arc'),
+          'color': L(0xFF00CC66),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'fontSize': L(16),
+          'padding': L(8)
+        },
       ),
       (
         name: 'Temp Bar',
         icon: Icons.thermostat,
-        props: {'value': T('temp.mosfet'), 'min': L(0), 'max': L(100), 'label': L('Temp'), 'unit': L('°C'), 'icon': L('temp'), 'style': L('bar'), 'color': L(0xFFFF5722), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(6), 'fontSize': L(14), 'padding': L(6)},
+        props: {
+          'value': T('temp.mosfet'),
+          'min': L(0),
+          'max': L(100),
+          'label': L('Temp'),
+          'unit': L('°C'),
+          'icon': L('temp'),
+          'style': L('bar'),
+          'color': L(0xFFFF5722),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF1A1A2E),
+          'borderRadius': L(6),
+          'fontSize': L(14),
+          'padding': L(6)
+        },
       ),
       (
         name: 'Fuel',
         icon: Icons.local_gas_station,
-        props: {'value': T('battery_pct'), 'min': L(0), 'max': L(100), 'label': L('Fuel'), 'unit': L('%'), 'icon': L('fuel'), 'style': L('arc'), 'color': L(0xFFFF9800), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(14), 'padding': L(8)},
+        props: {
+          'value': T('battery_pct'),
+          'min': L(0),
+          'max': L(100),
+          'label': L('Fuel'),
+          'unit': L('%'),
+          'icon': L('fuel'),
+          'style': L('arc'),
+          'color': L(0xFFFF9800),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF0D0D1A),
+          'borderRadius': L(8),
+          'fontSize': L(14),
+          'padding': L(8)
+        },
       ),
     ],
     'appgrid': [
       (
         name: 'CarPlay',
         icon: Icons.apps,
-        props: {'apps': L('phone,music,maps,messages,settings,weather,clock,calculator'), 'columns': L(4), 'iconSize': L(28), 'showLabels': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'padding': L(16)},
+        props: {
+          'apps':
+              L('phone,music,maps,messages,settings,weather,clock,calculator'),
+          'columns': L(4),
+          'iconSize': L(28),
+          'showLabels': L(true),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF000000),
+          'borderRadius': L(0),
+          'padding': L(16)
+        },
       ),
       (
         name: 'Compact',
         icon: Icons.apps,
-        props: {'apps': L('phone,music,maps,settings'), 'columns': L(2), 'iconSize': L(24), 'showLabels': L(false), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(12)},
+        props: {
+          'apps': L('phone,music,maps,settings'),
+          'columns': L(2),
+          'iconSize': L(24),
+          'showLabels': L(false),
+          'color': L(0xFF4FC3F7),
+          'accent': L(0xFF666666),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'padding': L(12)
+        },
       ),
     ],
     'statusbar': [
       (
         name: 'Top Bar',
         icon: Icons.bar_chart,
-        props: {'time': L('12:34'), 'battery': L(0.85), 'signal': L(0.75), 'showTime': L(true), 'showBattery': L(true), 'showSignal': L(true), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF000000), 'borderRadius': L(0), 'fontSize': L(13), 'padding': L(8)},
+        props: {
+          'time': L('12:34'),
+          'battery': L(0.85),
+          'signal': L(0.75),
+          'showTime': L(true),
+          'showBattery': L(true),
+          'showSignal': L(true),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF000000),
+          'borderRadius': L(0),
+          'fontSize': L(13),
+          'padding': L(8)
+        },
       ),
       (
         name: 'Minimal',
         icon: Icons.bar_chart,
-        props: {'time': L(''), 'battery': L(0.5), 'signal': L(0.5), 'showTime': L(false), 'showBattery': L(true), 'showSignal': L(false), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0x00000000), 'borderRadius': L(0), 'fontSize': L(12), 'padding': L(4)},
+        props: {
+          'time': L(''),
+          'battery': L(0.5),
+          'signal': L(0.5),
+          'showTime': L(false),
+          'showBattery': L(true),
+          'showSignal': L(false),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0x00000000),
+          'borderRadius': L(0),
+          'fontSize': L(12),
+          'padding': L(4)
+        },
       ),
     ],
     'climate': [
       (
         name: 'Temperature',
         icon: Icons.thermostat,
-        props: {'temperature': L(22), 'targetTemp': L(23), 'fanSpeed': L(0.5), 'mode': L('auto'), 'unit': L('°C'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF888888), 'backgroundColor': L(0xFF1A1A2E), 'borderRadius': L(12), 'fontSize': L(32), 'padding': L(16)},
+        props: {
+          'temperature': L(22),
+          'targetTemp': L(23),
+          'fanSpeed': L(0.5),
+          'mode': L('auto'),
+          'unit': L('°C'),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF888888),
+          'backgroundColor': L(0xFF1A1A2E),
+          'borderRadius': L(12),
+          'fontSize': L(32),
+          'padding': L(16)
+        },
       ),
       (
         name: 'Compact',
         icon: Icons.thermostat,
-        props: {'temperature': L(20), 'mode': L('cool'), 'unit': L('°F'), 'color': L(0xFF4FC3F7), 'accent': L(0xFF666666), 'backgroundColor': L(0xFF0D0D1A), 'borderRadius': L(8), 'fontSize': L(24), 'padding': L(12)},
+        props: {
+          'temperature': L(20),
+          'mode': L('cool'),
+          'unit': L('°F'),
+          'color': L(0xFF4FC3F7),
+          'accent': L(0xFF666666),
+          'backgroundColor': L(0xFF0D0D1A),
+          'borderRadius': L(8),
+          'fontSize': L(24),
+          'padding': L(12)
+        },
       ),
     ],
     'car_viz': [
       (
         name: 'Lane Assist',
         icon: Icons.directions_car,
-        props: {'laneLeft': L(false), 'laneRight': L(false), 'carAhead': L(false), 'label': L('Lane Keep'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF4488FF), 'backgroundColor': L(0xFF0A0A14), 'borderRadius': L(8), 'padding': L(8)},
+        props: {
+          'laneLeft': L(false),
+          'laneRight': L(false),
+          'carAhead': L(false),
+          'label': L('Lane Keep'),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF4488FF),
+          'backgroundColor': L(0xFF0A0A14),
+          'borderRadius': L(8),
+          'padding': L(8)
+        },
       ),
     ],
     'map': [
       (
         name: 'Navigation',
         icon: Icons.map,
-        props: {'label': L('Navigation'), 'eta': L('15 min'), 'distance': L('8.2 km'), 'nextTurn': L('Turn right'), 'color': L(0xFFFFFFFF), 'accent': L(0xFF4488FF), 'backgroundColor': L(0xFF111122), 'borderRadius': L(8), 'padding': L(8)},
+        props: {
+          'label': L('Navigation'),
+          'eta': L('15 min'),
+          'distance': L('8.2 km'),
+          'nextTurn': L('Turn right'),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF4488FF),
+          'backgroundColor': L(0xFF111122),
+          'borderRadius': L(8),
+          'padding': L(8),
+          'width': L(400),
+          'height': L(300)
+        },
+      ),
+    ],
+    'battery_range': [
+      (
+        name: 'Battery Range',
+        icon: Icons.battery_charging_full,
+        props: {
+          'batteryLevel': L(0.8),
+          'range': T('range'),
+          'temperature': T('temp.mosfet'),
+          'color': L(0xFF00CC66),
+          'textColor': L(0xFFFFFFFF),
+          'accentColor': L(0xFF888888),
+          'showRange': L(true),
+          'showTemperature': L(true),
+          'unit': L('km'),
+          'tempUnit': L('°C'),
+          'fontSize': L(24),
+          'backgroundColor': L(0xFF0A0A0A),
+          'borderRadius': L(8),
+          'padding': L(12),
+          'width': L(400),
+          'height': L(80)
+        },
+      ),
+    ],
+    'power_flow': [
+      (
+        name: 'kW Bar',
+        icon: Icons.bolt,
+        props: {
+          'power': T('power'),
+          'maxPower': L(200),
+          'color': L(0xFFFF9800),
+          'accent': L(0xFF888888),
+          'label': L('kW'),
+          'barWidth': L(80),
+          'barHeight': L(6),
+          'fontSize': L(18),
+          'backgroundColor': L(0x00000000),
+          'padding': L(8),
+          'width': L(200),
+          'height': L(50)
+        },
+      ),
+    ],
+    'gear_selector': [
+      (
+        name: 'PRND',
+        icon: Icons.swap_vert,
+        props: {
+          'currentGear': L('P'),
+          'gears': L('P,R,N,D'),
+          'activeColor': L(0xFFFFFFFF),
+          'inactiveColor': L(0xFF666666),
+          'fontSize': L(32),
+          'backgroundColor': L(0x00000000),
+          'padding': L(8),
+          'width': L(240),
+          'height': L(60)
+        },
       ),
     ],
   };
 
-  /// Build a gauge template: dial geometry + container cosmetics.
+  /// Build a modern gauge template with center text, tick labels, and proper sizing.
   static Map<String, Binding> _dial({
-    required String needle,
-    required double sweep, required double start,
-    required int ticks, required double arc,
-    required int colour, required int accent,
-    required int bg, required double rad,
-    required double bw, int bc = 0,
-  }) => {
-    'value': T('erpm'), 'min': L(0), 'max': L(30000), 'label': L('RPM'),
-    'needleStyle': L(needle), 'sweepAngle': L(sweep), 'startAngle': L(start),
-    'tickCount': L(ticks), 'arcWidth': L(arc),
-    'color': L(colour), 'accent': L(accent),
-    'backgroundColor': L(bg), 'borderRadius': L(rad),
-    'borderWidth': L(bw), 'borderColor': L(bc),
-    'opacity': L(1.0), 'padding': L(12), 'fontSize': L(28),
-  };
+    required double sweep,
+    required int ticks,
+    required double arc,
+    required int colour,
+    required int accent,
+    required String unit,
+    required double fSize,
+    required double w,
+    required double h,
+  }) =>
+      {
+        'value': T('erpm'),
+        'min': L(0),
+        'max': L(30000),
+        'needleStyle': L('arc'),
+        'sweepAngle': L(sweep),
+        'startAngle': L(135),
+        'tickCount': L(ticks),
+        'arcWidth': L(arc),
+        'color': L(colour),
+        'accent': L(accent),
+        'label': L(''),
+        'showCenterText': L(true),
+        'centerValue': T('erpm'),
+        'centerUnit': L(unit),
+        'showTickLabels': L(true),
+        'fontSize': L(fSize),
+        'backgroundColor': L(0x00000000),
+        'borderRadius': L(0),
+        'padding': L(16),
+        'width': L(w),
+        'height': L(h),
+      };
 
   static IconData _kindIcon(String kind) => switch (kind) {
         'gauge' => Icons.speed,
@@ -751,16 +1361,15 @@ class _WidgetPalette extends ConsumerWidget {
         'climate' => Icons.thermostat,
         'car_viz' => Icons.directions_car,
         'map' => Icons.map,
+        'battery_range' => Icons.battery_charging_full,
+        'power_flow' => Icons.bolt,
+        'gear_selector' => Icons.swap_vert,
         _ => Icons.widgets,
       };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final level = ref.watch(capabilityLevelProvider);
-    final kinds = builtInWidgets.entries
-        .where((e) => level.includes(e.value.level))
-        .map((e) => e.key)
-        .toList();
+    final kinds = builtInWidgets.keys.toList();
 
     return Container(
       width: 200,
@@ -770,7 +1379,8 @@ class _WidgetPalette extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('Widgets', style: Theme.of(context).textTheme.titleSmall),
+            child:
+                Text('Widgets', style: Theme.of(context).textTheme.titleSmall),
           ),
           Expanded(
             child: ListView.builder(
@@ -779,12 +1389,15 @@ class _WidgetPalette extends ConsumerWidget {
                 final kind = kinds[index];
                 final tpls = _templates[kind] ?? const [];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   child: ExpansionTile(
                     leading: Icon(_kindIcon(kind), size: 20),
-                    title: Text(kind.capitalize(), style: const TextStyle(fontSize: 13)),
+                    title: Text(kind.capitalize(),
+                        style: const TextStyle(fontSize: 13)),
                     tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-                    childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 4),
+                    childrenPadding:
+                        const EdgeInsets.only(left: 16, right: 8, bottom: 4),
                     initiallyExpanded: index == 0,
                     children: [
                       for (final tpl in tpls)
@@ -796,20 +1409,24 @@ class _WidgetPalette extends ConsumerWidget {
                               elevation: 4,
                               borderRadius: BorderRadius.circular(6),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.blue,
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(tpl.name,
-                                    style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 12)),
                               ),
                             ),
                             childWhenDragging: Opacity(
                               opacity: 0.3,
-                              child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                              child: _PaletteTile(
+                                  kind: kind, label: tpl.name, icon: tpl.icon),
                             ),
-                            child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                            child: _PaletteTile(
+                                kind: kind, label: tpl.name, icon: tpl.icon),
                           ),
                         ),
                     ],
@@ -842,6 +1459,7 @@ class _PaletteTile extends StatelessWidget {
     );
   }
 }
+
 /// The canvas area with drag-drop acceptance.
 class _CanvasArea extends ConsumerStatefulWidget {
   @override
@@ -962,6 +1580,23 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                       !ref.read(gridVisibleProvider);
                 },
               ),
+              IconButton(
+                icon: Icon(
+                  Icons.vertical_align_center,
+                  size: 16,
+                  color: ref.watch(centerSnapEnabledProvider)
+                      ? Theme.of(context).colorScheme.primary
+                      : null,
+                ),
+                tooltip: 'Toggle centre-line snap',
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                onPressed: () {
+                  ref.read(centerSnapEnabledProvider.notifier).state =
+                      !ref.read(centerSnapEnabledProvider);
+                },
+              ),
             ],
           ),
         ),
@@ -978,7 +1613,8 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                   key: _dropTargetKey,
                   onAcceptWithDetails: (details) {
                     final kind = details.data['kind'] as String;
-                    final tplProps = details.data['props'] as Map<String, Binding>?;
+                    final tplProps =
+                        details.data['props'] as Map<String, Binding>?;
                     final id = ref.read(idGeneratorProvider).next();
                     final localPos = _toCanvasPosition(details.offset);
                     final node = CanvasNode(
@@ -987,7 +1623,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                       data: WidgetInstance(
                         id: id,
                         kind: kind,
-                        properties: tplProps ?? _defaultProperties(kind),
+                        properties: tplProps ?? StudioEditor.defaultProperties(kind),
                       ),
                     );
                     commands.execute(AddNodeCommand(node));
@@ -1003,7 +1639,10 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                         border: Border.all(color: borderColor, width: 2),
                         color: candidate.isNotEmpty
                             ? Colors.blue.withValues(alpha: 0.05)
-                            : Theme.of(context).colorScheme.surface.withValues(alpha: 0.98),
+                            : Theme.of(context)
+                                .colorScheme
+                                .surface
+                                .withValues(alpha: 0.98),
                       ),
                       child: EditorCanvas(
                         scene: scene,
@@ -1011,6 +1650,9 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                         commands: commands,
                         canvasSize: Size(canvasSize.width, canvasSize.height),
                         showGrid: ref.watch(gridVisibleProvider),
+                        snapConfig: SnapConfig(
+                          enableCenterSnap: ref.watch(centerSnapEnabledProvider),
+                        ),
                         onCommandExecuted: (_) =>
                             ref.read(isDirtyProvider.notifier).state = true,
                         nodeBuilder: (node) {
@@ -1018,7 +1660,8 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                           if (w == null) {
                             return const Center(child: Text('No data'));
                           }
-                          final store = ref.read(canvasPreviewTelemetryProvider);
+                          final store =
+                              ref.read(canvasPreviewTelemetryProvider);
                           return buildWidget(w, _resolve(w, store));
                         },
                         nodeWidth: (node) {
@@ -1045,7 +1688,7 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
     );
   }
 
-  static Map<String, Binding> _defaultProperties(String kind) {
+  static Map<String, Binding> defaultProperties(String kind) {
     return switch (kind) {
       'gauge' => {
           'value': const Binding.telemetry(key: 'erpm'),
@@ -1071,6 +1714,39 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
           'max': const Binding.literal(value: 30000),
           'label': const Binding.literal(value: 'RPM'),
         },
+      'minigauge' => {
+          'value': const Binding.telemetry(key: 'duty'),
+          'min': const Binding.literal(value: 0),
+          'max': const Binding.literal(value: 1),
+          'label': const Binding.literal(value: 'Duty'),
+          'unit': const Binding.literal(value: '%'),
+        },
+      'battery_range' => {
+          'batteryLevel': const Binding.telemetry(key: 'battery_level'),
+          'range': const Binding.telemetry(key: 'range_est'),
+          'color': const Binding.literal(value: 0xFF66BB6A),
+        },
+      'tripstats' => {
+          'label1': const Binding.literal(value: 'Speed'),
+          'value1': const Binding.telemetry(key: 'speed'),
+          'label2': const Binding.literal(value: 'Temp'),
+          'value2': const Binding.telemetry(key: 'temp.motor'),
+        },
+      'car_viz' => {
+          'laneLeft': const Binding.telemetry(key: 'lane_left'),
+          'laneRight': const Binding.telemetry(key: 'lane_right'),
+          'carAhead': const Binding.telemetry(key: 'car_ahead'),
+        },
+      'power_flow' => {
+          'power': const Binding.telemetry(key: 'power'),
+          'maxPower': const Binding.literal(value: 5000),
+          'color': const Binding.literal(value: 0xFF4FC3F7),
+        },
+      'gear_selector' => {
+          'currentGear': const Binding.telemetry(key: 'gear'),
+          'gears': const Binding.literal(value: 'P,R,N,D'),
+          'activeColor': const Binding.literal(value: 0xFF4FC3F7),
+        },
       'image' => {
           'src': const Binding.literal(value: 'assets/images/placeholder.png'),
         },
@@ -1082,7 +1758,9 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
           'program': Binding.literal(value: _samplePaintProgram.toJson()),
           'r': const Binding.telemetry(key: 'temp.mosfet'),
         },
-      _ => <String, Binding>{},
+      _ => {
+          'label': const Binding.literal(value: 'Widget'),
+        },
     };
   }
 
@@ -1107,9 +1785,8 @@ class _PropertiesInspector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scene = ref.watch(sceneModelProvider);
+    final scene = ref.read(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
-    final level = ref.watch(capabilityLevelProvider);
 
     if (selection.isEmpty) {
       return Container(
@@ -1138,8 +1815,10 @@ class _PropertiesInspector extends ConsumerWidget {
         border: Border(left: BorderSide(color: Colors.grey.shade300)),
       ),
       padding: const EdgeInsets.all(16),
-      child: ListView(
-        children: [
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             children: [
               Text('Properties', style: Theme.of(context).textTheme.titleSmall),
@@ -1148,7 +1827,9 @@ class _PropertiesInspector extends ConsumerWidget {
                 icon: const Icon(Icons.delete_outline, size: 20),
                 tooltip: 'Delete widget',
                 onPressed: () {
-                  ref.read(commandStackProvider).execute(RemoveNodesCommand([node]));
+                  ref
+                      .read(commandStackProvider)
+                      .execute(RemoveNodesCommand([node]));
                   ref.read(selectionModelProvider).clear();
                   ref.read(isDirtyProvider.notifier).state = true;
                 },
@@ -1159,86 +1840,64 @@ class _PropertiesInspector extends ConsumerWidget {
           if (widget != null) ...[
             _Field(label: 'ID', value: widget.id),
             _Field(label: 'Kind', value: widget.kind),
-            if (!transformsUnlockedAt(level))
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  'Transforms locked — switch to Advanced to move widgets.',
-                  style: TextStyle(fontSize: 11, color: Colors.orange),
-                ),
-              ),
+            const SizedBox(height: 4),
+            _PositionFields(node: node),
             const Divider(),
-            ..._PropertiesInspector._buildProperties(node, widget, level),
+            ..._PropertiesInspector._buildProperties(
+              node,
+              widget,
+              level: ref.watch(capabilityLevelProvider),
+            ),
           ],
-        ],
+          ],
+        ),
       ),
     );
   }
 
   static List<Widget> _buildProperties(
     CanvasNode node,
-    WidgetInstance widget,
-    CapabilityLevel level,
-  ) {
+    WidgetInstance widget, {
+    CapabilityLevel level = CapabilityLevel.expert,
+  }) {
+    final categorized = categorizedProperties(widget.kind, level: level);
+    final entries = Map<String, Binding>.from(widget.properties);
+    final result = <Widget>[];
+
     if (widget.kind == 'paint') {
-      final entries = Map<String, Binding>.from(widget.properties);
-      return [
-        if (level.includes(CapabilityLevel.expert))
-          _PaintProgramEditor(node: node, widget: widget)
-        else
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 4),
-            child: Text(
-              'Switch to Expert to edit the paint program.',
-              style: TextStyle(fontSize: 11, color: Colors.orange),
-            ),
-          ),
-        for (final m in allProperties(widget.kind))
-          if (m.key != 'program')
-            _BindingField(
-              node: node, widget: widget, name: m.key,
-              binding: entries[m.key] ?? _defaultBinding(m),
-            ),
-      ];
+      result.add(_PaintProgramEditor(node: node, widget: widget));
     }
 
-    final all = allProperties(widget.kind);
-    final basic = all.where((m) => m.minLevel == CapabilityLevel.basic).toList();
-    final advanced = all.where((m) => m.minLevel == CapabilityLevel.advanced).toList();
-    final expert = all.where((m) => m.minLevel == CapabilityLevel.expert).toList();
-    final entries = Map<String, Binding>.from(widget.properties);
+    for (final category in PropertyCategory.values) {
+      final categoryMetas = categorized[category] ?? [];
+      final filteredMetas = widget.kind == 'paint'
+          ? categoryMetas.where((m) => m.key != 'program').toList()
+          : categoryMetas;
 
-    return [
-      for (final m in basic)
-        _BindingField(
-          node: node, widget: widget, name: m.key,
-          binding: entries[m.key] ?? _defaultBinding(m),
-        ),
-      if (advanced.isNotEmpty)
-        _ExpandableSection(
-          title: 'Advanced',
-          initiallyExpanded: true,
-          children: [
-            for (final m in advanced)
-              _BindingField(
-                node: node, widget: widget, name: m.key,
-                binding: entries[m.key] ?? _defaultBinding(m),
-              ),
-          ],
-        ),
-      if (expert.isNotEmpty)
-        _ExpandableSection(
-          title: 'Expert',
-          initiallyExpanded: false,
-          children: [
-            for (final m in expert)
-              _BindingField(
-                node: node, widget: widget, name: m.key,
-                binding: entries[m.key] ?? _defaultBinding(m),
-              ),
-          ],
-        ),
-    ];
+      if (filteredMetas.isNotEmpty) {
+        result.add(
+          ExpansionTile(
+            title: Text(
+              category.label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            initiallyExpanded: true,
+            dense: true,
+            childrenPadding: const EdgeInsets.symmetric(horizontal: 4),
+            children: [
+              for (final m in filteredMetas)
+                _BindingField(
+                  node: node,
+                  widget: widget,
+                  name: m.key,
+                  binding: entries[m.key] ?? _defaultBinding(m),
+                ),
+            ],
+          ),
+        );
+      }
+    }
+    return result;
   }
 
   static Binding _defaultBinding(PropertyMeta m) {
@@ -1248,7 +1907,8 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'padding') return const Binding.literal(value: 12);
     if (m.key == 'width') return const Binding.literal(value: 300);
     if (m.key == 'height') return const Binding.literal(value: 220);
-    if (m.key == 'orientation') return const Binding.literal(value: 'horizontal');
+    if (m.key == 'orientation')
+      return const Binding.literal(value: 'horizontal');
     if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');
     if (m.key == 'fontSize') return const Binding.literal(value: 20);
     if (m.key == 'fontWeight') return const Binding.literal(value: 'bold');
@@ -1262,69 +1922,99 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'fillArea') return const Binding.literal(value: false);
     if (m.key == 'window') return const Binding.literal(value: 120);
     if (m.key == 'js') return const Binding.literal(value: true);
-    final isColour = m.key == 'color' || m.key == 'accent' || m.key == 'backgroundColor' || m.key == 'borderColor' || m.key == 'shadowColor' || m.key == 'fillColor' || m.key == 'gridColor' || m.key == 'tint';
+    final isColour = m.key == 'color' ||
+        m.key == 'accent' ||
+        m.key == 'backgroundColor' ||
+        m.key == 'borderColor' ||
+        m.key == 'shadowColor' ||
+        m.key == 'fillColor' ||
+        m.key == 'gridColor' ||
+        m.key == 'tint';
     if (isColour) return const Binding.literal(value: 0xFFFFFFFF);
-    final isNum = m.key == 'min' || m.key == 'max' || m.key == 'borderRadius' || m.key == 'borderWidth' || m.key == 'shadowBlur' || m.key == 'shadowOffsetY' || m.key == 'letterSpacing' || m.key == 'barRadius';
+    final isNum = m.key == 'min' ||
+        m.key == 'max' ||
+        m.key == 'borderRadius' ||
+        m.key == 'borderWidth' ||
+        m.key == 'shadowBlur' ||
+        m.key == 'shadowOffsetY' ||
+        m.key == 'letterSpacing' ||
+        m.key == 'barRadius';
     if (isNum) return const Binding.literal(value: 0);
     return const Binding.literal(value: 0);
   }
 }
 
-class _ExpandableSection extends StatefulWidget {
-  final String title;
-  final bool initiallyExpanded;
-  final List<Widget> children;
-  const _ExpandableSection({
-    required this.title,
-    this.initiallyExpanded = false,
-    required this.children,
-  });
+class _PositionFields extends ConsumerWidget {
+  final CanvasNode node;
+  const _PositionFields({required this.node});
 
   @override
-  State<_ExpandableSection> createState() => _ExpandableSectionState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final x = node.transform.entry(0, 3).toInt();
+    final y = node.transform.entry(1, 3).toInt();
 
-class _ExpandableSectionState extends State<_ExpandableSection> {
-  late bool _expanded;
-
-  @override
-  void initState() {
-    super.initState();
-    _expanded = widget.initiallyExpanded;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        InkWell(
-          onTap: () => setState(() => _expanded = !_expanded),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                Icon(
-                  _expanded ? Icons.expand_less : Icons.expand_more,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  widget.title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
+        SizedBox(
+          width: 80,
+          child: Text(
+            'Position',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
           ),
         ),
-        if (_expanded) ...widget.children,
+        SizedBox(
+          width: 62,
+          child: TextFormField(
+            initialValue: x.toString(),
+            keyboardType: TextInputType.number,
+            style: const TextStyle(fontSize: 12),
+            decoration: InputDecoration(
+              labelText: 'X',
+              labelStyle: const TextStyle(fontSize: 10),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                  vertical: 4, horizontal: 6),
+              border: const OutlineInputBorder(),
+            ),
+            onFieldSubmitted: (v) => _commitPosition(ref, 'x', v),
+          ),
+        ),
+        const SizedBox(width: 8),
+        SizedBox(
+          width: 62,
+          child: TextFormField(
+            initialValue: y.toString(),
+            keyboardType: TextInputType.number,
+            style: const TextStyle(fontSize: 12),
+            decoration: InputDecoration(
+              labelText: 'Y',
+              labelStyle: const TextStyle(fontSize: 10),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(
+                  vertical: 4, horizontal: 6),
+              border: const OutlineInputBorder(),
+            ),
+            onFieldSubmitted: (v) => _commitPosition(ref, 'y', v),
+          ),
+        ),
       ],
     );
+  }
+
+  void _commitPosition(WidgetRef ref, String axis, String raw) {
+    final value = double.tryParse(raw);
+    if (value == null) return;
+    final oldT = node.transform.clone();
+    final newT = Matrix4.copy(node.transform);
+    if (axis == 'x') {
+      newT.setEntry(0, 3, value);
+    } else {
+      newT.setEntry(1, 3, value);
+    }
+    ref.read(commandStackProvider).execute(
+          TransformNodesCommand({node.id: (oldT, newT)}),
+        );
+    ref.read(isDirtyProvider.notifier).state = true;
   }
 }
 
@@ -1379,49 +2069,83 @@ class _BindingField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final meta = visibleProperties(widget.kind, ref.watch(capabilityLevelProvider))
-        .firstWhere(
-          (m) => m.key == name,
-          orElse: () => PropertyMeta(key: name, minLevel: CapabilityLevel.basic, label: name),
-        );
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(meta.label, style: const TextStyle(fontWeight: FontWeight.w500))),
-              _BindingTypeChip(label: 'Lit', active: binding is LiteralBinding, onTap: () => _commit(ref, const Binding.literal(value: 0))),
-              _BindingTypeChip(label: 'Tel', active: binding is TelemetryBinding, onTap: () => _commit(ref, const Binding.telemetry(key: 'erpm'))),
-              _BindingTypeChip(label: 'F(x)', active: binding is FormulaBinding, onTap: () => _commit(ref, const Binding.formula(expression: 'erpm / 1000'))),
-              if (ref.watch(capabilityLevelProvider).includes(CapabilityLevel.expert))
-                _BindingTypeChip(label: 'Graph', active: binding is GraphBinding, onTap: () => _commit(ref, Binding.graph(graphId: '', output: ''))),
-            ],
-          ),
-          const SizedBox(height: 4),
-          binding.map(
-            literal: (b) => _LiteralEditor(
-              value: b.value,
-              onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+    final meta = allProperties(widget.kind).firstWhere(
+      (m) => m.key == name,
+      orElse: () => PropertyMeta(
+        key: name,
+        minLevel: CapabilityLevel.basic,
+        label: name,
+        category: PropertyCategory.visuals,
+      ),
+    );
+    return Tooltip(
+      message: 'Property "${meta.label}" (${meta.key})',
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    meta.label,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+                _BindingTypeChip(
+                  label: 'Lit',
+                  tooltipMessage: 'Literal value',
+                  active: binding is LiteralBinding,
+                  onTap: () => _commit(ref, const Binding.literal(value: 0)),
+                ),
+                _BindingTypeChip(
+                  label: 'Tel',
+                  tooltipMessage: 'Telemetry binding',
+                  active: binding is TelemetryBinding,
+                  onTap: () => _commit(ref, const Binding.telemetry(key: 'erpm')),
+                ),
+                _BindingTypeChip(
+                  label: 'F(x)',
+                  tooltipMessage: 'Formula expression',
+                  active: binding is FormulaBinding,
+                  onTap: () => _commit(
+                      ref, const Binding.formula(expression: 'erpm / 1000')),
+                ),
+                _BindingTypeChip(
+                  label: 'Graph',
+                  tooltipMessage: 'Graph binding',
+                  active: binding is GraphBinding,
+                  onTap: () =>
+                      _commit(ref, Binding.graph(graphId: '', output: '')),
+                ),
+              ],
             ),
-            telemetry: (b) => _TelemetryEditor(
-              currentKey: b.key,
-              onChanged: (k) => _commit(ref, Binding.telemetry(key: k)),
+            const SizedBox(height: 4),
+            binding.map(
+              literal: (b) => _LiteralEditor(
+                value: b.value,
+                meta: meta,
+                onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+              ),
+              telemetry: (b) => _TelemetryEditor(
+                currentKey: b.key,
+                onChanged: (k) => _commit(ref, Binding.telemetry(key: k)),
+              ),
+              graph: (b) => _GraphEditor(
+                graphId: b.graphId,
+                output: b.output,
+                onChanged: (gid, out) =>
+                    _commit(ref, Binding.graph(graphId: gid, output: out)),
+              ),
+              formula: (b) => _FormulaEditor(
+                expression: b.expression,
+                onChanged: (expr) =>
+                    _commit(ref, Binding.formula(expression: expr)),
+              ),
             ),
-            graph: (b) => _GraphEditor(
-              graphId: b.graphId,
-              output: b.output,
-              onChanged: (gid, out) =>
-                  _commit(ref, Binding.graph(graphId: gid, output: out)),
-            ),
-            formula: (b) => _FormulaEditor(
-              expression: b.expression,
-              onChanged: (expr) =>
-                  _commit(ref, Binding.formula(expression: expr)),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1429,22 +2153,41 @@ class _BindingField extends ConsumerWidget {
 
 class _BindingTypeChip extends StatelessWidget {
   final String label;
+  final String tooltipMessage;
   final bool active;
   final VoidCallback onTap;
-  const _BindingTypeChip({required this.label, required this.active, required this.onTap});
+  const _BindingTypeChip({
+    required this.label,
+    required this.tooltipMessage,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(left: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: active ? Theme.of(context).colorScheme.primaryContainer : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(4),
+    return Tooltip(
+      message: tooltipMessage,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.only(left: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(
+            color: active
+                ? Theme.of(context).colorScheme.primaryContainer
+                : Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: active
+                  ? Theme.of(context).colorScheme.onPrimaryContainer
+                  : Colors.grey.shade700,
+            ),
+          ),
         ),
-        child: Text(label, style: TextStyle(fontSize: 10, color: active ? Theme.of(context).colorScheme.onPrimaryContainer : Colors.grey.shade700)),
       ),
     );
   }
@@ -1452,8 +2195,13 @@ class _BindingTypeChip extends StatelessWidget {
 
 class _LiteralEditor extends StatefulWidget {
   final Object value;
+  final PropertyMeta? meta;
   final ValueChanged<Object> onChanged;
-  const _LiteralEditor({required this.value, required this.onChanged});
+  const _LiteralEditor({
+    required this.value,
+    this.meta,
+    required this.onChanged,
+  });
 
   @override
   State<_LiteralEditor> createState() => _LiteralEditorState();
@@ -1473,6 +2221,16 @@ class _LiteralEditorState extends State<_LiteralEditor> {
   String _format(Object v) {
     if (v is num) return v.toString();
     return v.toString();
+  }
+
+  static int? parseHexColor(String input) {
+    final clean = input.replaceAll('#', '').trim();
+    if (clean.length == 6) {
+      return int.tryParse('FF$clean', radix: 16);
+    } else if (clean.length == 8) {
+      return int.tryParse(clean, radix: 16);
+    }
+    return null;
   }
 
   @override
@@ -1522,6 +2280,63 @@ class _LiteralEditorState extends State<_LiteralEditor> {
         ],
       );
     }
+
+    final hasSlider = widget.meta?.min != null &&
+        widget.meta?.max != null &&
+        widget.value is num;
+
+    if (hasSlider) {
+      final minVal = widget.meta!.min!;
+      final maxVal = widget.meta!.max!;
+      final double current =
+          (widget.value as num).toDouble().clamp(minVal, maxVal);
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: current,
+                  min: minVal,
+                  max: maxVal,
+                  divisions: widget.meta!.step != null && widget.meta!.step! > 0
+                      ? ((maxVal - minVal) / widget.meta!.step!).round()
+                      : null,
+                  label: current.toStringAsFixed(1),
+                  onChanged: (val) {
+                    final stepVal =
+                        widget.meta!.step != null && widget.meta!.step! > 0
+                            ? (val / widget.meta!.step!).round() *
+                                widget.meta!.step!
+                            : val;
+                    widget.onChanged(
+                        widget.value is int ? stepVal.round() : stepVal);
+                  },
+                ),
+              ),
+              SizedBox(
+                width: 44,
+                child: Text(
+                  current.toStringAsFixed(1),
+                  style: const TextStyle(fontSize: 11),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+          TextFormField(
+            controller: _controller,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(isDense: true),
+            onChanged: (s) => _apply(s),
+            onFieldSubmitted: (s) => _apply(s),
+          ),
+        ],
+      );
+    }
+
     return Row(
       children: [
         Expanded(
@@ -1529,6 +2344,7 @@ class _LiteralEditorState extends State<_LiteralEditor> {
             controller: _controller,
             style: const TextStyle(fontSize: 12),
             decoration: const InputDecoration(isDense: true),
+            onChanged: (s) => _apply(s),
             onFieldSubmitted: (s) => _apply(s),
           ),
         ),
@@ -1543,6 +2359,11 @@ class _LiteralEditorState extends State<_LiteralEditor> {
 
   void _apply(String s) {
     final trimmed = s.trim();
+    final hexVal = parseHexColor(trimmed);
+    if (hexVal != null) {
+      widget.onChanged(hexVal);
+      return;
+    }
     final n = num.tryParse(trimmed);
     widget.onChanged(n ?? trimmed);
   }
@@ -1559,6 +2380,20 @@ class _TelemetryEditor extends StatefulWidget {
 
 class _TelemetryEditorState extends State<_TelemetryEditor> {
   bool _manual = false;
+  String _filterQuery = '';
+  late final TextEditingController _filterController;
+
+  @override
+  void initState() {
+    super.initState();
+    _filterController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _filterController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1569,7 +2404,8 @@ class _TelemetryEditorState extends State<_TelemetryEditor> {
             child: TextFormField(
               initialValue: widget.currentKey,
               style: const TextStyle(fontSize: 12),
-              decoration: const InputDecoration(isDense: true, hintText: 'e.g. fault'),
+              decoration:
+                  const InputDecoration(isDense: true, hintText: 'e.g. fault'),
               onFieldSubmitted: (v) {
                 if (v.trim().isNotEmpty) widget.onChanged(v.trim());
                 setState(() => _manual = false);
@@ -1583,20 +2419,49 @@ class _TelemetryEditorState extends State<_TelemetryEditor> {
         ],
       );
     }
-    return Row(
+
+    final matchingKeys = TelemetryKey.all
+        .where((k) => k.toLowerCase().contains(_filterQuery.toLowerCase()))
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: DropdownButton<String>(
-            value: TelemetryKey.all.contains(widget.currentKey) ? widget.currentKey : null,
-            isExpanded: true,
-            hint: Text(widget.currentKey, style: const TextStyle(fontSize: 12)),
-            items: [for (final k in TelemetryKey.all) DropdownMenuItem(value: k, child: Text(k, style: const TextStyle(fontSize: 12)))],
-            onChanged: (v) { if (v != null) widget.onChanged(v); },
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _filterController,
+                style: const TextStyle(fontSize: 12),
+                decoration: const InputDecoration(
+                  hintText: 'Filter keys...',
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _filterQuery = v),
+              ),
+            ),
+            TextButton(
+              onPressed: () => setState(() => _manual = true),
+              child: const Text('Manual', style: TextStyle(fontSize: 11)),
+            ),
+          ],
         ),
-        TextButton(
-          onPressed: () => setState(() => _manual = true),
-          child: const Text('Manual', style: TextStyle(fontSize: 11)),
+        DropdownButton<String>(
+          value: matchingKeys.contains(widget.currentKey)
+              ? widget.currentKey
+              : null,
+          isExpanded: true,
+          hint: Text(widget.currentKey, style: const TextStyle(fontSize: 12)),
+          items: [
+            for (final k in matchingKeys)
+              DropdownMenuItem(
+                value: k,
+                child: Text(k, style: const TextStyle(fontSize: 12)),
+              )
+          ],
+          onChanged: (v) {
+            if (v != null) widget.onChanged(v);
+          },
         ),
       ],
     );
@@ -1636,7 +2501,8 @@ class _GraphEditor extends StatelessWidget {
   final String graphId;
   final String output;
   final void Function(String, String) onChanged;
-  const _GraphEditor({required this.graphId, required this.output, required this.onChanged});
+  const _GraphEditor(
+      {required this.graphId, required this.output, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -1646,7 +2512,10 @@ class _GraphEditor extends StatelessWidget {
           child: TextFormField(
             initialValue: graphId,
             style: const TextStyle(fontSize: 12),
-            decoration: const InputDecoration(isDense: true, labelText: 'Graph', labelStyle: TextStyle(fontSize: 10)),
+            decoration: const InputDecoration(
+                isDense: true,
+                labelText: 'Graph',
+                labelStyle: TextStyle(fontSize: 10)),
             onFieldSubmitted: (v) => onChanged(v.trim(), output),
           ),
         ),
@@ -1655,7 +2524,10 @@ class _GraphEditor extends StatelessWidget {
           child: TextFormField(
             initialValue: output,
             style: const TextStyle(fontSize: 12),
-            decoration: const InputDecoration(isDense: true, labelText: 'Output', labelStyle: TextStyle(fontSize: 10)),
+            decoration: const InputDecoration(
+                isDense: true,
+                labelText: 'Output',
+                labelStyle: TextStyle(fontSize: 10)),
             onFieldSubmitted: (v) => onChanged(graphId, v.trim()),
           ),
         ),

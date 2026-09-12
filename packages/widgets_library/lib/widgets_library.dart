@@ -36,6 +36,29 @@ export 'src/format.dart';
 export 'src/property_manifest.dart';
 export 'src/theme.dart';
 
+export 'widgets/appgrid_widget.dart';
+export 'widgets/bar_widget.dart';
+export 'widgets/battery_range_widget.dart';
+export 'widgets/car_viz_widget.dart';
+export 'widgets/chart_widget.dart';
+export 'widgets/climate_widget.dart';
+export 'widgets/digitalspeed_widget.dart';
+export 'widgets/gauge_widget.dart';
+export 'widgets/gear_selector_widget.dart';
+export 'widgets/image_widget.dart';
+export 'widgets/map_widget.dart';
+export 'widgets/minigauge_widget.dart';
+export 'widgets/music_widget.dart';
+export 'widgets/paint_widget.dart';
+export 'widgets/power_flow_widget.dart';
+export 'widgets/power_widget.dart';
+export 'widgets/status_widget.dart';
+export 'widgets/statusbar_widget.dart';
+export 'widgets/text_widget.dart';
+export 'widgets/tripstats_widget.dart';
+export 'widgets/warnings_widget.dart';
+export 'widgets/web_widget.dart';
+
 /// Metadata for a built-in widget kind.
 class WidgetKind {
   final String id;

@@ -18,6 +18,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:settings/settings.dart';
+import 'package:templates/templates.dart';
 import 'package:vesc_proto/vesc_proto.dart';
 import 'package:vesc_sim/vesc_sim.dart';
 import 'package:vesc_transport/vesc_transport.dart';
@@ -161,6 +162,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   final Map<String, ResolvedProperties> _resolved = {};
   TransportState _linkState = TransportState.disconnected;
   int _lastIngestTime = 0;
+  bool _toolbarVisible = false;
+  Timer? _hideTimer;
 
   @override
   void initState() {
@@ -213,10 +216,19 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     setState(() {});
   }
 
+  void _showToolbar() {
+    _hideTimer?.cancel();
+    setState(() => _toolbarVisible = true);
+    _hideTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted) setState(() => _toolbarVisible = false);
+    });
+  }
+
   Future<void> _exportDoc(DashboardDocument doc, BuildContext context) async {
     final json = const JsonEncoder.withIndent('  ').convert(doc.toJson());
     final dir = await getApplicationDocumentsDirectory();
-    final safeName = doc.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+    final safeName =
+        doc.name.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
     final file = File('${dir.path}/$safeName.veschub.json');
     try {
       await file.writeAsString(json);
@@ -292,6 +304,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
   @override
   void dispose() {
+    _hideTimer?.cancel();
     _rxSub.cancel();
     _dirtySub.cancel();
     _runtime.dispose();
@@ -304,67 +317,67 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final doc = _runtime.document;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final fg = isDark ? Colors.white70 : Colors.black87;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text(
-          'Veschub · ${doc.name}',
-          style: TextStyle(color: fg, fontSize: 14),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: _LinkBadge(state: _linkState, fg: fg),
-            ),
-          ),
-          if (_linkState == TransportState.disconnected)
-            IconButton(
-              icon: Icon(Icons.bluetooth, color: fg),
-              onPressed: _connect,
-              tooltip: 'Connect',
-            ),
-          IconButton(
-            icon: Icon(Icons.folder_open, color: fg),
-            onPressed: () => _showOpenDialog(context),
-            tooltip: 'Open dashboard',
-          ),
-          IconButton(
-            icon: Icon(Icons.settings, color: fg),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-            tooltip: 'Settings',
-          ),
-          IconButton(
-            icon: Icon(Icons.download, color: fg),
-            onPressed: () => _exportDoc(doc, context),
-            tooltip: 'Export as .veschub.json',
-          ),
-          IconButton(
-            icon: Icon(Icons.upload_file, color: fg),
-            onPressed: () => _importDoc(context),
-            tooltip: 'Import .veschub.json',
-          ),
-        ],
-      ),
-      body: Center(
-        child: FittedBox(
-          child: SizedBox(
-            width: doc.canvas.width,
-            height: doc.canvas.height,
-            child: ColoredBox(
-              color: Color(doc.background),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  for (final w in doc.widgets)
-                    _positioned(w, key: ValueKey(w.id)),
-                ],
+      body: Stack(
+        children: [
+          // Dashboard content
+          Center(
+            child: FittedBox(
+              child: SizedBox(
+                width: doc.canvas.width,
+                height: doc.canvas.height,
+                child: ColoredBox(
+                  color: Color(doc.background),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      for (final w in doc.widgets)
+                        _positioned(w, key: ValueKey(w.id)),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+          // Tap target to show toolbar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 48,
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: _showToolbar,
+            ),
+          ),
+          // Pop-out toolbar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 250),
+              offset: _toolbarVisible
+                  ? Offset.zero
+                  : const Offset(0, -1),
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 250),
+                opacity: _toolbarVisible ? 1.0 : 0.0,
+                child: _DashboardToolbar(
+                  docName: doc.name,
+                  linkState: _linkState,
+                  onConnect: _connect,
+                  onShowTemplates: () => _showTemplatePicker(context),
+                  onOpenSaved: () => _showOpenDialog(context),
+                  onSettings: () =>
+                      Navigator.of(context).pushNamed('/settings'),
+                  onExport: () => _exportDoc(doc, context),
+                  onImport: () => _importDoc(context),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -373,29 +386,135 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final tx = w.transform[4];
     final ty = w.transform[5];
     final resolved = _resolved[w.id] ?? const <String, dynamic>{};
-    final bgColor = Color((resolved['backgroundColor'] as int?) ?? (w.properties['backgroundColor']?.map(literal: (b) => b.value, telemetry: (_) => null, graph: (_) => null, formula: (_) => null) as int?) ?? 0xFF111111);
-    final borderRadius = ((resolved['borderRadius'] as num?) ?? (w.properties['borderRadius']?.map(literal: (b) => b.value, telemetry: (_) => null, graph: (_) => null, formula: (_) => null) as num?) ?? 0).toDouble();
+    final width = (resolved['width'] as num?)?.toDouble() ?? kDefaultWidgetWidth;
+    final height = (resolved['height'] as num?)?.toDouble() ?? kDefaultWidgetHeight;
     return Positioned(
       key: key,
       left: tx,
       top: ty,
-      width: kDefaultWidgetWidth,
-      height: kDefaultWidgetHeight,
-      child: RepaintBoundary(
-        child: Container(
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: borderRadius > 0
-                ? null
-                : Border.all(color: const Color(0xFF222222)),
-          ),
-          padding: const EdgeInsets.all(12),
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: RepaintBoundary(
           child: buildWidget(w, resolved),
         ),
       ),
     );
   }
+
+  Future<void> _showTemplatePicker(BuildContext context) async {
+    final templates = [
+      ...builtInTemplates,
+      ...advancedDashboardTemplates,
+    ];
+
+    final categories = <String, List<DashboardTemplate>>{};
+    for (final t in templates) {
+      categories.putIfAbsent(t.category, () => []).add(t);
+    }
+    final orderedCategories = categories.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.3,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (ctx, scrollController) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 12, horizontal: 16),
+                  child: Row(
+                    children: [
+                      Text('Select Template',
+                          style: Theme.of(ctx).textTheme.titleMedium),
+                      const Spacer(),
+                      Text(
+                          '${templates.length} templates',
+                          style: Theme.of(ctx).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: orderedCategories.length,
+                    itemBuilder: (ctx, i) {
+                      final entry = orderedCategories[i];
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              entry.key,
+                              style: Theme.of(ctx)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    color: Theme.of(ctx).colorScheme.primary,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            ...entry.value.map(
+                              (t) => Card(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                child: ListTile(
+                                  leading: Icon(
+                                    _iconFor(t.id),
+                                    size: 32,
+                                  ),
+                                  title: Text(t.name),
+                                  subtitle: Text(t.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis),
+                                  trailing: const Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 16),
+                                  onTap: () {
+                                    _loadDocument(t.document);
+                                    Navigator.of(ctx).pop();
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  IconData _iconFor(String id) => switch (id) {
+        'minimal' => Icons.speed,
+        'performance' => Icons.bolt,
+        'commuter' => Icons.directions_car,
+        'offroad' => Icons.terrain,
+        'tesla-model3' => Icons.electric_car,
+        'porsche-taycan' => Icons.sports_motorsports,
+        'bmw-classic' => Icons.precision_manufacturing,
+        'audi-virtual-cockpit' => Icons.flight,
+        'vesc-mobile' => Icons.sensors,
+        'android-auto' => Icons.android,
+        'carplay' => Icons.phone_iphone,
+        'ford-digital' => Icons.local_shipping,
+        'vw-digital' => Icons.airport_shuttle,
+        _ => Icons.dashboard,
+      };
 
   Future<void> _showOpenDialog(BuildContext context) async {
     final db = ref.read(dashboardDatabaseProvider);
@@ -410,7 +529,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           content: SizedBox(
             width: 400,
             child: entries.isEmpty
-                ? const Text('No saved dashboards yet. Author one in Studio.')
+                ? const Text(
+                    'No saved dashboards yet. Author one in Studio.')
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: entries.length,
@@ -444,6 +564,101 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+class _DashboardToolbar extends StatelessWidget {
+  final String docName;
+  final TransportState linkState;
+  final VoidCallback onConnect;
+  final VoidCallback onShowTemplates;
+  final VoidCallback onOpenSaved;
+  final VoidCallback onSettings;
+  final VoidCallback onExport;
+  final VoidCallback onImport;
+
+  const _DashboardToolbar({
+    required this.docName,
+    required this.linkState,
+    required this.onConnect,
+    required this.onShowTemplates,
+    required this.onOpenSaved,
+    required this.onSettings,
+    required this.onExport,
+    required this.onImport,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final fg = isDark ? Colors.white70 : Colors.black87;
+    return Container(
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.92),
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? Colors.white12 : Colors.black12,
+          ),
+        ),
+      ),
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: TextButton.icon(
+              onPressed: onShowTemplates,
+              icon: const Icon(Icons.dashboard, size: 20),
+              label: Text(
+                'Veschub · $docName',
+                style: TextStyle(color: fg, fontSize: 13),
+              ),
+            ),
+          ),
+          const Spacer(),
+          _LinkBadge(state: linkState, fg: fg),
+          const SizedBox(width: 4),
+          if (linkState == TransportState.disconnected)
+            IconButton(
+              icon: Icon(Icons.bluetooth, color: fg, size: 22),
+              onPressed: onConnect,
+              tooltip: 'Connect',
+              visualDensity: VisualDensity.compact,
+            ),
+          IconButton(
+            icon: Icon(Icons.grid_view, color: fg, size: 22),
+            onPressed: onShowTemplates,
+            tooltip: 'Templates',
+            visualDensity: VisualDensity.compact,
+          ),
+          IconButton(
+            icon: Icon(Icons.folder, color: fg, size: 22),
+            onPressed: onOpenSaved,
+            tooltip: 'Open saved',
+            visualDensity: VisualDensity.compact,
+          ),
+          IconButton(
+            icon: Icon(Icons.tune, color: fg, size: 22),
+            onPressed: onSettings,
+            tooltip: 'Settings',
+            visualDensity: VisualDensity.compact,
+          ),
+          IconButton(
+            icon: Icon(Icons.save_alt, color: fg, size: 22),
+            onPressed: onExport,
+            tooltip: 'Export',
+            visualDensity: VisualDensity.compact,
+          ),
+          IconButton(
+            icon: Icon(Icons.file_open, color: fg, size: 22),
+            onPressed: onImport,
+            tooltip: 'Import',
+            visualDensity: VisualDensity.compact,
+          ),
+          const SizedBox(width: 4),
+        ],
+      ),
     );
   }
 }

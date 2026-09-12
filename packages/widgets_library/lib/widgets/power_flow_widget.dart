@@ -10,65 +10,75 @@ class PowerFlowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final power = (properties['power'] as num?)?.toDouble() ?? 0;
-    final maxPower = (properties['maxPower'] as num?)?.toDouble() ?? 100;
-    final color = Color((properties['color'] as int?) ?? 0xFFFF9800);
-    final accent = Color((properties['accent'] as int?) ?? 0xFF888888);
-    final label = properties['label'] as String? ?? 'kW';
-    final fontSizeRaw = (properties['fontSize'] as num?) ?? 14.0;
-    final barWidth = (properties['barWidth'] as num?)?.toDouble() ?? 60.0;
-    final barHeight = (properties['barHeight'] as num?)?.toDouble() ?? 4.0;
+    final powerVal = properties['power'];
+    final power = (powerVal is num ? powerVal.toDouble() : null) ?? 0.0;
+    final maxPowerVal = properties['maxPower'];
+    final maxPower = (maxPowerVal is num ? maxPowerVal.toDouble() : null) ?? 100.0;
+    final colorVal = properties['color'];
+    final color = Color(colorVal is int ? colorVal : 0xFFFF9800);
+    final accentVal = properties['accent'];
+    final accent = Color(accentVal is int ? accentVal : 0xFF888888);
+    final label = properties['label']?.toString() ?? 'kW';
+    final fontSizeVal = properties['fontSize'];
+    final fontSize = (fontSizeVal is num ? fontSizeVal.toDouble() : null) ?? 14.0;
+    final barWidthVal = properties['barWidth'];
+    final barWidth = (barWidthVal is num ? barWidthVal.toDouble() : null) ?? 60.0;
+    final barHeightVal = properties['barHeight'];
+    final barHeight = (barHeightVal is num ? barHeightVal.toDouble() : null) ?? 4.0;
 
-    final t = (power / maxPower).clamp(0.0, 1.0);
+    final t = maxPower == 0 ? 0.0 : (power / maxPower).clamp(0.0, 1.0);
     final isRegen = power < 0;
     final displayPower = power.abs();
 
     return applyOpacity(
-      Container(
-        decoration: resolveBoxDecoration(properties),
-        child: Padding(
-          padding: resolvePadding(properties),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: fontSizeRaw.toDouble() * 0.8,
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Container(
+          decoration: resolveBoxDecoration(properties),
+          child: Padding(
+            padding: resolvePadding(properties),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: accent,
+                    fontSize: fontSize * 0.8,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: barWidth,
-                height: barHeight,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-                child: Align(
-                  alignment: isRegen ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    width: barWidth * t,
-                    height: barHeight,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
+                const SizedBox(width: 8),
+                Container(
+                  width: barWidth,
+                  height: barHeight,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Align(
+                    alignment: isRegen ? Alignment.centerRight : Alignment.centerLeft,
+                    child: Container(
+                      width: barWidth * t,
+                      height: barHeight,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _format(displayPower),
-                style: TextStyle(
-                  color: color,
-                  fontSize: fontSizeRaw.toDouble(),
-                  fontWeight: FontWeight.w600,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                const SizedBox(width: 8),
+                Text(
+                  _format(displayPower),
+                  style: TextStyle(
+                    color: color,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
