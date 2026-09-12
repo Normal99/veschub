@@ -5,8 +5,20 @@ extension on String {
       isEmpty ? this : '${this[0].toUpperCase()}${substring(1)}';
 }
 
-/// The drag-drop widget palette.
-class _WidgetPalette extends ConsumerWidget {
+/// Groups widget kinds into palette sections, in display order. A kind not
+/// listed here still shows up, under a trailing "Other" section — this is a
+/// display grouping only and never hides a widget kind.
+const Map<String, List<String>> _paletteCategories = {
+  'Gauges & Meters': ['gauge', 'minigauge', 'digitalspeed', 'power', 'power_flow'],
+  'Text & Data': ['text', 'status', 'tripstats', 'warnings'],
+  'Charts': ['bar', 'chart'],
+  'Car Status': ['car_viz', 'gear_selector', 'battery_range', 'climate', 'map'],
+  'Media & Controls': ['music', 'appgrid', 'statusbar'],
+  'Custom': ['image', 'web', 'paint'],
+};
+
+/// The drag-drop widget palette: searchable, grouped into categories.
+class _WidgetPalette extends ConsumerStatefulWidget {
   const _WidgetPalette();
 
   static Binding T(String key) => Binding.telemetry(key: key);
@@ -947,8 +959,74 @@ class _WidgetPalette extends ConsumerWidget {
       };
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final kinds = builtInWidgets.keys.toList();
+  ConsumerState<_WidgetPalette> createState() => _WidgetPaletteState();
+}
+
+class _WidgetPaletteState extends ConsumerState<_WidgetPalette> {
+  final _searchController = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<({String name, IconData icon, Map<String, Binding> props})>
+      _matchingTemplates(String kind) {
+    final tpls = _WidgetPalette._templates[kind] ?? const [];
+    if (_query.isEmpty || kind.contains(_query)) return tpls;
+    return tpls.where((t) => t.name.toLowerCase().contains(_query)).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allKinds = builtInWidgets.keys.toList();
+    final searching = _query.isNotEmpty;
+
+    final items = <Widget>[];
+    if (searching) {
+      final visibleKinds = allKinds
+          .where((k) => k.contains(_query) || _matchingTemplates(k).isNotEmpty)
+          .toList();
+      for (final kind in visibleKinds) {
+        items.add(_kindTile(kind, _matchingTemplates(kind), expanded: true));
+      }
+      if (visibleKinds.isEmpty) {
+        items.add(Padding(
+          padding: const EdgeInsets.all(16),
+          child: Text(
+            'No widgets match "$_query"',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ));
+      }
+    } else {
+      var firstTileShown = false;
+      final categorizedKinds = <String>{};
+      for (final entry in _paletteCategories.entries) {
+        final kindsInCategory =
+            entry.value.where(allKinds.contains).toList();
+        if (kindsInCategory.isEmpty) continue;
+        items.add(_categoryHeader(context, entry.key));
+        for (final kind in kindsInCategory) {
+          categorizedKinds.add(kind);
+          items.add(_kindTile(kind, _WidgetPalette._templates[kind] ?? const [],
+              expanded: !firstTileShown));
+          firstTileShown = true;
+        }
+      }
+      final leftover =
+          allKinds.where((k) => !categorizedKinds.contains(k)).toList();
+      if (leftover.isNotEmpty) {
+        items.add(_categoryHeader(context, 'Other'));
+        for (final kind in leftover) {
+          items.add(_kindTile(kind, _WidgetPalette._templates[kind] ?? const [],
+              expanded: !firstTileShown));
+          firstTileShown = true;
+        }
+      }
+    }
 
     return Container(
       width: 200,
@@ -957,63 +1035,98 @@ class _WidgetPalette extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
             child:
                 Text('Widgets', style: Theme.of(context).textTheme.titleSmall),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: kinds.length,
-              itemBuilder: (context, index) {
-                final kind = kinds[index];
-                final tpls = _templates[kind] ?? const [];
-                return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  child: ExpansionTile(
-                    leading: Icon(_kindIcon(kind), size: 20),
-                    title: Text(kind.capitalize(),
-                        style: const TextStyle(fontSize: 13)),
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-                    childrenPadding:
-                        const EdgeInsets.only(left: 16, right: 8, bottom: 4),
-                    initiallyExpanded: index == 0,
-                    children: [
-                      for (final tpl in tpls)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 1),
-                          child: Draggable<Map<String, dynamic>>(
-                            data: {'kind': kind, 'props': tpl.props},
-                            feedback: Material(
-                              elevation: 4,
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue,
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(tpl.name,
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 12)),
-                              ),
-                            ),
-                            childWhenDragging: Opacity(
-                              opacity: 0.3,
-                              child: _PaletteTile(
-                                  kind: kind, label: tpl.name, icon: tpl.icon),
-                            ),
-                            child: _PaletteTile(
-                                kind: kind, label: tpl.name, icon: tpl.icon),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+              style: const TextStyle(fontSize: 12),
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: 'Search widgets…',
+                hintStyle: const TextStyle(fontSize: 12),
+                prefixIcon: const Icon(Icons.search, size: 16),
+                suffixIcon: searching
+                    ? IconButton(
+                        icon: const Icon(Icons.clear, size: 14),
+                        tooltip: 'Clear search',
+                        onPressed: () => setState(() {
+                          _searchController.clear();
+                          _query = '';
+                        }),
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
             ),
           ),
+          const SizedBox(height: 8),
+          Expanded(child: ListView(children: items)),
+        ],
+      ),
+    );
+  }
+
+  Widget _categoryHeader(BuildContext context, String label) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+        child: Text(
+          label.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                letterSpacing: 0.5,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      );
+
+  Widget _kindTile(
+    String kind,
+    List<({String name, IconData icon, Map<String, Binding> props})> tpls, {
+    required bool expanded,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: ExpansionTile(
+        leading: Icon(_WidgetPalette._kindIcon(kind), size: 20),
+        title: Text(kind.capitalize(), style: const TextStyle(fontSize: 13)),
+        tilePadding: const EdgeInsets.symmetric(horizontal: 12),
+        childrenPadding:
+            const EdgeInsets.only(left: 16, right: 8, bottom: 4),
+        initiallyExpanded: expanded,
+        children: [
+          for (final tpl in tpls)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1),
+              child: Draggable<Map<String, dynamic>>(
+                data: {'kind': kind, 'props': tpl.props},
+                feedback: Material(
+                  elevation: 4,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(tpl.name,
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 12)),
+                  ),
+                ),
+                childWhenDragging: Opacity(
+                  opacity: 0.3,
+                  child:
+                      _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                ),
+                child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+              ),
+            ),
         ],
       ),
     );
