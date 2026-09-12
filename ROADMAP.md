@@ -1,6 +1,6 @@
 # Veschub Roadmap
 
-Last updated: 2026-09-12
+Last updated: 2026-09-13
 
 ## Legend
 
@@ -10,15 +10,69 @@ Last updated: 2026-09-12
 - `[P3]` — Future / deferred
 - `[SIDETRACKED]` — Intentionally paused; pick up later, not blocking anything below it
 
-## Current priority order
+## Current priority order (revised 2026-09-13)
 
-Milestone numbers below are historical, not priority order. Right now:
+Milestone numbers below are historical, not priority order. The AI assistant
+(Milestone 9) is **not** the current focus — it's a later nice-to-have.
+Right now, the priority is entirely: make Studio itself good enough that an
+amateur or a professional can freely build dashboards like the real-world
+references in `/home/volkan/Pictures/AIdashboards` (Tesla, Porsche Taycan,
+BMW, Audi, VW, Ford, CarPlay, Android Auto, and the existing VESC Tool /
+Kukirin mobile dashboard) — without the tool itself getting in the way.
 
-1. **Milestone 5** — Studio Polish (manifest audit test, rotation, layers, units)
-2. **Milestone 9** — AI Dashboard Assistant (Guidance mode, then Auto mode)
-3. **Milestone 10** — Independent Creation & Ease of Use
-4. Milestones 4, 6, 7 — as they come up
-5. **Milestone 3 (Real Hardware)** — sidetracked, resume once 5/9/10 are solid
+1. **Milestone 5 + 10** — Studio Polish & Independent Creation/Ease of Use
+   (merged in practice — see "Studio UX audit findings" below for what's
+   concretely wrong today)
+2. Milestones 4, 6, 7 — as they come up
+3. **Milestone 9 (AI Dashboard Assistant)** — deprioritized, revisit once
+   Studio itself is in good shape
+4. **Milestone 3 (Real Hardware)** — sidetracked, resume once the above is solid
+
+## Studio UX audit findings (2026-09-13)
+
+Found by actually launching `apps/studio` (`flutter run -d linux --release`)
+and reading `apps/studio/lib/editor/studio_editor.dart` (2,676 lines — the
+main editor file), compared against the reference dashboards.
+
+- [x] **FIXED**: `apps/studio/pubspec.yaml` was missing
+      `flutter: uses-material-design: true` (present in `apps/dashboard`,
+      never added here). Every icon in the widget palette and toolbar was
+      rendering as a garbled fallback glyph — confirmed by screenshot before
+      and after. This alone was likely the single biggest "why does this
+      look broken/confusing" contributor. Also fixed 4 icon collisions
+      found while verifying (gauge/digitalspeed, bar/statusbar,
+      status/tripstats, power/power_flow all shared one icon).
+- [ ] [P0] **Widget palette has no search or categories.** With 20+ widget
+      kinds (each an `ExpansionTile` in a flat `ListView`), finding a widget
+      means scrolling and reading labels one by one. Reference dashboards
+      compose several *kinds of zones* (primary gauge, status strip, media
+      bar, nav overlay) — group the palette to match: e.g. "Gauges & Meters",
+      "Text & Data", "Charts", "Car Status" (car_viz, gear_selector,
+      battery_range, power_flow, climate), "Media & Controls" (music,
+      appgrid, statusbar), "Custom" (web, paint, image). Add a search field
+      above the list.
+- [ ] [P1] **`studio_editor.dart` is a 2,676-line god-file.** ~880 lines
+      (430–1309) are hand-authored per-kind style-variant data (`_templates`
+      — "Tesla Style", "BMW Amber", "Audi Sport" gauge presets etc.) living
+      inside the same file as the canvas area, properties inspector, and
+      every binding editor. Split it: move `_templates` into
+      `packages/templates` (it's content, not UI logic) or a dedicated
+      `palette_presets.dart`; split `_CanvasArea`, `_PropertiesInspector`,
+      and the binding editors (`_BindingField`, `_LiteralEditor`,
+      `_TelemetryEditor`, `_FormulaEditor`, `_GraphEditor`) into their own
+      files under `apps/studio/lib/editor/`. This is exactly the kind of
+      "old and not that good" structure that makes every future UI change
+      here slower and riskier.
+- [ ] [P2] **Inspector empty state wastes the whole right panel** — "Select
+      a widget to edit its properties" with nothing else. Consider a
+      collapsed/narrow empty state, or defaulting to canvas-level properties
+      (size, background) when nothing is selected.
+- [ ] [P2] **Toolbar icons have no visible labels** — undo/redo, new/open/
+      save/export, settings, and layers are all icon-only in the top-right
+      toolbar. Tooltips may exist on hover but a first-time user scanning
+      the bar can't tell them apart at a glance; consider a labeled overflow
+      menu for the less-frequent ones (export, settings) and keep only
+      undo/redo/save as bare icons.
 
 ---
 

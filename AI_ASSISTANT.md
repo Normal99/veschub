@@ -1,6 +1,11 @@
 # AI Dashboard Assistant — Design
 
-Status: planned (Milestone 9 in `ROADMAP.md`). Not yet implemented.
+Status: planned (Milestone 9 in `ROADMAP.md`), **deprioritized as of
+2026-09-13**. The immediate focus is Studio's own UX (see "Studio UX audit
+findings" in `ROADMAP.md`) — making the manual editing experience good
+enough for amateurs and professionals alike, matching the quality bar set by
+`/home/volkan/Pictures/AIdashboards`. This design doc is kept as-is for when
+that work resumes. Not yet implemented.
 
 ## Goal
 
