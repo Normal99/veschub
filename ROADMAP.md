@@ -1,6 +1,6 @@
 # Veschub Roadmap
 
-Last updated: 2026-09-13
+Last updated: 2026-09-13 (Studio UX audit findings updated same day)
 
 ## Legend
 
@@ -42,27 +42,20 @@ main editor file), compared against the reference dashboards.
       look broken/confusing" contributor. Also fixed 4 icon collisions
       found while verifying (gauge/digitalspeed, bar/statusbar,
       status/tripstats, power/power_flow all shared one icon).
-- [ ] [P0] **Widget palette has no search or categories.** With 20+ widget
-      kinds (each an `ExpansionTile` in a flat `ListView`), finding a widget
-      means scrolling and reading labels one by one. Reference dashboards
-      compose several *kinds of zones* (primary gauge, status strip, media
-      bar, nav overlay) — group the palette to match: e.g. "Gauges & Meters",
-      "Text & Data", "Charts", "Car Status" (car_viz, gear_selector,
-      battery_range, power_flow, climate), "Media & Controls" (music,
-      appgrid, statusbar), "Custom" (web, paint, image). Add a search field
-      above the list.
-- [ ] [P1] **`studio_editor.dart` is a 2,676-line god-file.** ~880 lines
-      (430–1309) are hand-authored per-kind style-variant data (`_templates`
-      — "Tesla Style", "BMW Amber", "Audi Sport" gauge presets etc.) living
-      inside the same file as the canvas area, properties inspector, and
-      every binding editor. Split it: move `_templates` into
-      `packages/templates` (it's content, not UI logic) or a dedicated
-      `palette_presets.dart`; split `_CanvasArea`, `_PropertiesInspector`,
-      and the binding editors (`_BindingField`, `_LiteralEditor`,
-      `_TelemetryEditor`, `_FormulaEditor`, `_GraphEditor`) into their own
-      files under `apps/studio/lib/editor/`. This is exactly the kind of
-      "old and not that good" structure that makes every future UI change
-      here slower and riskier.
+- [x] **FIXED**: **Widget palette has no search or categories.** Added a
+      search field (filters by kind or template-variant name) and grouped
+      the default view into 6 categories (Gauges & Meters, Text & Data,
+      Charts, Car Status, Media & Controls, Custom) covering all 22 kinds,
+      with an "Other" fallback bucket so a future uncategorized kind can't
+      silently disappear. See `apps/studio/lib/editor/studio_palette.dart`.
+- [x] **FIXED**: **`studio_editor.dart` was a 2,676-line god-file.** Split
+      into `studio_editor.dart` (main widget only), `studio_palette.dart`
+      (palette + `_templates` preset data), `studio_canvas_area.dart`
+      (drop-target canvas), and `studio_inspector.dart` (properties
+      inspector + all binding editors) — joined via `part`/`part of` so no
+      private members needed renaming. Verified with `flutter analyze`
+      (no new issues) and `flutter test` (22/22 pass) both before and
+      after.
 - [ ] [P2] **Inspector empty state wastes the whole right panel** — "Select
       a widget to edit its properties" with nothing else. Consider a
       collapsed/narrow empty state, or defaulting to canvas-level properties
