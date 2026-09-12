@@ -81,6 +81,7 @@ class GaugeWidget extends StatelessWidget {
               max: max,
               tickLabelColor: accent.withValues(alpha: 0.7),
               fontFamily: properties['fontFamily'] as String?,
+              avoidCenter: showCenterText,
             ),
             child: showCenterText
                 ? Center(
@@ -186,6 +187,11 @@ class _GaugePainter extends CustomPainter {
   final Color tickLabelColor;
   final String? fontFamily;
 
+  /// Whether a digital readout is centered on top of this gauge. When true,
+  /// the needle must not draw its base/hub through the center — that spot
+  /// is claimed by the text — so the needle only occupies the outer ring.
+  final bool avoidCenter;
+
   _GaugePainter({
     required this.t,
     required this.innerT,
@@ -209,6 +215,7 @@ class _GaugePainter extends CustomPainter {
     required this.max,
     required this.tickLabelColor,
     this.fontFamily,
+    required this.avoidCenter,
   });
 
   @override
@@ -301,22 +308,31 @@ class _GaugePainter extends CustomPainter {
       final a = start + full * t;
       final tip = center +
           Offset(math.cos(a) * (radius - 16), math.sin(a) * (radius - 16));
+      // When a digital readout is centered on the gauge, the needle must
+      // not draw its base through that spot — start it further out instead
+      // of stabbing a wide triangle + hub through the number.
+      final pivotRadius = avoidCenter ? radius * 0.4 : 0.0;
+      final pivot = center +
+          Offset(math.cos(a) * pivotRadius, math.sin(a) * pivotRadius);
       final needle = Paint()
         ..style = PaintingStyle.fill
         ..color = color;
       final perpAngle = a + math.pi / 2;
-      final base1 =
-          center + Offset(math.cos(perpAngle) * 5, math.sin(perpAngle) * 5);
-      final base2 =
-          center - Offset(math.cos(perpAngle) * 5, math.sin(perpAngle) * 5);
+      final baseWidth = avoidCenter ? 3.0 : 5.0;
+      final base1 = pivot +
+          Offset(math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
+      final base2 = pivot -
+          Offset(math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
       final path = Path()
         ..moveTo(tip.dx, tip.dy)
         ..lineTo(base1.dx, base1.dy)
         ..lineTo(base2.dx, base2.dy)
         ..close();
       canvas.drawPath(path, needle);
-      canvas.drawCircle(center, 10, Paint()..color = const Color(0xFF1E1E1E));
-      canvas.drawCircle(center, 5, Paint()..color = accent);
+      if (!avoidCenter) {
+        canvas.drawCircle(center, 10, Paint()..color = const Color(0xFF1E1E1E));
+        canvas.drawCircle(center, 5, Paint()..color = accent);
+      }
     }
   }
 
