@@ -112,18 +112,56 @@ passed to the app, treating the first one as a `--target` override).
       principle above, this should be a *Studio tool* (visual overlap
       highlight, maybe a "widgets overlap" indicator in the layer panel)
       — not something to catch by manually reviewing JSON.
-- [ ] [P2] Other widgets not yet individually audited for rendering
-      quality: minigauge, power, warnings, appgrid, statusbar, climate,
-      battery_range, power_flow, gear_selector, digitalspeed, car_viz,
-      map, bar, chart — the 9 example dashboards exercise most of these
-      and looked clean in this pass, but none were reviewed as closely as
-      gauge was.
+- [x] **All 22 widget kinds individually audited** (2026-09-13, second
+      pass): rendered one instance of every registered kind side by side
+      via a generated showcase dashboard through `tools/dashboard_renderer`.
+      Found and fixed three more real issues:
+  - [x] **FIXED**: `bar`'s track had no border — at low/zero values it was
+        nearly invisible against a similarly dark background. Added a
+        visible outline regardless of fill level.
+  - [x] **FIXED**: `image` had no `errorBuilder` on `Image.asset`/
+        `Image.network` — a missing/invalid `src` rendered as a silent
+        blank box. Now falls back to the same broken-image icon already
+        used for a null `src`. (Also confirmed the built-in Image presets'
+        `assets/images/placeholder.png` path doesn't exist and isn't
+        declared in any pubspec — every fresh Image widget hits this
+        fallback until a user supplies a real path; that's expected, not
+        a bug, but worth remembering if this surprises someone.)
+  - [x] **FIXED**: Studio palette's `paint > Custom` preset shipped an
+        empty program (renders nothing at all), while the bare-default
+        fallback elsewhere in the same file already had a good starter
+        program (`_samplePaintProgram`) — palette preset now uses it too.
+  - **Not a bug**: `chart` appeared blank in the one-shot showcase
+        render — by design it needs 2+ samples in its rolling history
+        before it draws a line, and a static single-frame render never
+        gets a second sample. The real running dashboard app updates
+        telemetry continuously, so this doesn't reproduce there.
+  - Remaining, not fixed: `warnings` shows icons with no text labels
+        (low clarity — a beginner may not know what the icons mean without
+        hovering/guessing); `power_flow` is visually very thin/minimal
+        compared to its neighbors. Neither is broken, just weak.
 - [ ] [P2] **Need genuinely minimal starter widgets, not just car-brand
       replicas.** Current templates lean toward maximalist car-cluster
       looks. Add plain/minimal variants (e.g. a bare "just the number"
       text style, an undecorated thin-bar) for users who want a dashboard
       with only the 2-3 values they care about — a SimHub-style simple
       option alongside the styled ones, not a replacement for them.
+
+## Full test sweep (2026-09-13)
+
+Ran `flutter test` in every package/app with a `test/` directory (melos'
+own `test` script needs a bare `dart` on PATH, which isn't set up in this
+shell — looped manually instead). **228/228 tests pass** across
+`app_integration`, `dashboard_model`, `dashboard_runtime`,
+`dashboard_storage`, `editor_canvas`, `node_graph`, `paint_dsl`,
+`settings`, `templates`, `vesc_proto`, `vesc_telemetry`, `vesc_transport`,
+`widgets_library` (102), `apps/dashboard`, `apps/studio` (23, including
+the new end-to-end drag/select/inspect flow).
+
+- [ ] [P1] **`packages/node_graph_editor` has zero test files** — 466 lines
+      of interactive Flow-mode canvas code (drag nodes, connect sockets,
+      delete edges) with no automated coverage at all. This is the
+      biggest test-coverage gap in the monorepo.
 
 ---
 
