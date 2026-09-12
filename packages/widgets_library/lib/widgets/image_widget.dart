@@ -30,9 +30,15 @@ class ImageWidget extends StatelessWidget {
     final opacity = (properties['opacity'] as num?)?.toDouble() ?? 1.0;
     final borderRadiusRaw = (properties['borderRadius'] as num?) ?? 0.0;
 
+    // A missing/invalid asset or network path must never fail silently —
+    // without an errorBuilder, Flutter renders nothing at all, which looks
+    // identical to an empty, broken widget.
+    Widget errorFallback(BuildContext context, Object error, StackTrace? _) =>
+        const Center(child: Icon(Icons.broken_image, color: Colors.white54));
     final isUrl = src.startsWith('http://') || src.startsWith('https://');
-    final image =
-        isUrl ? Image.network(src, fit: fit) : Image.asset(src, fit: fit);
+    final image = isUrl
+        ? Image.network(src, fit: fit, errorBuilder: errorFallback)
+        : Image.asset(src, fit: fit, errorBuilder: errorFallback);
 
     Widget widget = Opacity(
       opacity: opacity.clamp(0.0, 1.0),

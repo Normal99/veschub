@@ -40,6 +40,10 @@ class BarWidget extends StatelessWidget {
           child: LayoutBuilder(
         builder: (context, constraints) {
           final trackColor = color.withValues(alpha: 0.18);
+          // The track always gets a visible outline so the bar's bounds read
+          // clearly even at 0% fill or against a similarly dark background —
+          // without this it can look like an empty box with nothing in it.
+          final trackBorder = Border.all(color: color.withValues(alpha: 0.4));
           if (vertical) {
             final h = constraints.maxHeight * t;
             return Stack(
@@ -49,6 +53,7 @@ class BarWidget extends StatelessWidget {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: trackColor,
+                    border: trackBorder,
                     borderRadius: BorderRadius.circular(radius),
                   ),
                 ),
@@ -73,6 +78,7 @@ class BarWidget extends StatelessWidget {
                 height: double.infinity,
                 decoration: BoxDecoration(
                   color: trackColor,
+                  border: trackBorder,
                   borderRadius: BorderRadius.circular(radius),
                 ),
               ),

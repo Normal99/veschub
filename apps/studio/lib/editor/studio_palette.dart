@@ -421,7 +421,13 @@ class _WidgetPalette extends ConsumerStatefulWidget {
       (
         name: 'Custom',
         icon: Icons.brush,
-        props: {},
+        // A paint widget with an empty program renders nothing at all —
+        // ship the same starter program used by the bare-default fallback
+        // so dropping this from the palette gives immediate visual
+        // feedback instead of an invisible box.
+        props: {
+          'program': L(_samplePaintProgram.toJson()),
+        },
       ),
     ],
     'digitalspeed': [
