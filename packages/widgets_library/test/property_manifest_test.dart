@@ -18,11 +18,14 @@ void main() {
   ];
 
   group('visibleProperties', () {
-    test('Basic level shows only safe props for gauge', () {
+    test(
+        'Basic level shows only safe props for gauge, plus the value '
+        'binding itself (what a widget displays is never gated — only its '
+        'cosmetic/advanced knobs are)', () {
       final visible = visibleProperties('gauge', CapabilityLevel.basic);
       final keys = visible.map((m) => m.key).toSet();
-      expect(keys, containsAll(['min', 'max', 'label', 'unit', 'color']));
-      expect(keys, isNot(contains('value')));
+      expect(
+          keys, containsAll(['value', 'min', 'max', 'label', 'unit', 'color']));
       expect(keys, isNot(contains('accent')));
     });
 
@@ -77,18 +80,22 @@ void main() {
       expect(PropertyCategory.fontsAndColors.displayName, 'Fonts & Colors');
     });
 
-    test('PropertyMeta category field is mandatory and non-null for all manifests', () {
+    test(
+        'PropertyMeta category field is mandatory and non-null for all manifests',
+        () {
       for (final entry in propertyManifest.entries) {
         for (final meta in entry.value) {
           expect(
             meta.category,
             isNotNull,
-            reason: 'Property "${meta.key}" in widget "${entry.key}" missing category',
+            reason:
+                'Property "${meta.key}" in widget "${entry.key}" missing category',
           );
           expect(
             PropertyCategory.values.contains(meta.category),
             isTrue,
-            reason: 'Property "${meta.key}" in widget "${entry.key}" has invalid category',
+            reason:
+                'Property "${meta.key}" in widget "${entry.key}" has invalid category',
           );
         }
       }
@@ -98,12 +105,16 @@ void main() {
   group('Target 11 Widget Kinds Categorization', () {
     test('all 11 target widget kinds are present and non-empty', () {
       for (final kind in target11Kinds) {
-        expect(propertyManifest.containsKey(kind), isTrue, reason: 'Missing manifest for "$kind"');
-        expect(allProperties(kind).isNotEmpty, isTrue, reason: 'Empty manifest for "$kind"');
+        expect(propertyManifest.containsKey(kind), isTrue,
+            reason: 'Missing manifest for "$kind"');
+        expect(allProperties(kind).isNotEmpty, isTrue,
+            reason: 'Empty manifest for "$kind"');
       }
     });
 
-    test('all 11 target widget kinds have properties across multiple categories', () {
+    test(
+        'all 11 target widget kinds have properties across multiple categories',
+        () {
       for (final kind in target11Kinds) {
         final grouped = propertiesByCategory(kind);
         expect(grouped[PropertyCategory.dataBindings], isNotNull);
@@ -124,25 +135,35 @@ void main() {
   });
 
   group('car_viz Manifest Expansion', () {
-    test('car_viz includes missing properties doorLeft, doorRight, showRing, showLabels, fontSize', () {
+    test(
+        'car_viz includes missing properties doorLeft, doorRight, showRing, showLabels, fontSize',
+        () {
       final keys = allProperties('car_viz').map((m) => m.key).toSet();
-      expect(keys, containsAll(['doorLeft', 'doorRight', 'showRing', 'showLabels', 'fontSize']));
+      expect(
+          keys,
+          containsAll(
+              ['doorLeft', 'doorRight', 'showRing', 'showLabels', 'fontSize']));
 
-      final doorLeftMeta = allProperties('car_viz').firstWhere((m) => m.key == 'doorLeft');
+      final doorLeftMeta =
+          allProperties('car_viz').firstWhere((m) => m.key == 'doorLeft');
       expect(doorLeftMeta.category, PropertyCategory.dataBindings);
       expect(doorLeftMeta.minLevel, CapabilityLevel.basic);
 
-      final doorRightMeta = allProperties('car_viz').firstWhere((m) => m.key == 'doorRight');
+      final doorRightMeta =
+          allProperties('car_viz').firstWhere((m) => m.key == 'doorRight');
       expect(doorRightMeta.category, PropertyCategory.dataBindings);
       expect(doorRightMeta.minLevel, CapabilityLevel.basic);
 
-      final showRingMeta = allProperties('car_viz').firstWhere((m) => m.key == 'showRing');
+      final showRingMeta =
+          allProperties('car_viz').firstWhere((m) => m.key == 'showRing');
       expect(showRingMeta.category, PropertyCategory.visuals);
 
-      final showLabelsMeta = allProperties('car_viz').firstWhere((m) => m.key == 'showLabels');
+      final showLabelsMeta =
+          allProperties('car_viz').firstWhere((m) => m.key == 'showLabels');
       expect(showLabelsMeta.category, PropertyCategory.visuals);
 
-      final fontSizeMeta = allProperties('car_viz').firstWhere((m) => m.key == 'fontSize');
+      final fontSizeMeta =
+          allProperties('car_viz').firstWhere((m) => m.key == 'fontSize');
       expect(fontSizeMeta.category, PropertyCategory.fontsAndColors);
       expect(fontSizeMeta.min, 8.0);
       expect(fontSizeMeta.max, 96.0);
@@ -153,7 +174,8 @@ void main() {
   group('propertiesByCategory and categorizedProperties helper functions', () {
     test('returns properties grouped by category preserving total count', () {
       final grouped = propertiesByCategory('gauge');
-      final totalGroupedCount = grouped.values.fold<int>(0, (sum, list) => sum + list.length);
+      final totalGroupedCount =
+          grouped.values.fold<int>(0, (sum, list) => sum + list.length);
       expect(totalGroupedCount, allProperties('gauge').length);
 
       final catGrouped = categorizedProperties('gauge');
@@ -161,9 +183,12 @@ void main() {
     });
 
     test('filters by capability level when specified', () {
-      final basicGrouped = propertiesByCategory('gauge', level: CapabilityLevel.basic);
-      final basicTotalCount = basicGrouped.values.fold<int>(0, (sum, list) => sum + list.length);
-      expect(basicTotalCount, visibleProperties('gauge', CapabilityLevel.basic).length);
+      final basicGrouped =
+          propertiesByCategory('gauge', level: CapabilityLevel.basic);
+      final basicTotalCount =
+          basicGrouped.values.fold<int>(0, (sum, list) => sum + list.length);
+      expect(basicTotalCount,
+          visibleProperties('gauge', CapabilityLevel.basic).length);
     });
 
     test('returns empty lists for unknown widget kind', () {
@@ -176,13 +201,16 @@ void main() {
 
   group('getPropertiesByCategory helper function', () {
     test('returns exact list of properties for category', () {
-      final fontProps = getPropertiesByCategory('text', PropertyCategory.fontsAndColors);
+      final fontProps =
+          getPropertiesByCategory('text', PropertyCategory.fontsAndColors);
       final keys = fontProps.map((m) => m.key).toSet();
-      expect(keys, containsAll(['fontSize', 'fontFamily', 'fontWeight', 'color']));
+      expect(
+          keys, containsAll(['fontSize', 'fontFamily', 'fontWeight', 'color']));
     });
 
     test('returns empty list for unknown kind', () {
-      final props = getPropertiesByCategory('unknown', PropertyCategory.visuals);
+      final props =
+          getPropertiesByCategory('unknown', PropertyCategory.visuals);
       expect(props, isEmpty);
     });
   });
@@ -191,9 +219,12 @@ void main() {
     test('WidgetManifest.forKind creates valid manifest instance', () {
       final manifest = WidgetManifest.forKind('bar');
       expect(manifest.kind, 'bar');
-      expect(manifest.propertiesByCategory().keys, containsAll(PropertyCategory.values));
-      expect(manifest.categorizedProperties.keys, containsAll(PropertyCategory.values));
-      expect(manifest.getPropertiesByCategory(PropertyCategory.dataBindings), isNotEmpty);
+      expect(manifest.propertiesByCategory().keys,
+          containsAll(PropertyCategory.values));
+      expect(manifest.categorizedProperties.keys,
+          containsAll(PropertyCategory.values));
+      expect(manifest.getPropertiesByCategory(PropertyCategory.dataBindings),
+          isNotEmpty);
     });
   });
 }

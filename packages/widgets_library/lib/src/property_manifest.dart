@@ -120,7 +120,7 @@ class WidgetManifest {
 const List<PropertyMeta> _gauge = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -201,7 +201,7 @@ const List<PropertyMeta> _gauge = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'centerValue',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Center value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -221,17 +221,17 @@ const List<PropertyMeta> _gauge = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'innerValue',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Inner value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'innerMin',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Inner min',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'innerMax',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Inner max',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -249,7 +249,7 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'redlineStart',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Redline',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -374,7 +374,7 @@ const List<PropertyMeta> _gauge = [
 const List<PropertyMeta> _bar = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -531,7 +531,7 @@ const List<PropertyMeta> _bar = [
 const List<PropertyMeta> _text = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -675,7 +675,7 @@ const List<PropertyMeta> _text = [
 const List<PropertyMeta> _status = [
   PropertyMeta(
       key: 'fault',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Fault binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -686,7 +686,7 @@ const List<PropertyMeta> _status = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'State text',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -812,7 +812,7 @@ const List<PropertyMeta> _status = [
 const List<PropertyMeta> _chart = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1216,7 +1216,7 @@ const List<PropertyMeta> _paint = [
 const List<PropertyMeta> _digitalspeed = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1227,7 +1227,7 @@ const List<PropertyMeta> _digitalspeed = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'sourceUnit',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Source unit',
       category: PropertyCategory.dataBindings,
       options: _speedUnitOptions),
@@ -1263,7 +1263,7 @@ const List<PropertyMeta> _digitalspeed = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'subValue',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Sub-value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1401,17 +1401,17 @@ const List<PropertyMeta> _music = [
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'album',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Album',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'progress',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Progress (s)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'duration',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Duration (s)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1565,7 +1565,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value1',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Stat 1 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1582,7 +1582,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value2',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Stat 2 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1599,7 +1599,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value3',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Stat 3 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1616,7 +1616,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value4',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Stat 4 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1639,7 +1639,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val1',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1650,7 +1650,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val2',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1661,7 +1661,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val3',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1678,7 +1678,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val1',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1689,7 +1689,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val2',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1700,7 +1700,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val3',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1717,7 +1717,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val1',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1728,7 +1728,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val2',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1739,7 +1739,7 @@ const List<PropertyMeta> _tripstats = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val3',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1891,7 +1891,7 @@ const List<PropertyMeta> _tripstats = [
 const List<PropertyMeta> _power = [
   PropertyMeta(
       key: 'power',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Power binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -1902,7 +1902,7 @@ const List<PropertyMeta> _power = [
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'regen',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Regen binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -2062,7 +2062,7 @@ const List<PropertyMeta> _power = [
 const List<PropertyMeta> _warnings = [
   PropertyMeta(
       key: 'activeWarnings',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Active warnings',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -2187,7 +2187,7 @@ const List<PropertyMeta> _warnings = [
 const List<PropertyMeta> _minigauge = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -2216,7 +2216,7 @@ const List<PropertyMeta> _minigauge = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'sourceUnit',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Source temperature unit',
       category: PropertyCategory.dataBindings,
       options: _temperatureUnitOptions),
@@ -2539,12 +2539,12 @@ const List<PropertyMeta> _statusbar = [
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'battery',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Battery level',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'signal',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Signal level',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -2699,17 +2699,17 @@ const List<PropertyMeta> _statusbar = [
 const List<PropertyMeta> _climate = [
   PropertyMeta(
       key: 'temperature',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'targetTemp',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Target temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'fanSpeed',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Fan speed',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -2864,17 +2864,17 @@ const List<PropertyMeta> _climate = [
 const List<PropertyMeta> _car_viz = [
   PropertyMeta(
       key: 'laneLeft',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Left lane warning',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'laneRight',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Right lane warning',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'carAhead',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Car ahead',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3047,17 +3047,17 @@ const List<PropertyMeta> _map = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'eta',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'ETA',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'distance',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Distance',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'nextTurn',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Next turn',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3079,12 +3079,12 @@ const List<PropertyMeta> _map = [
       ]),
   PropertyMeta(
       key: 'lat',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Latitude',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lon',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Longitude',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3097,7 +3097,7 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'heading',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Heading',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3205,22 +3205,22 @@ const List<PropertyMeta> _map = [
 const List<PropertyMeta> _gps = [
   PropertyMeta(
       key: 'speed',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Speed binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'altitude',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Altitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lat',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Latitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lon',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Longitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3493,17 +3493,17 @@ const List<PropertyMeta> _gear_selector = [
 const List<PropertyMeta> _battery_range = [
   PropertyMeta(
       key: 'batteryLevel',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Battery level (0-1)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'range',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Range',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'temperature',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
@@ -3671,7 +3671,7 @@ const List<PropertyMeta> _battery_range = [
 const List<PropertyMeta> _power_flow = [
   PropertyMeta(
       key: 'power',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Power',
       category: PropertyCategory.dataBindings),
   PropertyMeta(

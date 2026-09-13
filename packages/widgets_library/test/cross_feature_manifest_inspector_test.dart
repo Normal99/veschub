@@ -7,7 +7,9 @@ import 'package:widgets_library/widgets_library.dart';
 
 void main() {
   group('Tier 3: Cross-Feature Manifest & Inspector Interactions', () {
-    testWidgets('XF1: Property Manifest Schema + Default Properties + Telemetry Binding + Widget Render Update', (tester) async {
+    testWidgets(
+        'XF1: Property Manifest Schema + Default Properties + Telemetry Binding + Widget Render Update',
+        (tester) async {
       final store = TelemetryStore();
       store.updateFromMap({
         'erpm': 12500.0,
@@ -83,7 +85,9 @@ void main() {
       expect(find.byType(GaugeWidget), findsOneWidget);
     });
 
-    testWidgets('XF2: CarViz Manifest Properties + Property Inspector Binding + Live CarViz Render Tree', (tester) async {
+    testWidgets(
+        'XF2: CarViz Manifest Properties + Property Inspector Binding + Live CarViz Render Tree',
+        (tester) async {
       final store = TelemetryStore();
       store.updateFromMap({
         'door_left_status': true,
@@ -135,13 +139,18 @@ void main() {
       expect(resolvedProps['doorRight'], isFalse);
     });
 
-    testWidgets('XF3: Capability Level Filter + Property Manifest + Inspector Visibility Validation', (tester) async {
+    testWidgets(
+        'XF3: Capability Level Filter + Property Manifest + Inspector Visibility Validation',
+        (tester) async {
       final basicGaugeProps = visibleProperties('gauge', CapabilityLevel.basic);
-      final advancedGaugeProps = visibleProperties('gauge', CapabilityLevel.advanced);
-      final expertGaugeProps = visibleProperties('gauge', CapabilityLevel.expert);
+      final advancedGaugeProps =
+          visibleProperties('gauge', CapabilityLevel.advanced);
+      final expertGaugeProps =
+          visibleProperties('gauge', CapabilityLevel.expert);
 
       expect(basicGaugeProps.length, lessThan(advancedGaugeProps.length));
-      expect(advancedGaugeProps.length, lessThanOrEqualTo(expertGaugeProps.length));
+      expect(advancedGaugeProps.length,
+          lessThanOrEqualTo(expertGaugeProps.length));
 
       // Verify safe basic knobs
       final basicKeys = basicGaugeProps.map((m) => m.key).toSet();
@@ -149,12 +158,15 @@ void main() {
       expect(basicKeys.contains('max'), isTrue);
       expect(basicKeys.contains('label'), isTrue);
 
-      // Verify advanced knobs are excluded from basic
-      expect(basicKeys.contains('value'), isFalse);
+      // The value binding itself is never gated (what a widget displays
+      // isn't an "advanced" concept) — only cosmetic/advanced knobs are.
+      expect(basicKeys.contains('value'), isTrue);
       expect(basicKeys.contains('sweepAngle'), isFalse);
     });
 
-    testWidgets('XF4: Multi-Widget Dashboard Document Serialization & Property Resolution', (tester) async {
+    testWidgets(
+        'XF4: Multi-Widget Dashboard Document Serialization & Property Resolution',
+        (tester) async {
       final store = TelemetryStore();
       store.updateFromMap({
         'v_in': 52.4,
@@ -223,7 +235,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('XF5: Palette Preset Template Execution & Customized Widget Instantiation', (tester) async {
+    testWidgets(
+        'XF5: Palette Preset Template Execution & Customized Widget Instantiation',
+        (tester) async {
       final presetInstance = const WidgetInstance(
         id: 'preset_mini',
         kind: 'minigauge',
