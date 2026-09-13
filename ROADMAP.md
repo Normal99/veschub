@@ -75,10 +75,9 @@ main editor file), compared against the reference dashboards.
       private members needed renaming. Verified with `flutter analyze`
       (no new issues) and `flutter test` (22/22 pass) both before and
       after.
-- [ ] [P2] **Inspector empty state wastes the whole right panel** — "Select
-      a widget to edit its properties" with nothing else. Consider a
-      collapsed/narrow empty state, or defaulting to canvas-level properties
-      (size, background) when nothing is selected.
+- [x] [P2] **Inspector empty state** (2026-09-13) — now shows canvas size,
+      background/accent colour swatches, with the "select a widget" hint
+      as a footer instead of the only content.
 - [ ] [P2] **Toolbar icons have no visible labels** — undo/redo, new/open/
       save/export, settings, and layers are all icon-only in the top-right
       toolbar. Tooltips may exist on hover but a first-time user scanning
