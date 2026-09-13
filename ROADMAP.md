@@ -270,8 +270,7 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 - [ ] [P2] Dark / light theme obeying widget background colors
 - [x] [P2] Metric / imperial unit conversion (per-widget, not global) (2026-09-13):
       same work as Milestone 10's "Per-widget unit system" item — see that
-      entry. v1 covers speed (`digitalspeed` widget); temperature conversion
-      helpers exist in `format.dart` too but aren't wired into a widget yet.
+      entry. Covers speed (`digitalspeed`) and temperature (`minigauge`).
 - [ ] [P3] Dashboard app display modes: fullscreen, splitscreen, Pi-optimized
 
 ## Milestone 5: Studio Polish 🚧
@@ -290,10 +289,24 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       completely undeclared). See `widgets_library/test/manifest_matches_renderer_test.dart`.
 - [x] [P1] **Rotation property/field in the inspector** (2026-09-13) —
       done; see `_PositionFields` in `studio_inspector.dart`.
-- [ ] [P1] Rotation handle on canvas (drag to rotate) — not yet done.
-      Needs its own drag-session type, a hit-test zone above the selection
-      bounds, and a decision on group-rotation pivot behavior for
-      multi-select. Anchor point for resize/rotate also still open.
+- [x] [P1] Rotation handle on canvas (drag to rotate) (2026-09-13): a new
+      `_DragSession.rotate` type in `editor_canvas.dart`, hit-tested via a
+      handle drawn 24px above the shape's own local top-centre — computed by
+      transforming that local point through the node's current matrix, so
+      the handle stays attached to (and rotates with) an already-rotated
+      shape rather than sitting on a static axis-aligned box. Pivots around
+      the shape's true geometric centre (`MatrixUtils.transformPoint` of its
+      local centre) rather than the numeric rotation field's top-left-origin
+      pivot (`NodeTransforms.compose`'s `rotationZ` is anchored at the local
+      origin) — a deliberate inconsistency between the two controls, since
+      center-pivot is the expected feel for an interactive drag handle and
+      changing the numeric field's pivot would alter every already-saved
+      dashboard's rotation semantics. Scoped to single-selection only for
+      now — the group-rotation pivot decision for multi-select is still
+      open, deliberately deferred rather than guessed at. Widget tests in
+      the `editor_canvas` package drive the actual gesture (not just the
+      matrix math) and confirm multi-select correctly does NOT expose the
+      handle. Anchor point for resize (separate from rotate) still open.
 - [x] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
       (2026-09-13) — see `bar_widget_test.dart`.
 - [x] [P1] Multiple selection with group operations (2026-09-13) — group-move

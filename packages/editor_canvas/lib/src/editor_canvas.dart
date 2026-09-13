@@ -7,6 +7,8 @@
 /// payload rendering is delegated to [nodeBuilder].
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -19,6 +21,11 @@ import 'snapping.dart';
 
 /// Builds a widget for a node's payload (called per-frame during paint).
 typedef NodeBuilder = Widget Function(CanvasNode node);
+
+/// Distance (in canvas units) from a shape's own top edge to its rotate
+/// handle, shared by the hit-test and the overlay painter so they always
+/// agree on where the handle actually is.
+const double _kRotateHandleDistance = 24.0;
 
 class EditorCanvas extends StatefulWidget {
   final SceneModel scene;
@@ -180,6 +187,35 @@ class _EditorCanvasState extends State<EditorCanvas> {
 
   void _onPanStart(DragStartDetails details) {
     final p = details.localPosition;
+
+    // The rotate handle sits above the shape's own top edge (rotating with
+    // it), i.e. outside the shape's own hit-testable bounds — so it must be
+    // checked before the normal node hit-test, which would otherwise see
+    // empty space there and start a marquee instead. Scoped to a single
+    // selection only: a shared group-rotation pivot for multi-select is a
+    // separate, still-open design decision (see ROADMAP.md).
+    if (widget.selection.ids.length == 1) {
+      final onlyId = widget.selection.ids.first;
+      final node = widget.scene[onlyId];
+      if (node != null && !(widget.isNodeLocked?.call(node) ?? false)) {
+        final handlePos = _rotateHandlePosition(node);
+        if ((p - handlePos).distanceSquared <=
+            _cornerHitRadius * _cornerHitRadius) {
+          final w = widget.nodeWidth(node);
+          final h = widget.nodeHeight(node);
+          final pivot =
+              MatrixUtils.transformPoint(node.transform, Offset(w / 2, h / 2));
+          _drag = _DragSession.rotate(
+            origin: p,
+            startTransforms: {onlyId: node.transform.clone()},
+            pivot: pivot,
+          );
+          setState(() {});
+          return;
+        }
+      }
+    }
+
     final hit = hitTestNode(p);
     if (hit != null) {
       final shiftHeld = HardwareKeyboard.instance.isShiftPressed ||
@@ -241,7 +277,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
   void _onPanUpdate(DragUpdateDetails details) {
     final p = details.localPosition;
     if (_drag != null) {
-      if (_drag!.isResize) {
+      if (_drag!.isRotate) {
+        _applyRotate(p);
+      } else if (_drag!.isResize) {
         _applyResize(p);
       } else {
         _applyMove(p);
@@ -359,6 +397,35 @@ class _EditorCanvasState extends State<EditorCanvas> {
     setState(() {});
   }
 
+  void _applyRotate(Offset current) {
+    assert(_drag != null && _drag!.isRotate);
+    final drag = _drag!;
+    final pivot = drag.pivot;
+    final currentAngle =
+        math.atan2(current.dy - pivot.dy, current.dx - pivot.dx);
+    final deltaAngle = currentAngle - drag.startAngle;
+    for (final entry in drag.startTransforms.entries) {
+      final node = widget.scene[entry.key];
+      if (node == null) continue;
+      final t = Matrix4.identity()
+        ..translateByDouble(pivot.dx, pivot.dy, 0, 1)
+        ..multiply(Matrix4.rotationZ(deltaAngle))
+        ..translateByDouble(-pivot.dx, -pivot.dy, 0, 1)
+        ..multiply(entry.value);
+      _dragTransforms[entry.key] = _clampTransform(t, node);
+    }
+    setState(() {});
+  }
+
+  /// World-space position of the rotate handle: a fixed distance above the
+  /// shape's own local top-centre, transformed by its current matrix so the
+  /// handle rotates along with an already-rotated shape.
+  Offset _rotateHandlePosition(CanvasNode node) {
+    final w = widget.nodeWidth(node);
+    return MatrixUtils.transformPoint(
+        node.transform, Offset(w / 2, -_kRotateHandleDistance));
+  }
+
   Matrix4 _clampTransform(Matrix4 transform, CanvasNode node) {
     final cs = widget.canvasSize;
     if (cs == null) return transform;
@@ -435,6 +502,9 @@ class _DragSession {
   final bool isResize;
   final Offset resizeAnchor;
   final double initialScale;
+  final bool isRotate;
+  final Offset pivot;
+  final double startAngle;
   List<GuideLine> guides;
 
   _DragSession({
@@ -443,6 +513,9 @@ class _DragSession {
     this.isResize = false,
     this.resizeAnchor = Offset.zero,
     this.initialScale = 1.0,
+    this.isRotate = false,
+    this.pivot = Offset.zero,
+    this.startAngle = 0.0,
   }) : guides = const [];
 
   factory _DragSession.move({
@@ -462,6 +535,19 @@ class _DragSession {
         isResize: true,
         resizeAnchor: resizeAnchor,
         initialScale: (origin - resizeAnchor).distance,
+      );
+
+  factory _DragSession.rotate({
+    required Offset origin,
+    required Map<String, Matrix4> startTransforms,
+    required Offset pivot,
+  }) =>
+      _DragSession(
+        origin: origin,
+        startTransforms: startTransforms,
+        isRotate: true,
+        pivot: pivot,
+        startAngle: math.atan2(origin.dy - pivot.dy, origin.dx - pivot.dx),
       );
 }
 
@@ -506,16 +592,19 @@ class _OverlayPainter extends CustomPainter {
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1
     ..color = const Color(0xFFFF4081);
+  static final _rotateHandlePaint = Paint()..color = const Color(0xFFFFFFFF);
+  static final _rotateLinePaint = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 1
+    ..color = const Color(0xFF4FC3F7);
 
   @override
   void paint(Canvas canvas, Size size) {
     for (final id in selection) {
       final node = scene[id];
       if (node == null) continue;
-      final tempNode = CanvasNode(
-        id: node.id,
-        transform: _currentTransform(node),
-      );
+      final transform = _currentTransform(node);
+      final tempNode = CanvasNode(id: node.id, transform: transform);
       final bounds =
           transformedBounds(tempNode, nodeWidth(node), nodeHeight(node));
       canvas.drawRect(bounds.inflate(2), _selectPaint);
@@ -527,6 +616,19 @@ class _OverlayPainter extends CustomPainter {
       ]) {
         canvas.drawCircle(corner, 5, _handlePaint);
         canvas.drawCircle(corner, 5, _handleStroke);
+      }
+
+      // Rotate handle: single-selection only (see EditorCanvas._onPanStart
+      // for why group rotation is deliberately out of scope for now).
+      if (selection.length == 1) {
+        final w = nodeWidth(node);
+        final topCentre =
+            MatrixUtils.transformPoint(transform, Offset(w / 2, 0));
+        final handle = MatrixUtils.transformPoint(
+            transform, Offset(w / 2, -_kRotateHandleDistance));
+        canvas.drawLine(topCentre, handle, _rotateLinePaint);
+        canvas.drawCircle(handle, 5, _rotateHandlePaint);
+        canvas.drawCircle(handle, 5, _handleStroke);
       }
     }
 
