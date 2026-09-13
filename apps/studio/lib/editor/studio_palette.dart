@@ -9,7 +9,13 @@ extension on String {
 /// listed here still shows up, under a trailing "Other" section — this is a
 /// display grouping only and never hides a widget kind.
 const Map<String, List<String>> _paletteCategories = {
-  'Gauges & Meters': ['gauge', 'minigauge', 'digitalspeed', 'power', 'power_flow'],
+  'Gauges & Meters': [
+    'gauge',
+    'minigauge',
+    'digitalspeed',
+    'power',
+    'power_flow'
+  ],
   'Text & Data': ['text', 'status', 'tripstats', 'warnings'],
   'Charts': ['bar', 'chart'],
   'Car Status': ['car_viz', 'gear_selector', 'battery_range', 'climate', 'map'],
@@ -990,8 +996,7 @@ class _WidgetPaletteState extends ConsumerState<_WidgetPalette> {
       var firstTileShown = false;
       final categorizedKinds = <String>{};
       for (final entry in _paletteCategories.entries) {
-        final kindsInCategory =
-            entry.value.where(allKinds.contains).toList();
+        final kindsInCategory = entry.value.where(allKinds.contains).toList();
         if (kindsInCategory.isEmpty) continue;
         items.add(_categoryHeader(context, entry.key));
         for (final kind in kindsInCategory) {
@@ -1077,11 +1082,16 @@ class _WidgetPaletteState extends ConsumerState<_WidgetPalette> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: ExpansionTile(
-        leading: Icon(_WidgetPalette._kindIcon(kind), size: 20),
-        title: Text(kind.capitalize(), style: const TextStyle(fontSize: 13)),
+        leading: Tooltip(
+          message: kindDescription(kind),
+          child: Icon(_WidgetPalette._kindIcon(kind), size: 20),
+        ),
+        title: Tooltip(
+          message: kindDescription(kind),
+          child: Text(kind.capitalize(), style: const TextStyle(fontSize: 13)),
+        ),
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
-        childrenPadding:
-            const EdgeInsets.only(left: 16, right: 8, bottom: 4),
+        childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 4),
         initiallyExpanded: expanded,
         children: [
           for (final tpl in tpls)
@@ -1100,8 +1110,8 @@ class _WidgetPaletteState extends ConsumerState<_WidgetPalette> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(tpl.name,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 12)),
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 12)),
                   ),
                 ),
                 childWhenDragging: Opacity(
@@ -1109,7 +1119,8 @@ class _WidgetPaletteState extends ConsumerState<_WidgetPalette> {
                   child:
                       _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
                 ),
-                child: _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
+                child:
+                    _PaletteTile(kind: kind, label: tpl.name, icon: tpl.icon),
               ),
             ),
         ],
@@ -1126,13 +1137,16 @@ class _PaletteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon ?? Icons.widgets, size: 16),
-      title: Text(label ?? kind, style: const TextStyle(fontSize: 11)),
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-      minLeadingWidth: 24,
+    return Tooltip(
+      message: 'Drag onto the canvas to add.\n${kindDescription(kind)}',
+      child: ListTile(
+        leading: Icon(icon ?? Icons.widgets, size: 16),
+        title: Text(label ?? kind, style: const TextStyle(fontSize: 11)),
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+        minLeadingWidth: 24,
+      ),
     );
   }
 }

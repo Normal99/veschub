@@ -349,7 +349,11 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 
 ## Milestone 7: Production Readiness 🚧
 
-- [ ] [P1] Android release build (APK signing)
+- [ ] [BLOCKED] [P1] Android release build (APK signing) — needs a keystore
+      and signing credentials only the project owner can provide; flagging
+      rather than attempting a workaround (e.g. a throwaway debug-signed
+      "release" build) since that would produce an artifact that looks
+      shippable but isn't actually signed for a real release.
 - [ ] [P2] Windows / macOS release builds
 - [ ] [P2] CI: version bumping + changelog generation
 - [ ] [P2] Crash reporting (Sentry or similar)
@@ -438,8 +442,19 @@ few net-new pieces.
       does (`studio_canvas_area.dart`'s nodeWidth/nodeHeight). Updated 5 studio
       tests that assumed Canvas-mode boot to explicitly switch modes first;
       all pass, no golden regressions.
-- [ ] [P2] Contextual tooltips/help already added for property rows (see
-      `PROJECT.md` #5) — extend the same pattern to canvas tools and palette
+- [x] [P2] Contextual tooltips/help extended to canvas tools and palette
+      (2026-09-13): canvas toolbar icons (grid/snap/orientation) already had
+      `tooltip:` set via plain `IconButton`; the actual gap was the palette,
+      which had exactly one tooltip in the whole file (the search-clear
+      button) — the 22 widget-kind tiles and every preset under them had
+      none, despite being the first thing a new user has to make sense of.
+      Added `kindDescription(String kind)` to `widgets_library`'s
+      `kind_icons.dart` (same single-source-of-truth pattern as `kindIcon`)
+      — a one-line plain-language description per kind — and wired it into
+      both the kind tile (icon + title) and each draggable preset row.
+      Added a completeness test asserting every kind in `propertyManifest`
+      has a real (non-fallback) description, so a newly-added widget kind
+      can't silently ship without one.
 - [x] [P2] Smart-default widget positioning when dropped on canvas (2026-09-13):
       dropping a widget onto a spot already covered by another now nudges it
       to the nearest clear spot (`_avoidOverlap` in `studio_canvas_area.dart`,
