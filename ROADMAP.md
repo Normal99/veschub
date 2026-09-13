@@ -105,13 +105,12 @@ passed to the app, treating the first one as a `--target` override).
 - [x] **FIXED**: `vw_digital.veschub.json`'s two trip-info pods were
       centered on the exact same point as their gauge's own center-value
       text — moved and shrunk to sit below the readout instead.
-- [ ] [P1] **Canvas needs overlap awareness.** The VW bug (two widgets
-      authored with identical centers) is a symptom of a general gap: the
-      canvas has grid/edge/center snapping but nothing warns when one
-      widget is dropped or resized on top of another. Per the guiding
-      principle above, this should be a *Studio tool* (visual overlap
-      highlight, maybe a "widgets overlap" indicator in the layer panel)
-      — not something to catch by manually reviewing JSON.
+- [x] [P1] **Canvas overlap awareness** (2026-09-13) — `findOverlappingNodes`
+      in `editor_canvas`'s `hit_test.dart` + an amber warning icon next to
+      any overlapping layer in the layer panel. A hint, not a block — see
+      `editor_canvas/test/editor_canvas_test.dart`. A canvas-level visual
+      highlight (not just the layer panel) is a possible future follow-up
+      if the layer-panel hint proves insufficient in practice.
 - [x] **All 22 widget kinds individually audited** (2026-09-13, second
       pass): rendered one instance of every registered kind side by side
       via a generated showcase dashboard through `tools/dashboard_renderer`.
