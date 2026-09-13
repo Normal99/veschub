@@ -5,10 +5,15 @@
 /// [evaluateGraph] at render time; the result feeds [Binding.graph] properties.
 library;
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:node_graph/node_graph.dart';
 import 'package:node_graph_editor/node_graph_editor.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../providers/editor_providers.dart';
 
@@ -64,6 +69,17 @@ class _FlowToolbar extends ConsumerWidget {
         children: [
           Text('${graph.nodes.length} nodes · ${graph.edges.length} edges'),
           const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.download, size: 18),
+            tooltip: 'Export graph as a reusable .flowgraph.json preset',
+            onPressed: () => _exportGraph(context, ref),
+          ),
+          IconButton(
+            icon: const Icon(Icons.upload_file, size: 18),
+            tooltip: 'Import a .flowgraph.json preset (replaces this graph)',
+            onPressed: () => _importGraph(context, ref),
+          ),
+          const SizedBox(width: 8),
           FilledButton.tonalIcon(
             icon: const Icon(Icons.save, size: 16),
             label: const Text('Save graph'),
@@ -72,6 +88,77 @@ class _FlowToolbar extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  /// Exports the current graph + its node properties as a standalone file —
+  /// independent of "Save graph" (which embeds it in the dashboard document)
+  /// so a graph can be reused as a preset across different dashboards.
+  Future<void> _exportGraph(BuildContext context, WidgetRef ref) async {
+    final graph = ref.read(flowGraphProvider);
+    final properties = ref.read(flowPropertiesProvider);
+    final serialized = graph.toJson();
+    serialized['properties'] = properties;
+    final json = const JsonEncoder.withIndent('  ').convert(serialized);
+    final dir = await getApplicationDocumentsDirectory();
+    final safeName =
+        graph.id.replaceAll(RegExp(r'[^\w\s-]'), '').replaceAll(' ', '_');
+    final file = File('${dir.path}/$safeName.flowgraph.json');
+    try {
+      await file.writeAsString(json);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Exported to ${file.path}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _importGraph(BuildContext context, WidgetRef ref) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty || !context.mounted) return;
+
+    final path = result.files.single.path;
+    if (path == null) return;
+
+    try {
+      final raw = await File(path).readAsString();
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final importedGraph = FlowGraph.fromJson(json);
+      final importedProps = json['properties'];
+      ref.read(flowGraphProvider.notifier).state = importedGraph;
+      ref.read(flowPropertiesProvider.notifier).state = importedProps is Map
+          ? importedProps.map(
+              (k, v) =>
+                  MapEntry(k as String, Map<String, dynamic>.from(v as Map)),
+            )
+          : const {};
+      ref.read(selectedNodeProvider.notifier).state = null;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Imported "${importedGraph.id}": ${importedGraph.nodes.length} '
+              'nodes, ${importedGraph.edges.length} edges. Replaces the '
+              'current graph — "Save graph" to keep it.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Import failed: $e')));
+      }
+    }
   }
 
   void _saveToDocument(BuildContext context, WidgetRef ref) {

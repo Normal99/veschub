@@ -228,7 +228,8 @@ competitor in the same space. Read: Dash-Studio.md, ---Creation-Tutorial,
 
 ## Milestone 2: Dashboard Runtime ✅
 
-- [x] VESC telemetry ingestion (14 of 18 keys)
+- [x] VESC telemetry ingestion (16 of 16 base COMM_GET_VALUES keys, +4 GPS
+      keys from a separate source — see Milestone 4's FOC-key fix)
 - [x] Widget rendering in dashboard viewer
 - [x] Cosmetic properties: backgroundColor, borderRadius, fontSize
 - [x] Formula bindings: math expression evaluator (F(x) toggle)
@@ -237,7 +238,23 @@ competitor in the same space. Read: Dash-Studio.md, ---Creation-Tutorial,
 - [x] Pipeline integration tests (3 tests)
 - [x] Settings: transport, auto-connect, data rate
 - [ ] [P2] Flow mode: add script/Dart-expression tab alongside node graph
-- [ ] [P2] Flow mode: node-graph export/import, presets, documentation
+- [x] [P2] Flow mode: node-graph export/import (2026-09-13): `FlowGraph`
+      already had `toJson`/`fromJson` (and an existing round-trip test in
+      `node_graph/test/graph_test.dart`) — this was pure UI wiring, mirroring
+      the already-working whole-document export/import pattern in
+      `studio_editor.dart`. Added Export/Import icon buttons to the Flow mode
+      toolbar, writing/reading a standalone `.flowgraph.json` (graph +
+      per-node properties), distinct from the existing "Save graph" button
+      (which embeds the graph in the current dashboard document) — so a
+      graph can be built once and reused as a preset across dashboards. No
+      dedicated test added: consistent with the existing whole-document
+      export/import, which also has zero test coverage in this codebase
+      (FilePicker's platform channel isn't mocked anywhere here). "Presets"
+      (a curated built-in library of graphs, vs. just import/export of your
+      own) and documentation are still open, smaller follow-ups. Script/
+      Dart-expression tab (a separate, bigger, more speculative feature —
+      likely overlapping with the property inspector's existing Formula
+      binding) intentionally not attempted in this pass.
 
 ## Milestone 3: Real Hardware [SIDETRACKED]
 
