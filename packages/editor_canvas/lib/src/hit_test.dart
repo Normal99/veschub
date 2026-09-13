@@ -56,6 +56,35 @@ Set<String> hitTestRect(
   return selected;
 }
 
+/// Returns the id of every node whose transformed bounding box overlaps at
+/// least one other node's — the general case the VW-example bug (two
+/// widgets authored with identical centers, one hiding the other's own
+/// readout) was a symptom of. Intended for a layer-panel or canvas warning,
+/// not for blocking anything: overlap is often intentional (a decorative
+/// shape behind a gauge, a label over a background).
+Set<String> findOverlappingNodes(
+  Iterable<CanvasNode> nodes,
+  double Function(CanvasNode) boundsWidth,
+  double Function(CanvasNode) boundsHeight,
+) {
+  final list = nodes.toList();
+  final boxes = {
+    for (final n in list) n.id: transformedBounds(n, boundsWidth(n), boundsHeight(n)),
+  };
+  final overlapping = <String>{};
+  for (var i = 0; i < list.length; i++) {
+    for (var j = i + 1; j < list.length; j++) {
+      final a = boxes[list[i].id]!;
+      final b = boxes[list[j].id]!;
+      if (a.overlaps(b)) {
+        overlapping.add(list[i].id);
+        overlapping.add(list[j].id);
+      }
+    }
+  }
+  return overlapping;
+}
+
 /// Computes the axis-aligned bounding box of a node after its transform is
 /// applied to its local [width]×[height] rectangle.
 Rect transformedBounds(CanvasNode node, double width, double height) {

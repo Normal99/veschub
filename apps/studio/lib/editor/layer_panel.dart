@@ -8,7 +8,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:widgets_library/widgets_library.dart' show kindIcon;
 
+import '../document_bridge.dart';
 import '../providers/editor_providers.dart';
+
+double _nodeWidth(CanvasNode node) {
+  final w = node.data as WidgetInstance?;
+  final p = w?.properties['width']?.mapOrNull(literal: (b) => b.value);
+  return (p as num?)?.toDouble() ?? kDefaultNodeWidth;
+}
+
+double _nodeHeight(CanvasNode node) {
+  final h = node.data as WidgetInstance?;
+  final p = h?.properties['height']?.mapOrNull(literal: (b) => b.value);
+  return (p as num?)?.toDouble() ?? kDefaultNodeHeight;
+}
 
 class LayerPanel extends ConsumerWidget {
   const LayerPanel({super.key});
@@ -18,6 +31,10 @@ class LayerPanel extends ConsumerWidget {
     final scene = ref.watch(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
     final nodes = scene.nodes.toList()..sort((a, b) => b.z.compareTo(a.z));
+    // Informational only — overlap is often intentional (a shape behind a
+    // gauge, a label over a background), so this is a hint, not a block.
+    final overlapping =
+        findOverlappingNodes(scene.nodes, _nodeWidth, _nodeHeight);
 
     return Column(
       children: [
@@ -57,6 +74,7 @@ class LayerPanel extends ConsumerWidget {
               final isSelected = selection.ids.contains(node.id);
               final isVisible = _isVisible(w);
               final isLocked = _isLocked(w);
+              final overlapsAnother = overlapping.contains(node.id);
 
               return Container(
                 key: ValueKey(node.id),
@@ -90,14 +108,35 @@ class LayerPanel extends ConsumerWidget {
                           ? Theme.of(context).colorScheme.primary
                           : null,
                     ),
-                    title: Text(
-                      kind.capitalize(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.normal,
-                        color: isVisible ? null : Colors.grey,
-                      ),
+                    title: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            kind.capitalize(),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: isVisible ? null : Colors.grey,
+                            ),
+                          ),
+                        ),
+                        if (overlapsAnother) ...[
+                          const SizedBox(width: 4),
+                          Tooltip(
+                            message:
+                                'Overlaps another widget — often fine, but '
+                                'check nothing important is hidden underneath',
+                            child: Icon(
+                              Icons.warning_amber,
+                              size: 13,
+                              color: Colors.amber.shade700,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     subtitle: Text(
                       '#${node.z} · ${node.id.substring(0, 8)}',

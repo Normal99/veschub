@@ -171,6 +171,24 @@ void main() {
       );
       expect(selected, {'a', 'b'});
     });
+
+    test('findOverlappingNodes flags only nodes that actually overlap', () {
+      final nodes = [
+        _node('a', t: const Offset(0, 0)),
+        _node('b', t: const Offset(20, 20)), // overlaps a (both 50x50)
+        _node('c', t: const Offset(500, 500)), // isolated
+      ];
+      final overlapping = findOverlappingNodes(nodes, (_) => 50, (_) => 50);
+      expect(overlapping, {'a', 'b'});
+    });
+
+    test('findOverlappingNodes returns empty when nothing overlaps', () {
+      final nodes = [
+        _node('a', t: const Offset(0, 0)),
+        _node('b', t: const Offset(500, 500)),
+      ];
+      expect(findOverlappingNodes(nodes, (_) => 50, (_) => 50), isEmpty);
+    });
   });
 
   group('snapping', () {
