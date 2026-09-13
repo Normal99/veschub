@@ -135,12 +135,13 @@ passed to the app, treating the first one as a `--target` override).
         (low clarity — a beginner may not know what the icons mean without
         hovering/guessing); `power_flow` is visually very thin/minimal
         compared to its neighbors. Neither is broken, just weak.
-- [ ] [P2] **Need genuinely minimal starter widgets, not just car-brand
-      replicas.** Current templates lean toward maximalist car-cluster
-      looks. Add plain/minimal variants (e.g. a bare "just the number"
-      text style, an undecorated thin-bar) for users who want a dashboard
-      with only the 2-3 values they care about — a SimHub-style simple
-      option alongside the styled ones, not a replacement for them.
+- [x] [P2] **Genuinely minimal starter widgets** (2026-09-13): added a
+      `Minimal` preset each to the `text` and `bar` palette entries in
+      `studio_palette.dart` — bare number (transparent background, no
+      label, no card chrome) and an undecorated thin fill bar (zero radius,
+      zero padding), alongside the existing styled/car-brand presets rather
+      than replacing them. `gauge` already had a comparable `Minimal Arc`
+      preset from before this session.
 
 ## Full test sweep (2026-09-13)
 

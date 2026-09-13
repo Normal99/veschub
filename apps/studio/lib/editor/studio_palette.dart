@@ -204,6 +204,23 @@ class _WidgetPalette extends ConsumerStatefulWidget {
     ],
     'bar': [
       (
+        // A genuinely undecorated bar — no radius, no padding, no card
+        // background — the "just the fill, nothing else" option.
+        name: 'Minimal',
+        icon: Icons.exposure_zero,
+        props: {
+          'value': T('duty'),
+          'min': L(0),
+          'max': L(1),
+          'color': L(0xFFFFFFFF),
+          'backgroundColor': L(0x22FFFFFF),
+          'borderRadius': L(0),
+          'padding': L(0),
+          'width': L(300),
+          'height': L(24)
+        },
+      ),
+      (
         name: 'Horizontal',
         icon: Icons.bar_chart,
         props: {
@@ -268,6 +285,24 @@ class _WidgetPalette extends ConsumerStatefulWidget {
       ),
     ],
     'text': [
+      (
+        // A SimHub-style "just the number" option: no card, no label, no
+        // background chrome — for a dashboard that only shows the 2-3
+        // values someone actually cares about. See ROADMAP.md's note on
+        // needing genuinely minimal starters alongside the styled presets.
+        name: 'Minimal',
+        icon: Icons.exposure_zero,
+        props: {
+          'value': T('v_in'),
+          'unit': L('V'),
+          'fontSize': L(48),
+          'color': L(0xFFFFFFFF),
+          'backgroundColor': L(0x00000000),
+          'padding': L(4),
+          'width': L(160),
+          'height': L(70)
+        },
+      ),
       (
         name: 'Sans',
         icon: Icons.text_fields,
