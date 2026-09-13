@@ -21,6 +21,15 @@ enum PropertyCategory {
   String get displayName => label;
 }
 
+/// One choice in a fixed-vocabulary property's picker: [value] is the raw
+/// string a widget's renderer actually compares against (e.g. `'kmh'`),
+/// [label] is what the inspector shows for it (e.g. `'km/h'`).
+class EnumOption {
+  final String label;
+  final String value;
+  const EnumOption({required this.label, required this.value});
+}
+
 /// Metadata for a single widget property.
 class PropertyMeta {
   final String key;
@@ -32,6 +41,12 @@ class PropertyMeta {
   final double? max;
   final double? step;
 
+  /// For a `String` property with a fixed set of valid values (a "style",
+  /// unit, or mode toggle rather than free text) — when set, the inspector
+  /// shows a searchable picker listing exactly these instead of a raw text
+  /// field the user has no way to know the valid values for.
+  final List<EnumOption>? options;
+
   const PropertyMeta({
     required this.key,
     required this.minLevel,
@@ -41,8 +56,37 @@ class PropertyMeta {
     this.min,
     this.max,
     this.step,
+    this.options,
   });
 }
+
+/// Shared option lists for the speed/temperature unit properties that
+/// appear on more than one widget kind (digitalspeed, minigauge) — see
+/// `speedUnitFromString`/`temperatureUnitFromString` in `src/format.dart`
+/// for the vocabulary these values are parsed against.
+const List<EnumOption> _speedUnitOptions = [
+  EnumOption(label: 'km/h', value: 'kmh'),
+  EnumOption(label: 'mph', value: 'mph'),
+  EnumOption(label: 'm/s', value: 'ms'),
+];
+
+/// `displayUnit` additionally accepts empty (unset) meaning "off — show the
+/// raw value with no conversion", the default until a user opts in.
+const List<EnumOption> _speedDisplayUnitOptions = [
+  EnumOption(label: 'Off (no conversion)', value: ''),
+  ..._speedUnitOptions,
+];
+
+const List<EnumOption> _temperatureUnitOptions = [
+  EnumOption(label: 'Celsius (°C)', value: 'celsius'),
+  EnumOption(label: 'Fahrenheit (°F)', value: 'fahrenheit'),
+  EnumOption(label: 'Kelvin (K)', value: 'kelvin'),
+];
+
+const List<EnumOption> _temperatureDisplayUnitOptions = [
+  EnumOption(label: 'Off (no conversion)', value: ''),
+  ..._temperatureUnitOptions,
+];
 
 /// OOP wrapper for widget property manifest definitions.
 class WidgetManifest {
@@ -138,7 +182,11 @@ const List<PropertyMeta> _gauge = [
       key: 'needleStyle',
       minLevel: CapabilityLevel.advanced,
       label: 'Needle',
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Needle', value: 'needle'),
+        EnumOption(label: 'None', value: 'none'),
+      ]),
   PropertyMeta(
       key: 'showCenterText',
       minLevel: CapabilityLevel.basic,
@@ -344,7 +392,11 @@ const List<PropertyMeta> _bar = [
       key: 'orientation',
       minLevel: CapabilityLevel.advanced,
       label: 'Orientation',
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Horizontal', value: 'horizontal'),
+        EnumOption(label: 'Vertical', value: 'vertical'),
+      ]),
   PropertyMeta(
       key: 'showValue',
       minLevel: CapabilityLevel.basic,
@@ -1169,14 +1221,16 @@ const List<PropertyMeta> _digitalspeed = [
   PropertyMeta(
       key: 'sourceUnit',
       minLevel: CapabilityLevel.advanced,
-      label: 'Source unit (kmh/mph/ms)',
-      category: PropertyCategory.dataBindings),
+      label: 'Source unit',
+      category: PropertyCategory.dataBindings,
+      options: _speedUnitOptions),
   PropertyMeta(
       key: 'displayUnit',
       minLevel: CapabilityLevel.basic,
-      label: 'Display unit (kmh/mph/ms)',
+      label: 'Display unit',
       safe: true,
-      category: PropertyCategory.dataBindings),
+      category: PropertyCategory.dataBindings,
+      options: _speedDisplayUnitOptions),
   PropertyMeta(
       key: 'color',
       minLevel: CapabilityLevel.basic,
@@ -2156,31 +2210,49 @@ const List<PropertyMeta> _minigauge = [
   PropertyMeta(
       key: 'sourceUnit',
       minLevel: CapabilityLevel.advanced,
-      label: 'Source temp. unit (celsius/fahrenheit/kelvin)',
-      category: PropertyCategory.dataBindings),
+      label: 'Source temperature unit',
+      category: PropertyCategory.dataBindings,
+      options: _temperatureUnitOptions),
   PropertyMeta(
       key: 'displayUnit',
       minLevel: CapabilityLevel.basic,
-      label: 'Display temp. unit (celsius/fahrenheit/kelvin)',
+      label: 'Display temperature unit',
       safe: true,
-      category: PropertyCategory.dataBindings),
+      category: PropertyCategory.dataBindings,
+      options: _temperatureDisplayUnitOptions),
   PropertyMeta(
       key: 'icon',
       minLevel: CapabilityLevel.basic,
       label: 'Icon',
       safe: true,
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'None', value: ''),
+        EnumOption(label: 'Battery', value: 'battery'),
+        EnumOption(label: 'Temperature', value: 'temp'),
+        EnumOption(label: 'Fuel', value: 'fuel'),
+        EnumOption(label: 'Speed', value: 'speed'),
+        EnumOption(label: 'Power', value: 'power'),
+      ]),
   PropertyMeta(
       key: 'style',
       minLevel: CapabilityLevel.basic,
       label: 'Style',
       safe: true,
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Arc', value: 'arc'),
+        EnumOption(label: 'Bar', value: 'bar'),
+      ]),
   PropertyMeta(
       key: 'orientation',
       minLevel: CapabilityLevel.advanced,
       label: 'Orientation',
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Horizontal', value: 'horizontal'),
+        EnumOption(label: 'Vertical', value: 'vertical'),
+      ]),
   PropertyMeta(
       key: 'color',
       minLevel: CapabilityLevel.basic,
@@ -2638,7 +2710,13 @@ const List<PropertyMeta> _climate = [
       minLevel: CapabilityLevel.basic,
       label: 'Mode',
       safe: true,
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Auto', value: 'auto'),
+        EnumOption(label: 'Cooling', value: 'cool'),
+        EnumOption(label: 'Heating', value: 'heat'),
+        EnumOption(label: 'Defrost', value: 'defrost'),
+      ]),
   PropertyMeta(
       key: 'unit',
       minLevel: CapabilityLevel.basic,
@@ -2984,9 +3062,14 @@ const List<PropertyMeta> _map = [
   PropertyMeta(
       key: 'mapStyle',
       minLevel: CapabilityLevel.basic,
-      label: 'Map style (vector/satellite/osm)',
+      label: 'Map style',
       safe: true,
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Decorative (vector)', value: 'vector'),
+        EnumOption(label: 'Live map (OpenStreetMap)', value: 'osm'),
+        EnumOption(label: 'Decorative (satellite look)', value: 'satellite'),
+      ]),
   PropertyMeta(
       key: 'lat',
       minLevel: CapabilityLevel.advanced,

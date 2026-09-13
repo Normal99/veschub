@@ -56,7 +56,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "sweepAngle": {"type": "literal", "value": 360},
         "startAngle": {"type": "literal", "value": 270},
         "arcWidth": {"type": "literal", "value": 4},
-        "needleStyle": {"type": "literal", "value": "arc"},
+        "needleStyle": {"type": "literal", "value": "none"},
         "showCenterText": {"type": "literal", "value": true},
         "centerValue": {"type": "telemetry", "key": "speed"},
         "centerUnit": {"type": "literal", "value": "km/h"},

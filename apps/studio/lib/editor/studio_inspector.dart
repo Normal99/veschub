@@ -168,15 +168,6 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'padding') return const Binding.literal(value: 12);
     if (m.key == 'width') return const Binding.literal(value: 300);
     if (m.key == 'height') return const Binding.literal(value: 220);
-    if (m.key == 'orientation')
-      return const Binding.literal(value: 'horizontal');
-    // Speed (digitalspeed) and temperature (minigauge) both use
-    // sourceUnit/displayUnit keys with different string vocabularies;
-    // 'kmh' is a harmless default either way since displayUnit stays
-    // empty (off) until the user explicitly opts in.
-    if (m.key == 'sourceUnit') return const Binding.literal(value: 'kmh');
-    if (m.key == 'displayUnit') return const Binding.literal(value: '');
-    if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');
     if (m.key == 'fontSize') return const Binding.literal(value: 20);
     // Canonical 'w700' (not the 'bold' alias) so the fontWeight picker's
     // options — which use the canonical w100..w900 forms — can actually
@@ -194,6 +185,14 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'fillArea') return const Binding.literal(value: false);
     if (m.key == 'window') return const Binding.literal(value: 120);
     if (m.key == 'js') return const Binding.literal(value: true);
+    // Any property with a fixed set of valid values (orientation,
+    // needleStyle, mapStyle, ...) defaults to its first declared option —
+    // a real, valid value, instead of falling through to the numeric `0`
+    // below, which is meaningless for a string-enum property and was
+    // exactly the "unrecognizable value with no visible options" bug.
+    if (m.options != null && m.options!.isNotEmpty) {
+      return Binding.literal(value: m.options!.first.value);
+    }
     final isColour = m.key == 'color' ||
         m.key == 'accent' ||
         m.key == 'backgroundColor' ||
@@ -452,21 +451,30 @@ class _BindingField extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             binding.map(
-              literal: (b) => switch (name) {
-                'fontFamily' => _FontFamilyEditor(
-                    value: b.value is String ? b.value as String : '',
-                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
-                  ),
-                'fontWeight' => _FontWeightEditor(
-                    value: b.value is String ? b.value as String : 'w400',
-                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
-                  ),
-                _ => _LiteralEditor(
-                    value: b.value,
-                    meta: meta,
-                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
-                  ),
-              },
+              literal: (b) => meta.options != null
+                  ? _EnumEditor(
+                      value: b.value is String ? b.value as String : '',
+                      options: meta.options!,
+                      onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+                    )
+                  : switch (name) {
+                      'fontFamily' => _FontFamilyEditor(
+                          value: b.value is String ? b.value as String : '',
+                          onChanged: (v) =>
+                              _commit(ref, Binding.literal(value: v)),
+                        ),
+                      'fontWeight' => _FontWeightEditor(
+                          value: b.value is String ? b.value as String : 'w400',
+                          onChanged: (v) =>
+                              _commit(ref, Binding.literal(value: v)),
+                        ),
+                      _ => _LiteralEditor(
+                          value: b.value,
+                          meta: meta,
+                          onChanged: (v) =>
+                              _commit(ref, Binding.literal(value: v)),
+                        ),
+                    },
               telemetry: (b) => _TelemetryEditor(
                 currentKey: b.key,
                 onChanged: (k) => _commit(ref, Binding.telemetry(key: k)),
@@ -897,6 +905,70 @@ class _FontWeightEditor extends StatelessWidget {
   }
 }
 
+/// A searchable dropdown for any property with a fixed set of valid string
+/// values declared via `PropertyMeta.options` (a "style"/mode/unit toggle,
+/// not free text) — same pattern and same focus-clear-on-open fix as
+/// [_FontFamilyEditor]/[_FontWeightEditor], generalised so a new enum-like
+/// property doesn't need its own bespoke editor class.
+class _EnumEditor extends StatelessWidget {
+  final String value;
+  final List<EnumOption> options;
+  final ValueChanged<String> onChanged;
+  const _EnumEditor({
+    required this.value,
+    required this.options,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final current = options.firstWhere(
+      (o) => o.value == value,
+      orElse: () => EnumOption(label: value, value: value),
+    );
+    return Autocomplete<EnumOption>(
+      key: ValueKey(value),
+      initialValue: TextEditingValue(text: current.label),
+      displayStringForOption: (o) => o.label,
+      optionsBuilder: (textEditingValue) {
+        final q = textEditingValue.text.trim().toLowerCase();
+        if (q.isEmpty) return options;
+        return options.where((o) => o.label.toLowerCase().contains(q));
+      },
+      onSelected: (o) => onChanged(o.value),
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        // See _FontFamilyEditor's fieldViewBuilder — same fix, same reason:
+        // Autocomplete filters options by the field's current text, so
+        // opening it pre-filled with the current label only ever matched
+        // itself.
+        return Focus(
+          onFocusChange: (hasFocus) {
+            if (hasFocus) {
+              controller.clear();
+            } else if (controller.text != current.label) {
+              controller.text = current.label;
+            }
+          },
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              isDense: true,
+              suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+            ),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, opts) => _OptionsList(
+        options: opts,
+        onSelected: onSelected,
+        labelOf: (o) => o.label,
+      ),
+    );
+  }
+}
+
 /// Shared dropdown-list popup for [_FontFamilyEditor]/[_FontWeightEditor]'s
 /// `optionsViewBuilder` — a plain [Material]-backed list under the field,
 /// styled consistently between the two pickers.
@@ -951,101 +1023,80 @@ class _OptionsList<T extends Object> extends StatelessWidget {
   }
 }
 
-class _TelemetryEditor extends StatefulWidget {
+/// Picker for a telemetry-bound property's key: a searchable list of every
+/// known VESC field (shown by human-readable name, e.g. "Motor Speed
+/// (ERPM)" rather than the raw `erpm` a beginner has no reason to know) —
+/// same Autocomplete + clear-on-focus pattern as [_EnumEditor]/
+/// [_FontFamilyEditor]. Typing something that isn't in the list and
+/// pressing Enter commits it directly as a custom key (a VESC LispBM
+/// variable, or anything else not in [TelemetryKey.all]) — this replaces
+/// the previous separate "Manual" mode toggle with one unified field that
+/// does both jobs.
+class _TelemetryEditor extends StatelessWidget {
   final String currentKey;
   final ValueChanged<String> onChanged;
   const _TelemetryEditor({required this.currentKey, required this.onChanged});
 
-  @override
-  State<_TelemetryEditor> createState() => _TelemetryEditorState();
-}
-
-class _TelemetryEditorState extends State<_TelemetryEditor> {
-  bool _manual = false;
-  String _filterQuery = '';
-  late final TextEditingController _filterController;
-
-  @override
-  void initState() {
-    super.initState();
-    _filterController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _filterController.dispose();
-    super.dispose();
-  }
+  static final List<EnumOption> _options = [
+    for (final key in TelemetryKey.all)
+      EnumOption(label: '${telemetryKeyLabel(key)} ($key)', value: key),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    if (_manual) {
-      return Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              initialValue: widget.currentKey,
-              style: const TextStyle(fontSize: 12),
-              decoration:
-                  const InputDecoration(isDense: true, hintText: 'e.g. fault'),
-              onFieldSubmitted: (v) {
-                if (v.trim().isNotEmpty) widget.onChanged(v.trim());
-                setState(() => _manual = false);
-              },
-            ),
-          ),
-          TextButton(
-            onPressed: () => setState(() => _manual = false),
-            child: const Text('Pick', style: TextStyle(fontSize: 11)),
-          ),
-        ],
-      );
-    }
-
-    final matchingKeys = TelemetryKey.all
-        .where((k) => k.toLowerCase().contains(_filterQuery.toLowerCase()))
-        .toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: TextFormField(
-                controller: _filterController,
-                style: const TextStyle(fontSize: 12),
-                decoration: const InputDecoration(
-                  hintText: 'Filter keys...',
-                  isDense: true,
-                ),
-                onChanged: (v) => setState(() => _filterQuery = v),
-              ),
-            ),
-            TextButton(
-              onPressed: () => setState(() => _manual = true),
-              child: const Text('Manual', style: TextStyle(fontSize: 11)),
-            ),
-          ],
-        ),
-        DropdownButton<String>(
-          value: matchingKeys.contains(widget.currentKey)
-              ? widget.currentKey
-              : null,
-          isExpanded: true,
-          hint: Text(widget.currentKey, style: const TextStyle(fontSize: 12)),
-          items: [
-            for (final k in matchingKeys)
-              DropdownMenuItem(
-                value: k,
-                child: Text(k, style: const TextStyle(fontSize: 12)),
-              )
-          ],
-          onChanged: (v) {
-            if (v != null) widget.onChanged(v);
+    final current = _options.firstWhere(
+      (o) => o.value == currentKey,
+      orElse: () => EnumOption(
+          label: '${telemetryKeyLabel(currentKey)} ($currentKey)',
+          value: currentKey),
+    );
+    return Autocomplete<EnumOption>(
+      key: ValueKey(currentKey),
+      initialValue: TextEditingValue(text: current.label),
+      displayStringForOption: (o) => o.label,
+      optionsBuilder: (textEditingValue) {
+        final q = textEditingValue.text.trim().toLowerCase();
+        if (q.isEmpty) return _options;
+        return _options.where((o) => o.label.toLowerCase().contains(q));
+      },
+      onSelected: (o) => onChanged(o.value),
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        return Focus(
+          onFocusChange: (hasFocus) {
+            if (hasFocus) {
+              controller.clear();
+            } else if (controller.text != current.label) {
+              controller.text = current.label;
+            }
           },
-        ),
-      ],
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              isDense: true,
+              hintText: 'Pick, or type a custom variable',
+              suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+            ),
+            onFieldSubmitted: (text) {
+              final trimmed = text.trim();
+              if (trimmed.isEmpty) return;
+              // Submitting exactly what a list entry displays picks that
+              // entry; anything else is taken as a literal custom key.
+              final match = _options.firstWhere(
+                (o) => o.label.toLowerCase() == trimmed.toLowerCase(),
+                orElse: () => EnumOption(label: trimmed, value: trimmed),
+              );
+              onChanged(match.value);
+            },
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, opts) => _OptionsList(
+        options: opts,
+        onSelected: onSelected,
+        labelOf: (o) => o.label,
+      ),
     );
   }
 }

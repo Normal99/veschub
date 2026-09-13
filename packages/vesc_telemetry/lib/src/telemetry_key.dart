@@ -66,3 +66,33 @@ class TelemetryKey {
     gpsAltitude,
   ];
 }
+
+/// A human-readable name for a canonical telemetry key, for a picker UI
+/// (Studio's binding editor) rather than someone who already knows the raw
+/// VESC field names. Falls back to the raw key itself for anything outside
+/// [TelemetryKey.all] — a custom LispBM variable, or any other
+/// non-canonical key a dashboard might bind to.
+String telemetryKeyLabel(String key) => switch (key) {
+      TelemetryKey.erpm => 'Motor Speed (ERPM)',
+      TelemetryKey.duty => 'Duty Cycle',
+      TelemetryKey.currentMotor => 'Motor Current',
+      TelemetryKey.currentInput => 'Battery Current',
+      TelemetryKey.vIn => 'Battery Voltage',
+      TelemetryKey.tempMotor => 'Motor Temperature',
+      TelemetryKey.tempMosfet => 'Controller Temperature',
+      TelemetryKey.focId => 'FOC D-Axis Current',
+      TelemetryKey.focIq => 'FOC Q-Axis Current',
+      TelemetryKey.ampHoursCharged => 'Amp Hours Charged',
+      TelemetryKey.ampHoursDischarged => 'Amp Hours Discharged',
+      TelemetryKey.wattHoursCharged => 'Watt Hours Charged',
+      TelemetryKey.wattHoursDischarged => 'Watt Hours Discharged',
+      TelemetryKey.tachometer => 'Tachometer (Distance)',
+      TelemetryKey.tachometerAbs => 'Tachometer (Absolute)',
+      TelemetryKey.fault => 'Fault Code',
+      TelemetryKey.gpsLat => 'GPS Latitude',
+      TelemetryKey.gpsLon => 'GPS Longitude',
+      TelemetryKey.gpsSpeed => 'GPS Speed',
+      TelemetryKey.gpsHeading => 'GPS Heading',
+      TelemetryKey.gpsAltitude => 'GPS Altitude',
+      _ => key,
+    };
