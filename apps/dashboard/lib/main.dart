@@ -69,11 +69,13 @@ class DashboardApp extends ConsumerWidget {
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: Colors.white,
+        fontFamily: kDashboardFontFamily,
       ),
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
+        fontFamily: kDashboardFontFamily,
       ),
       themeMode: themeMode,
       home: settings.onboardingDone

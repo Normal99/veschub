@@ -8,6 +8,15 @@ library;
 
 import 'package:flutter/material.dart';
 
+/// The dashboard's default font (Rajdhani, SIL OFL — see
+/// `lib/assets/fonts/OFL.txt`), applied app-wide via `ThemeData(fontFamily:
+/// kDashboardFontFamily)` so widgets (which never hardcode a fontFamily of
+/// their own — see `applyTextStyle`) inherit it instead of falling back to
+/// the platform's generic system font. Package-sourced fonts must be
+/// referenced with this `packages/<name>/<family>` prefix — see
+/// https://docs.flutter.dev/cookbook/design/fonts#from-a-package.
+const kDashboardFontFamily = 'packages/widgets_library/Rajdhani';
+
 /// A resolved dashboard theme: surface/foreground + accent + chart palette.
 @immutable
 class DashboardTheme {

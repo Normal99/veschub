@@ -14,7 +14,7 @@ void main(List<String> args) {
   String? dashboardPath;
   bool autoScreenshot = false;
   String? screenshotOutput;
-  
+
   for (int i = 0; i < args.length; i++) {
     if (args[i] == '--screenshot') {
       autoScreenshot = true;
@@ -25,7 +25,7 @@ void main(List<String> args) {
       dashboardPath = args[i];
     }
   }
-  
+
   runApp(DashboardRendererApp(
     dashboardPath: dashboardPath,
     autoScreenshot: autoScreenshot,
@@ -49,7 +49,10 @@ class DashboardRendererApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
+      theme: ThemeData.dark().copyWith(
+        textTheme:
+            ThemeData.dark().textTheme.apply(fontFamily: kDashboardFontFamily),
+      ),
       home: DashboardRenderer(
         dashboardPath: dashboardPath,
         autoScreenshot: autoScreenshot,
@@ -90,10 +93,11 @@ class _DashboardRendererState extends State<DashboardRenderer> {
 
   Future<void> _loadDashboard() async {
     try {
-      String path = widget.dashboardPath ?? 'examples/tesla_model3.veschub.json';
+      String path =
+          widget.dashboardPath ?? 'examples/tesla_model3.veschub.json';
       print('Attempting to load dashboard from: $path');
       print('Current directory: ${Directory.current.path}');
-      
+
       // Try relative path first, then absolute
       var file = File(path);
       if (!await file.exists()) {
@@ -101,7 +105,7 @@ class _DashboardRendererState extends State<DashboardRenderer> {
         // Try from project root
         file = File('../../$path');
       }
-      
+
       if (!await file.exists()) {
         print('Dashboard not found: ${file.path}');
         setState(() {
@@ -115,7 +119,8 @@ class _DashboardRendererState extends State<DashboardRenderer> {
       final json = jsonDecode(jsonStr) as Map<String, dynamic>;
       final migrated = migrate(json);
       final document = DashboardDocument.fromJson(migrated);
-      print('Dashboard loaded: ${document.name} with ${document.widgets.length} widgets');
+      print(
+          'Dashboard loaded: ${document.name} with ${document.widgets.length} widgets');
 
       // Create telemetry store with mock data
       final store = TelemetryStore();
@@ -144,7 +149,7 @@ class _DashboardRendererState extends State<DashboardRenderer> {
         _store = store;
         _status = 'Loaded: ${document.name}';
       });
-      
+
       // Auto-screenshot after rendering completes
       if (widget.autoScreenshot) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -179,7 +184,7 @@ class _DashboardRendererState extends State<DashboardRenderer> {
     store.update(TelemetryKey.tachometerAbs, 403438.0);
     store.update(TelemetryKey.fault, 0);
     store.update(TelemetryKey.gpsSpeed, 0.0);
-    
+
     // Additional keys for Tesla dashboard
     store.update('speed', 0.0);
     store.update('battery_pct', 85.0);
@@ -201,15 +206,16 @@ class _DashboardRendererState extends State<DashboardRenderer> {
 
     try {
       // Find the RepaintBoundary in the widget tree
-      final repaintBoundary = context.findAncestorRenderObjectOfType<RenderRepaintBoundary>();
+      final repaintBoundary =
+          context.findAncestorRenderObjectOfType<RenderRepaintBoundary>();
       if (repaintBoundary == null) {
         print('No RepaintBoundary found in widget tree');
         return;
       }
-      
+
       final image = await repaintBoundary.toImage(pixelRatio: 2.0);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      
+
       if (byteData == null) {
         print('Failed to capture screenshot: byteData is null');
         setState(() => _status = 'Failed to capture screenshot');
@@ -217,7 +223,8 @@ class _DashboardRendererState extends State<DashboardRenderer> {
       }
 
       final pngBytes = byteData.buffer.asUint8List();
-      final outputPath = widget.screenshotOutput ?? '${_document!.name.replaceAll(' ', '_').toLowerCase()}_render.png';
+      final outputPath = widget.screenshotOutput ??
+          '${_document!.name.replaceAll(' ', '_').toLowerCase()}_render.png';
       print('Saving screenshot to: $outputPath');
       final file = File(outputPath);
       await file.writeAsBytes(pngBytes);
@@ -226,7 +233,7 @@ class _DashboardRendererState extends State<DashboardRenderer> {
       setState(() {
         _status = 'Screenshot saved: ${file.path}';
       });
-      
+
       // Exit if auto-screenshot mode
       if (widget.autoScreenshot) {
         print('Auto-screenshot mode, exiting in 500ms...');

@@ -22,3 +22,25 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+
+flutter:
+  # Rajdhani (SIL OFL 1.1 — see lib/assets/fonts/OFL.txt): a technical,
+  # geometric typeface with proper tabular figures, used as the dashboard's
+  # default font instead of the platform system font. Declared here (not
+  # per-app) so apps/studio, apps/dashboard, and tools/dashboard_renderer
+  # all get it automatically just by depending on this package — see
+  # https://docs.flutter.dev/cookbook/design/fonts#from-a-package for the
+  # required `packages/widgets_library/Rajdhani` fontFamily prefix.
+  fonts:
+    - family: Rajdhani
+      fonts:
+        - asset: lib/assets/fonts/Rajdhani-Light.ttf
+          weight: 300
+        - asset: lib/assets/fonts/Rajdhani-Regular.ttf
+          weight: 400
+        - asset: lib/assets/fonts/Rajdhani-Medium.ttf
+          weight: 500
+        - asset: lib/assets/fonts/Rajdhani-SemiBold.ttf
+          weight: 600
+        - asset: lib/assets/fonts/Rajdhani-Bold.ttf
+          weight: 700

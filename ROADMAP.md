@@ -202,6 +202,46 @@ passed to the app, treating the first one as a `--target` override).
         that drag a "Speedometer" preset onto the canvas were unaffected
         because that preset (built via the `_dial()` helper) already had
         a transparent background and wasn't touched.
+- [x] [P1] **Widget font system — no custom font existed at all** (2026-09-13):
+      "the widget font system is a little scuffed" turned out to be literal —
+      `grep -r "fonts:" apps/*/pubspec.yaml` and a search for `.ttf`/`.otf`
+      anywhere in the repo both came back empty. Every widget rendered in
+      whatever generic system font the host platform happened to have
+      (Roboto on Linux/Android), which reads as plain/un-dashboard-like next
+      to real digital-cluster typography. Added Rajdhani (SIL OFL 1.1 — see
+      `packages/widgets_library/lib/assets/fonts/OFL.txt`; weights 300–700)
+      as a package font declared once in `packages/widgets_library/pubspec.yaml`
+      and exposed as `kDashboardFontFamily` in `packages/widgets_library/lib/
+      src/theme.dart`, so every app that depends on `widgets_library` gets it
+      automatically (Flutter's package-font mechanism) rather than needing
+      the font files duplicated into each app.
+  - Applied via `ThemeData(fontFamily: kDashboardFontFamily)` in
+        `apps/dashboard` (both light/dark themes) and `tools/dashboard_renderer`
+        (its golden-test rendering tool) — these two ARE the widget content,
+        so app-wide is correct there.
+  - Deliberately did NOT set it app-wide in `apps/studio` — Studio's own
+        chrome (menus, inspector, toolbar labels) should stay in a normal
+        legible UI font for productivity work; only the *previewed dashboard
+        content* should show the real font, so what's edited visually matches
+        what actually renders. Wrapped just the Canvas editor's widget-render
+        area (`studio_canvas_area.dart`) and the Template gallery's preview
+        thumbnails (`template_mode.dart`) in a local
+        `DefaultTextStyle.merge(style: TextStyle(fontFamily: kDashboardFontFamily))`
+        instead.
+  - No widget file hardcodes its own `fontFamily` (confirmed via grep — the
+        one property-driven exception, `gauge_widget.dart`'s needle-label
+        painter, only sets it when the user explicitly configures a
+        `fontFamily` property), so every `Text` with an unset `fontFamily`
+        correctly inherits the ambient theme's font through normal
+        `DefaultTextStyle` merging — no per-widget-file changes needed.
+  - **Verification note**: `flutter test` golden-file comparisons across all
+        three apps show **zero diff** with this change, which is expected,
+        not a sign the wiring is broken — Flutter's default test binding
+        does not load custom package fonts into golden renders regardless of
+        `ThemeData`, a known framework limitation. Confirmed the font is
+        actually applied by rebuilding the real Linux binary and visually
+        inspecting a live-launched window instead of trusting golden tests
+        for this specific check.
 
 ## Full test sweep (2026-09-13)
 

@@ -210,113 +210,124 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
             ),
-            child: FittedBox(
-              child: SizedBox(
-                width: canvasSize.width,
-                height: canvasSize.height,
-                child: DragTarget<Map<String, dynamic>>(
-                  key: _dropTargetKey,
-                  onAcceptWithDetails: (details) {
-                    final kind = details.data['kind'] as String;
-                    final tplProps =
-                        details.data['props'] as Map<String, Binding>?;
-                    final id = ref.read(idGeneratorProvider).next();
-                    final properties =
-                        tplProps ?? StudioEditor.defaultProperties(kind);
-                    final size = _declaredSize(properties);
-                    final dropPos = _toCanvasPosition(details.offset);
-                    final localPos = _avoidOverlap(
-                      dropPos,
-                      size,
-                      scene.nodes,
-                      Size(canvasSize.width, canvasSize.height),
-                    );
-                    final node = CanvasNode(
-                      id: id,
-                      transform: NodeTransforms.compose(translation: localPos),
-                      data: WidgetInstance(
+            // The dashboard font (not Studio's own UI font) applies only to
+            // the canvas content itself, so what's edited here visually
+            // matches how it actually renders in the real dashboard app —
+            // Studio's own menus/inspector stay in the system UI font.
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(fontFamily: kDashboardFontFamily),
+              child: FittedBox(
+                child: SizedBox(
+                  width: canvasSize.width,
+                  height: canvasSize.height,
+                  child: DragTarget<Map<String, dynamic>>(
+                    key: _dropTargetKey,
+                    onAcceptWithDetails: (details) {
+                      final kind = details.data['kind'] as String;
+                      final tplProps =
+                          details.data['props'] as Map<String, Binding>?;
+                      final id = ref.read(idGeneratorProvider).next();
+                      final properties =
+                          tplProps ?? StudioEditor.defaultProperties(kind);
+                      final size = _declaredSize(properties);
+                      final dropPos = _toCanvasPosition(details.offset);
+                      final localPos = _avoidOverlap(
+                        dropPos,
+                        size,
+                        scene.nodes,
+                        Size(canvasSize.width, canvasSize.height),
+                      );
+                      final node = CanvasNode(
                         id: id,
-                        kind: kind,
-                        properties: properties,
-                      ),
-                    );
-                    commands.execute(AddNodeCommand(node));
-                    ref.read(isDirtyProvider.notifier).state = true;
-                    // A widget has now been dropped at least once — the
-                    // first-drop hint has done its job, don't show it again
-                    // even if the user later deletes everything.
-                    ref.read(settingsServiceProvider).markCanvasHintDismissed();
-                  },
-                  builder: (context, candidate, rejected) {
-                    final borderColor = candidate.isNotEmpty
-                        ? Colors.blue
-                        : Theme.of(context).colorScheme.outline;
-                    return Container(
-                      key: _canvasKey,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: borderColor, width: 2),
-                        color: candidate.isNotEmpty
-                            ? Colors.blue.withValues(alpha: 0.05)
-                            : Theme.of(context)
-                                .colorScheme
-                                .surface
-                                .withValues(alpha: 0.98),
-                      ),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          EditorCanvas(
-                            scene: scene,
-                            selection: selection,
-                            commands: commands,
-                            canvasSize:
-                                Size(canvasSize.width, canvasSize.height),
-                            showGrid: ref.watch(gridVisibleProvider),
-                            snapConfig: SnapConfig(
-                              enableCenterSnap:
-                                  ref.watch(centerSnapEnabledProvider),
+                        transform:
+                            NodeTransforms.compose(translation: localPos),
+                        data: WidgetInstance(
+                          id: id,
+                          kind: kind,
+                          properties: properties,
+                        ),
+                      );
+                      commands.execute(AddNodeCommand(node));
+                      ref.read(isDirtyProvider.notifier).state = true;
+                      // A widget has now been dropped at least once — the
+                      // first-drop hint has done its job, don't show it again
+                      // even if the user later deletes everything.
+                      ref
+                          .read(settingsServiceProvider)
+                          .markCanvasHintDismissed();
+                    },
+                    builder: (context, candidate, rejected) {
+                      final borderColor = candidate.isNotEmpty
+                          ? Colors.blue
+                          : Theme.of(context).colorScheme.outline;
+                      return Container(
+                        key: _canvasKey,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: borderColor, width: 2),
+                          color: candidate.isNotEmpty
+                              ? Colors.blue.withValues(alpha: 0.05)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .surface
+                                  .withValues(alpha: 0.98),
+                        ),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            EditorCanvas(
+                              scene: scene,
+                              selection: selection,
+                              commands: commands,
+                              canvasSize:
+                                  Size(canvasSize.width, canvasSize.height),
+                              showGrid: ref.watch(gridVisibleProvider),
+                              snapConfig: SnapConfig(
+                                enableCenterSnap:
+                                    ref.watch(centerSnapEnabledProvider),
+                              ),
+                              onCommandExecuted: (_) => ref
+                                  .read(isDirtyProvider.notifier)
+                                  .state = true,
+                              isNodeLocked: (node) {
+                                final w = node.data as WidgetInstance?;
+                                return w?.properties['locked']?.mapOrNull(
+                                        literal: (b) => b.value as bool?) ??
+                                    false;
+                              },
+                              nodeBuilder: (node) {
+                                final w = node.data as WidgetInstance?;
+                                if (w == null) {
+                                  return const Center(child: Text('No data'));
+                                }
+                                final store =
+                                    ref.read(canvasPreviewTelemetryProvider);
+                                return buildWidget(w, _resolve(w, store));
+                              },
+                              nodeWidth: (node) {
+                                final w = node.data as WidgetInstance?;
+                                final p = w?.properties['width']
+                                    ?.mapOrNull(literal: (b) => b.value);
+                                return (p as num?)?.toDouble() ??
+                                    kDefaultNodeWidth;
+                              },
+                              nodeHeight: (node) {
+                                final h = node.data as WidgetInstance?;
+                                final p = h?.properties['height']
+                                    ?.mapOrNull(literal: (b) => b.value);
+                                return (p as num?)?.toDouble() ??
+                                    kDefaultNodeHeight;
+                              },
                             ),
-                            onCommandExecuted: (_) =>
-                                ref.read(isDirtyProvider.notifier).state = true,
-                            isNodeLocked: (node) {
-                              final w = node.data as WidgetInstance?;
-                              return w?.properties['locked']?.mapOrNull(
-                                      literal: (b) => b.value as bool?) ??
-                                  false;
-                            },
-                            nodeBuilder: (node) {
-                              final w = node.data as WidgetInstance?;
-                              if (w == null) {
-                                return const Center(child: Text('No data'));
-                              }
-                              final store =
-                                  ref.read(canvasPreviewTelemetryProvider);
-                              return buildWidget(w, _resolve(w, store));
-                            },
-                            nodeWidth: (node) {
-                              final w = node.data as WidgetInstance?;
-                              final p = w?.properties['width']
-                                  ?.mapOrNull(literal: (b) => b.value);
-                              return (p as num?)?.toDouble() ??
-                                  kDefaultNodeWidth;
-                            },
-                            nodeHeight: (node) {
-                              final h = node.data as WidgetInstance?;
-                              final p = h?.properties['height']
-                                  ?.mapOrNull(literal: (b) => b.value);
-                              return (p as num?)?.toDouble() ??
-                                  kDefaultNodeHeight;
-                            },
-                          ),
-                          if (scene.length == 0 &&
-                              !ref
-                                  .watch(settingsServiceProvider)
-                                  .canvasHintDismissed)
-                            const _FirstDropHint(),
-                        ],
-                      ),
-                    );
-                  },
+                            if (scene.length == 0 &&
+                                !ref
+                                    .watch(settingsServiceProvider)
+                                    .canvasHintDismissed)
+                              const _FirstDropHint(),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
