@@ -2978,9 +2978,32 @@ const List<PropertyMeta> _map = [
   PropertyMeta(
       key: 'mapStyle',
       minLevel: CapabilityLevel.basic,
-      label: 'Map style',
+      label: 'Map style (vector/satellite/osm)',
       safe: true,
       category: PropertyCategory.visuals),
+  PropertyMeta(
+      key: 'lat',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Latitude',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'lon',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Longitude',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'zoom',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Zoom level',
+      category: PropertyCategory.visuals,
+      min: 1,
+      max: 19,
+      step: 1),
+  PropertyMeta(
+      key: 'heading',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Heading',
+      category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
       minLevel: CapabilityLevel.basic,

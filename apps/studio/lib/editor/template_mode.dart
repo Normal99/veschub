@@ -43,6 +43,9 @@ final previewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.ampHoursDischarged: 12.5,
     TelemetryKey.wattHoursDischarged: 600,
     TelemetryKey.gpsSpeed: 0.0,
+    TelemetryKey.gpsLat: 52.52,
+    TelemetryKey.gpsLon: 13.405,
+    TelemetryKey.gpsHeading: 45.0,
     // Custom keys used by advanced example dashboards.
     'speed': 0.0,
     'battery_pct': 85.0,

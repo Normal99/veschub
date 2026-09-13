@@ -105,7 +105,13 @@ const Map<String, String> _descriptions = {
       'Convert the value to this unit for display. Leave blank to show it '
           'exactly as bound, with no conversion.',
   'tempUnit': 'Unit shown for temperature readings on this widget.',
-  'mapStyle': 'Visual style/theme of the map tiles.',
+  'mapStyle':
+      'Visual style of the map: a decorative graphic (vector/satellite) or '
+          'real OpenStreetMap tiles (osm), centred on lat/lon.',
+  'lat': 'Latitude to centre the map on.',
+  'lon': 'Longitude to centre the map on.',
+  'zoom': 'Map zoom level — higher numbers zoom in closer.',
+  'heading': 'Compass direction, in degrees, the position marker points.',
   'showRing': 'Whether a status ring is drawn around the icon.',
   'activeColor': 'Colour used when this indicator/state is active.',
   'inactiveColor': 'Colour used when this indicator/state is inactive.',

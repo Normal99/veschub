@@ -852,6 +852,23 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'height': L(300)
         },
       ),
+      (
+        // Real OpenStreetMap tiles instead of the decorative graphic —
+        // opt-in via mapStyle: 'osm', bound to the actual GPS telemetry
+        // keys rather than the free-text nextTurn/eta/distance above.
+        name: 'Live GPS Map',
+        icon: Icons.satellite_alt,
+        props: {
+          'mapStyle': L('osm'),
+          'lat': T('gps.lat'),
+          'lon': T('gps.lon'),
+          'heading': T('gps.heading'),
+          'zoom': L(16),
+          'accent': L(0xFF00E5FF),
+          'width': L(400),
+          'height': L(300)
+        },
+      ),
     ],
     'battery_range': [
       (

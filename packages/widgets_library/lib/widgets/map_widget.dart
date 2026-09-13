@@ -1,6 +1,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as ll;
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import '../src/cosmetic_helpers.dart';
 
@@ -18,6 +20,7 @@ class MapWidget extends StatelessWidget {
     final nextTurn = properties['nextTurn'] as String?;
     final showMapGraphic = properties['showMapGraphic'] as bool? ?? true;
     final mapStyle = properties['mapStyle'] as String? ?? 'vector';
+    final isLiveTiles = mapStyle == 'osm';
 
     final width = (properties['width'] as num?)?.toDouble();
     final height = (properties['height'] as num?)?.toDouble();
@@ -30,63 +33,159 @@ class MapWidget extends StatelessWidget {
           decoration: resolveBoxDecoration(properties),
           clipBehavior: Clip.antiAlias,
           child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (showMapGraphic)
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _MapCanvasPainter(
-                    accentColor: accent,
-                    style: mapStyle,
+            fit: StackFit.expand,
+            children: [
+              if (isLiveTiles)
+                Positioned.fill(
+                  child: _LiveMapTiles(properties: properties, accent: accent),
+                ),
+              if (showMapGraphic && !isLiveTiles)
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _MapCanvasPainter(
+                      accentColor: accent,
+                      style: mapStyle,
+                    ),
                   ),
                 ),
-              ),
-            if (!showMapGraphic)
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.map, color: color.withValues(alpha: 0.3), size: 48),
-                    const SizedBox(height: 8),
-                    Text(label, style: TextStyle(color: color.withValues(alpha: 0.5), fontSize: 14)),
-                  ],
-                ),
-              ),
-            if (nextTurn != null || eta != null)
-              Positioned(
-                top: 8,
-                left: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xCC000000),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: accent.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
+              if (!showMapGraphic && !isLiveTiles)
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (nextTurn != null) ...[
-                        Icon(Icons.navigation, color: accent, size: 16),
-                        const SizedBox(width: 6),
-                        Expanded(child: Text(nextTurn, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold))),
-                      ],
-                      if (eta != null)
-                        Text(eta, style: TextStyle(color: accent, fontSize: 13, fontWeight: FontWeight.w600)),
-                      if (distance != null)
-                        Padding(
-                          padding: const EdgeInsets.only(left: 6),
-                          child: Text(distance, style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 12)),
-                        ),
+                      Icon(Icons.map,
+                          color: color.withValues(alpha: 0.3), size: 48),
+                      const SizedBox(height: 8),
+                      Text(label,
+                          style: TextStyle(
+                              color: color.withValues(alpha: 0.5),
+                              fontSize: 14)),
                     ],
                   ),
                 ),
-              ),
-          ],
+              if (nextTurn != null || eta != null)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  right: 8,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xCC000000),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: accent.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        if (nextTurn != null) ...[
+                          Icon(Icons.navigation, color: accent, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                              child: Text(nextTurn,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold))),
+                        ],
+                        if (eta != null)
+                          Text(eta,
+                              style: TextStyle(
+                                  color: accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600)),
+                        if (distance != null)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 6),
+                            child: Text(distance,
+                                style: TextStyle(
+                                    color: color.withValues(alpha: 0.7),
+                                    fontSize: 12)),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
-    ),
       properties,
+    );
+  }
+}
+
+/// Real OpenStreetMap tiles, centred on the bound `lat`/`lon` telemetry —
+/// opt-in via `mapStyle: 'osm'` (default remains the decorative
+/// `_MapCanvasPainter` graphic, so no existing dashboard's look changes).
+/// Includes the on-map attribution OSM's tile usage policy requires.
+class _LiveMapTiles extends StatelessWidget {
+  final ResolvedProperties properties;
+  final Color accent;
+  const _LiveMapTiles({required this.properties, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final lat = (properties['lat'] as num?)?.toDouble();
+    final lon = (properties['lon'] as num?)?.toDouble();
+    final zoom = (properties['zoom'] as num?)?.toDouble() ?? 15.0;
+    final heading = (properties['heading'] as num?)?.toDouble() ?? 0.0;
+
+    if (lat == null || lon == null) {
+      return ColoredBox(
+        color: const Color(0xFF0F141C),
+        child: Center(
+          child: Text(
+            'No GPS fix yet',
+            style:
+                TextStyle(color: accent.withValues(alpha: 0.6), fontSize: 13),
+          ),
+        ),
+      );
+    }
+
+    final center = ll.LatLng(lat, lon);
+    return FlutterMap(
+      options: MapOptions(
+        initialCenter: center,
+        initialZoom: zoom,
+        interactionOptions:
+            const InteractionOptions(flags: InteractiveFlag.none),
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.veschub.dashboard',
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: center,
+              width: 28,
+              height: 28,
+              child: Transform.rotate(
+                angle: heading * 3.141592653589793 / 180,
+                child: Icon(Icons.navigation, color: accent, size: 28),
+              ),
+            ),
+          ],
+        ),
+        // Required by OSM's tile usage policy — see
+        // https://operations.osmfoundation.org/policies/tiles/
+        const Align(
+          alignment: Alignment.bottomRight,
+          child: DecoratedBox(
+            decoration: BoxDecoration(color: Color(0x99000000)),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+              child: Text(
+                '© OpenStreetMap contributors',
+                style: TextStyle(color: Colors.white70, fontSize: 8),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -99,11 +198,13 @@ class _MapCanvasPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final isSatellite = style == 'satellite';
-    final bgPaint = Paint()..color = isSatellite ? const Color(0xFF15221B) : const Color(0xFF0F141C);
+    final bgPaint = Paint()
+      ..color = isSatellite ? const Color(0xFF15221B) : const Color(0xFF0F141C);
     canvas.drawRect(Offset.zero & size, bgPaint);
 
     // Terrain/Parks
-    final parkPaint = Paint()..color = isSatellite ? const Color(0xFF1C2E24) : const Color(0xFF141D18);
+    final parkPaint = Paint()
+      ..color = isSatellite ? const Color(0xFF1C2E24) : const Color(0xFF141D18);
     final parkPath = Path()
       ..moveTo(size.width * 0.1, 0)
       ..lineTo(size.width * 0.4, 0)
@@ -136,7 +237,8 @@ class _MapCanvasPainter extends CustomPainter {
       ..strokeWidth = 10;
     final highwayPath = Path()
       ..moveTo(size.width * 0.2, size.height)
-      ..cubicTo(size.width * 0.3, size.height * 0.6, size.width * 0.4, size.height * 0.4, size.width * 0.8, 0);
+      ..cubicTo(size.width * 0.3, size.height * 0.6, size.width * 0.4,
+          size.height * 0.4, size.width * 0.8, 0);
     canvas.drawPath(highwayPath, majorRoadPaint);
 
     // Active Navigation Route Line (Cyan/Accent)
@@ -154,7 +256,8 @@ class _MapCanvasPainter extends CustomPainter {
     final routePath = Path()
       ..moveTo(size.width * 0.5, size.height * 0.85)
       ..lineTo(size.width * 0.5, size.height * 0.5)
-      ..cubicTo(size.width * 0.5, size.height * 0.35, size.width * 0.6, size.height * 0.3, size.width * 0.75, size.height * 0.2);
+      ..cubicTo(size.width * 0.5, size.height * 0.35, size.width * 0.6,
+          size.height * 0.3, size.width * 0.75, size.height * 0.2);
     canvas.drawPath(routePath, routeGlow);
     canvas.drawPath(routePath, routePaint);
 

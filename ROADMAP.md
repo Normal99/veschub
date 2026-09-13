@@ -591,7 +591,38 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 ## Milestone 6: Navigation & GPS 🚧
 
 - [ ] [P2] GPS widget (speed, altitude, coordinates)
-- [ ] [P2] Map widget (OpenStreetMap tile layer)
+- [x] [P2] Map widget (OpenStreetMap tile layer) (2026-09-13): the existing
+      `map` kind's `_MapCanvasPainter` was purely decorative — hand-drawn
+      fake roads, not a real map. Added `flutter_map`/`latlong2` and a new
+      opt-in `mapStyle: 'osm'` code path (`_LiveMapTiles` in
+      `map_widget.dart`) rendering real tiles from
+      `tile.openstreetmap.org`, centred on new `lat`/`lon` properties (bind
+      to `TelemetryKey.gpsLat`/`gpsLon`, which already existed and were
+      unused by any widget until now), with a rotated position marker
+      (`heading` property) and the on-map "© OpenStreetMap contributors"
+      attribution OSM's tile usage policy requires. Default `mapStyle`
+      unchanged (still the decorative graphic), so no existing dashboard's
+      look changes. Added a "Live GPS Map" palette preset bound to the real
+      `gps.*` telemetry keys, and seeded those keys into both Studio preview
+      telemetry stores (canvas + template) so the preset actually renders
+      live tiles while editing, not just once deployed. When `lat`/`lon`
+      aren't bound yet, shows a "No GPS fix yet" placeholder rather than
+      attempting to render a map with no centre.
+  - **Deliberately no automated test renders real tiles**: doing so would
+        make the test suite depend on genuine network access to
+        `tile.openstreetmap.org` (flakiness, OSM rate limits, CI policy) —
+        `map_widget_test.dart` covers the two paths that don't touch the
+        network (decorative-by-default, and the no-GPS-fix placeholder) and
+        documents why the live-tile path isn't covered there. Verified the
+        live-tile path instead by rebuilding the real Linux binary, dropping
+        the preset in a live-launched window, and confirming actual OSM
+        tiles rendered (Berlin, matching the seeded coordinates) with the
+        marker and attribution both correct.
+  - Verified: `flutter analyze` clean across all three touched files,
+        `flutter test` in `packages/widgets_library` (134 tests, 1 new
+        file), `apps/studio` (34 tests), `tools/dashboard_renderer`
+        (10 tests, unaffected), and `apps/dashboard` (11 tests, unaffected)
+        all pass.
 - [ ] [P2] GPX import / export
 - [ ] [P3] Route planning overlay
 - [ ] [P3] Trip recording with replay

@@ -164,6 +164,9 @@ final canvasPreviewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.focId: -2.1,
     TelemetryKey.focIq: 17.8,
     TelemetryKey.fault: 0,
+    TelemetryKey.gpsLat: 52.52,
+    TelemetryKey.gpsLon: 13.405,
+    TelemetryKey.gpsHeading: 45.0,
   });
   ref.onDispose(store.dispose);
   return store;
