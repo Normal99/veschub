@@ -266,6 +266,59 @@ passed to the app, treating the first one as a `--target` override).
         actually applied by rebuilding the real Linux binary and visually
         inspecting a live-launched window instead of trusting golden tests
         for this specific check.
+- [x] [P1] **Font selection in the inspector was broken — literally a raw
+      integer** (2026-09-13): user feedback — "you can't select fonts, they
+      are just an integer... it should be a dropdown with search, something
+      most programs use." Confirmed exactly right: `_defaultBinding` in
+      `studio_inspector.dart` had no case for `fontFamily` at all, so it fell
+      through to the generic numeric fallback and defaulted to the literal
+      **integer `0`** — a user's first encounter with the property was an
+      unlabelled "0" in a plain text field. `fontWeight` was at least a valid
+      string (`'bold'`) but was still a raw free-text field with zero
+      discoverability of the 9 accepted values.
+  - Added `packages/widgets_library/lib/src/font_catalog.dart`:
+        `kFontChoices` (4 entries: Default + the 3 bundled fonts) and
+        `kFontWeightChoices` (all 9 accepted weight strings, human-readable
+        labels like "Semi Bold (600)").
+  - Bundled two more fonts alongside Rajdhani — Orbitron (geometric sci-fi
+        display, for a HUD look) and Share Tech Mono (monospaced
+        terminal/telemetry look) — both SIL OFL 1.1, same
+        `packages/widgets_library/<Family>` reference convention. A picker
+        with only one real, non-default choice would have been a thin
+        payoff for the UI work; three gives an actual style decision.
+  - Replaced the raw-text-field dispatch for these two specific property
+        keys with `_FontFamilyEditor`/`_FontWeightEditor` in
+        `studio_inspector.dart`, both built on Flutter's stock
+        `Autocomplete` widget (type to filter, pick from a dropdown) rather
+        than a bespoke combobox — matches "something most programs use"
+        without reinventing it. Fixed `_defaultBinding`'s `fontWeight`
+        default to the canonical `'w700'` (was the `'bold'` alias) so the
+        picker's options — which use canonical `w100`..`w900` forms — can
+        actually match and highlight the current value; added an explicit
+        `fontFamily` case defaulting to `''` ("Default"/inherit theme font)
+        instead of falling into the broken integer fallback.
+  - Real bug hit while writing the end-to-end test: `Autocomplete` only
+        reads its `initialValue` once per Element, so an external change to
+        the underlying property (undo/redo, switching selection) wouldn't
+        resync the field's displayed text — the same class of problem
+        `_LiteralEditor` already solves via a manual `didUpdateWidget`
+        resync. Fixed by keying each picker on the current value
+        (`key: ValueKey(value)`), forcing Flutter to recreate — and
+        therefore re-read `initialValue` on — a genuine external change.
+  - `apps/studio/test/font_picker_test.dart`: drives the real Studio UI
+        (drop a gauge, expand "Fonts & Colors", search, select, verify the
+        gauge's actual rendered `TextStyle` picked up the new
+        `fontFamily`/`fontWeight`) rather than testing the picker in
+        isolation. Along the way, found that `tester.drag(finder, offset)`
+        picking a finder's geometric centre as the drag's start point can
+        silently land on an interactive descendant (here, a text field)
+        that doesn't bubble the gesture to an ancestor `Scrollable` —
+        `tester.dragFrom` with an explicit corner-inset point was needed to
+        reliably scroll the properties panel to a collapsed, off-screen
+        category. Verified: `flutter analyze`/`dart format` clean, full
+        `flutter test` in `apps/studio` (34 tests), `packages/
+        widgets_library` (127 tests), and `tools/dashboard_renderer`
+        (10 tests) all pass.
 
 ## Full test sweep (2026-09-13)
 

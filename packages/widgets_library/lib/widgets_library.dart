@@ -10,6 +10,7 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 
 export 'src/kind_icons.dart';
+export 'src/font_catalog.dart';
 
 import 'widgets/appgrid_widget.dart';
 import 'widgets/bar_widget.dart';

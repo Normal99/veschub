@@ -44,3 +44,24 @@ flutter:
           weight: 600
         - asset: lib/assets/fonts/Rajdhani-Bold.ttf
           weight: 700
+    # Orbitron (SIL OFL 1.1 — lib/assets/fonts/OFL-Orbitron.txt): a
+    # geometric sci-fi display face, offered as a per-widget alternative
+    # for a more futuristic HUD look.
+    - family: Orbitron
+      fonts:
+        - asset: lib/assets/fonts/Orbitron-Regular.ttf
+          weight: 400
+        - asset: lib/assets/fonts/Orbitron-Medium.ttf
+          weight: 500
+        - asset: lib/assets/fonts/Orbitron-SemiBold.ttf
+          weight: 600
+        - asset: lib/assets/fonts/Orbitron-Bold.ttf
+          weight: 700
+        - asset: lib/assets/fonts/Orbitron-ExtraBold.ttf
+          weight: 800
+    # Share Tech Mono (SIL OFL 1.1 — lib/assets/fonts/OFL-ShareTechMono.txt):
+    # a monospaced terminal/telemetry look, single weight.
+    - family: ShareTechMono
+      fonts:
+        - asset: lib/assets/fonts/ShareTechMono-Regular.ttf
+          weight: 400

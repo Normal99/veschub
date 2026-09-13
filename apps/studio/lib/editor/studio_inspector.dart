@@ -178,7 +178,11 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'displayUnit') return const Binding.literal(value: '');
     if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');
     if (m.key == 'fontSize') return const Binding.literal(value: 20);
-    if (m.key == 'fontWeight') return const Binding.literal(value: 'bold');
+    // Canonical 'w700' (not the 'bold' alias) so the fontWeight picker's
+    // options — which use the canonical w100..w900 forms — can actually
+    // match and highlight the current value.
+    if (m.key == 'fontWeight') return const Binding.literal(value: 'w700');
+    if (m.key == 'fontFamily') return const Binding.literal(value: '');
     if (m.key == 'sweepAngle') return const Binding.literal(value: 270.0);
     if (m.key == 'startAngle') return const Binding.literal(value: 135.0);
     if (m.key == 'tickCount') return const Binding.literal(value: 10);
@@ -463,11 +467,21 @@ class _BindingField extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             binding.map(
-              literal: (b) => _LiteralEditor(
-                value: b.value,
-                meta: meta,
-                onChanged: (v) => _commit(ref, Binding.literal(value: v)),
-              ),
+              literal: (b) => switch (name) {
+                'fontFamily' => _FontFamilyEditor(
+                    value: b.value is String ? b.value as String : '',
+                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+                  ),
+                'fontWeight' => _FontWeightEditor(
+                    value: b.value is String ? b.value as String : 'w400',
+                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+                  ),
+                _ => _LiteralEditor(
+                    value: b.value,
+                    meta: meta,
+                    onChanged: (v) => _commit(ref, Binding.literal(value: v)),
+                  ),
+              },
               telemetry: (b) => _TelemetryEditor(
                 currentKey: b.key,
                 onChanged: (k) => _commit(ref, Binding.telemetry(key: k)),
@@ -706,6 +720,162 @@ class _LiteralEditorState extends State<_LiteralEditor> {
     }
     final n = num.tryParse(trimmed);
     widget.onChanged(n ?? trimmed);
+  }
+}
+
+/// A searchable dropdown for the `fontFamily` property — previously a raw
+/// text field (and, worse, defaulted to the literal integer `0` before a
+/// value was ever set — see `_defaultBinding`), which is exactly why "you
+/// can't select fonts, they're just an integer" was a fair complaint.
+/// Built on [Autocomplete] since that's the stock Flutter widget for
+/// "type to filter, pick from a dropdown," matching what most other
+/// programs' font pickers do rather than inventing a bespoke one.
+class _FontFamilyEditor extends StatelessWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+  const _FontFamilyEditor({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final current = kFontChoices.firstWhere(
+      (f) => f.fontFamily == value,
+      orElse: () => FontChoice(label: value, fontFamily: value),
+    );
+    return Autocomplete<FontChoice>(
+      // Rekeyed on the incoming value so an external change (undo/redo,
+      // switching selection) resets Autocomplete's own internal text
+      // controller — it only reads `initialValue` once per Element, same
+      // reason _LiteralEditor manually resyncs its controller in
+      // didUpdateWidget.
+      key: ValueKey(value),
+      initialValue: TextEditingValue(text: current.label),
+      displayStringForOption: (f) => f.label,
+      optionsBuilder: (textEditingValue) {
+        final q = textEditingValue.text.trim().toLowerCase();
+        if (q.isEmpty) return kFontChoices;
+        return kFontChoices.where((f) => f.label.toLowerCase().contains(q));
+      },
+      onSelected: (f) => onChanged(f.fontFamily),
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          style: const TextStyle(fontSize: 12),
+          decoration: const InputDecoration(
+            isDense: true,
+            suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) => _OptionsList(
+        options: options,
+        onSelected: onSelected,
+        labelOf: (f) => f.label,
+        styleOf: (f) => TextStyle(
+          fontFamily: f.fontFamily.isEmpty ? null : f.fontFamily,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+}
+
+/// A searchable dropdown for the `fontWeight` property — same reasoning and
+/// pattern as [_FontFamilyEditor]. Values are the canonical `w100`..`w900`
+/// strings `_parseFontWeight` (in `cosmetic_helpers.dart`) accepts.
+class _FontWeightEditor extends StatelessWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+  const _FontWeightEditor({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final current = kFontWeightChoices.firstWhere(
+      (f) => f.value == value,
+      orElse: () => FontWeightChoice(label: value, value: value),
+    );
+    return Autocomplete<FontWeightChoice>(
+      key: ValueKey(value),
+      initialValue: TextEditingValue(text: current.label),
+      displayStringForOption: (f) => f.label,
+      optionsBuilder: (textEditingValue) {
+        final q = textEditingValue.text.trim().toLowerCase();
+        if (q.isEmpty) return kFontWeightChoices;
+        return kFontWeightChoices
+            .where((f) => f.label.toLowerCase().contains(q));
+      },
+      onSelected: (f) => onChanged(f.value),
+      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+        return TextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          style: const TextStyle(fontSize: 12),
+          decoration: const InputDecoration(
+            isDense: true,
+            suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+          ),
+        );
+      },
+      optionsViewBuilder: (context, onSelected, options) => _OptionsList(
+        options: options,
+        onSelected: onSelected,
+        labelOf: (f) => f.label,
+      ),
+    );
+  }
+}
+
+/// Shared dropdown-list popup for [_FontFamilyEditor]/[_FontWeightEditor]'s
+/// `optionsViewBuilder` — a plain [Material]-backed list under the field,
+/// styled consistently between the two pickers.
+class _OptionsList<T extends Object> extends StatelessWidget {
+  final Iterable<T> options;
+  final ValueChanged<T> onSelected;
+  final String Function(T) labelOf;
+  final TextStyle Function(T)? styleOf;
+  const _OptionsList({
+    required this.options,
+    required this.onSelected,
+    required this.labelOf,
+    this.styleOf,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final list = options.toList();
+    return Align(
+      alignment: Alignment.topLeft,
+      child: Material(
+        elevation: 4,
+        borderRadius: BorderRadius.circular(6),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 220, minWidth: 220),
+          child: list.isEmpty
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text('No match', style: TextStyle(fontSize: 12)),
+                )
+              : ListView.builder(
+                  padding: EdgeInsets.zero,
+                  shrinkWrap: true,
+                  itemCount: list.length,
+                  itemBuilder: (context, i) {
+                    final option = list[i];
+                    return ListTile(
+                      dense: true,
+                      visualDensity: VisualDensity.compact,
+                      title: Text(
+                        labelOf(option),
+                        style: styleOf?.call(option) ??
+                            const TextStyle(fontSize: 13),
+                      ),
+                      onTap: () => onSelected(option),
+                    );
+                  },
+                ),
+        ),
+      ),
+    );
   }
 }
 
