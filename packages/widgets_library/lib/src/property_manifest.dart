@@ -2027,6 +2027,12 @@ const List<PropertyMeta> _warnings = [
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
+      key: 'showLabels',
+      minLevel: CapabilityLevel.basic,
+      label: 'Show labels',
+      safe: true,
+      category: PropertyCategory.visuals),
+  PropertyMeta(
       key: 'backgroundColor',
       minLevel: CapabilityLevel.basic,
       label: 'Background',

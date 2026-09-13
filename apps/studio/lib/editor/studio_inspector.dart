@@ -189,6 +189,7 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'arcWidth') return const Binding.literal(value: 10.0);
     if (m.key == 'lineWidth') return const Binding.literal(value: 2.0);
     if (m.key == 'showGrid') return const Binding.literal(value: true);
+    if (m.key == 'showLabels') return const Binding.literal(value: true);
     if (m.key == 'smoothCurve') return const Binding.literal(value: true);
     if (m.key == 'fillArea') return const Binding.literal(value: false);
     if (m.key == 'window') return const Binding.literal(value: 120);

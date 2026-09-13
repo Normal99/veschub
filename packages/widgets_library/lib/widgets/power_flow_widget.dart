@@ -13,18 +13,22 @@ class PowerFlowWidget extends StatelessWidget {
     final powerVal = properties['power'];
     final power = (powerVal is num ? powerVal.toDouble() : null) ?? 0.0;
     final maxPowerVal = properties['maxPower'];
-    final maxPower = (maxPowerVal is num ? maxPowerVal.toDouble() : null) ?? 100.0;
+    final maxPower =
+        (maxPowerVal is num ? maxPowerVal.toDouble() : null) ?? 100.0;
     final colorVal = properties['color'];
     final color = Color(colorVal is int ? colorVal : 0xFFFF9800);
     final accentVal = properties['accent'];
     final accent = Color(accentVal is int ? accentVal : 0xFF888888);
     final label = properties['label']?.toString() ?? 'kW';
     final fontSizeVal = properties['fontSize'];
-    final fontSize = (fontSizeVal is num ? fontSizeVal.toDouble() : null) ?? 14.0;
+    final fontSize =
+        (fontSizeVal is num ? fontSizeVal.toDouble() : null) ?? 14.0;
     final barWidthVal = properties['barWidth'];
-    final barWidth = (barWidthVal is num ? barWidthVal.toDouble() : null) ?? 60.0;
+    final barWidth =
+        (barWidthVal is num ? barWidthVal.toDouble() : null) ?? 60.0;
     final barHeightVal = properties['barHeight'];
-    final barHeight = (barHeightVal is num ? barHeightVal.toDouble() : null) ?? 4.0;
+    final barHeight =
+        (barHeightVal is num ? barHeightVal.toDouble() : null) ?? 8.0;
 
     final t = maxPower == 0 ? 0.0 : (power / maxPower).clamp(0.0, 1.0);
     final isRegen = power < 0;
@@ -40,6 +44,12 @@ class PowerFlowWidget extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Icon(
+                  isRegen ? Icons.battery_charging_full : Icons.bolt,
+                  color: color,
+                  size: fontSize * 1.2,
+                ),
+                const SizedBox(width: 4),
                 Text(
                   label,
                   style: TextStyle(
@@ -52,17 +62,22 @@ class PowerFlowWidget extends StatelessWidget {
                   width: barWidth,
                   height: barHeight,
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
+                    color: color.withValues(alpha: 0.18),
+                    // The track always gets a visible outline so its bounds
+                    // read clearly at 0% fill or against a similarly dark
+                    // background, same fix as bar_widget.dart's track.
+                    border: Border.all(color: color.withValues(alpha: 0.4)),
+                    borderRadius: BorderRadius.circular(barHeight / 2),
                   ),
                   child: Align(
-                    alignment: isRegen ? Alignment.centerRight : Alignment.centerLeft,
+                    alignment:
+                        isRegen ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
                       width: barWidth * t,
                       height: barHeight,
                       decoration: BoxDecoration(
                         color: color,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(barHeight / 2),
                       ),
                     ),
                   ),
