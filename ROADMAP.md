@@ -477,6 +477,49 @@ before fixing anything, per the guiding principle above.
       multiple choices). Reproduced live on the running app before fixing,
       confirmed fixed after.
 
+## Property inspector picker pass (2026-09-13)
+
+User feedback: "multiple issues in the property tab... unrecognizable
+suffixes... instead of options that are choosable" and a request for
+Text/Gauge's "choose what value to display" to be easier — from a list or
+a custom VESC variable.
+
+- [x] **Real pickers for fixed-vocabulary string properties**: `PropertyMeta`
+      gained an `options: List<EnumOption>?` field; a new generic
+      `_EnumEditor` (same Autocomplete + clear-on-focus pattern as the font
+      pickers above) renders whenever declared, replacing a raw text field
+      that gave zero indication of valid values. Wired up for
+      `gauge.needleStyle`, `bar`/`minigauge.orientation`, `minigauge.style`,
+      `minigauge.icon`, `climate.mode`, `map.mapStyle`, and the speed/
+      temperature `sourceUnit`/`displayUnit` pairs on `digitalspeed`/
+      `minigauge`. `_defaultBinding`'s fallback for any options-bearing
+      property is now its first declared option (a real value), not the
+      numeric literal `0` it fell through to before — that literal-`0`
+      fallback was itself a real, separate bug for any string-enum property
+      with no explicit default (`style`, `icon`, `mapStyle`, `mode` all had
+      none).
+  - Caught a real, related bug while testing: the shared `_dial()` gauge
+        preset helper (backing "Speedometer" and others) and the Tesla
+        template both baked in `needleStyle: 'arc'` — not a value the gauge
+        renderer recognises at all (only `'needle'` draws anything; every
+        other string, 'arc' included, happened to produce "no needle" by
+        accident, which is exactly why it went unnoticed). Fixed to the new
+        canonical `'none'` value both places.
+- [x] **Friendly telemetry key names + unified picker**: the "choose what
+      value to display" binding editor now shows human-readable names
+      ("Motor Speed (ERPM)") instead of only the raw VESC field name
+      (`erpm`) via a new `telemetryKeyLabel()` in `packages/vesc_telemetry`.
+      Rewrote `_TelemetryEditor` from a filter-box + `DropdownButton` +
+      separate "Manual" mode toggle into one unified Autocomplete field —
+      pick from the list, or type any custom key (a VESC LispBM variable,
+      etc.) and press Enter, no mode switch needed. This directly answers
+      "choose from a list or a custom variable from VESC": that capability
+      already existed, it just wasn't discoverable/friendly; the mechanism
+      itself didn't need to change.
+  - Verified live on the running app (not just tests): reproduced the
+        needleStyle bug's raw "arc" value on screen before fixing it,
+        confirmed pickers show the full option list with real labels after.
+
 ---
 
 ## Milestone 1: Studio MVP ✅
