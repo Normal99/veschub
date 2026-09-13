@@ -303,7 +303,9 @@ class _NodePropertiesPanel extends ConsumerWidget {
           ..._propertyEditors(node, props, ref),
           const Divider(),
           TextButton.icon(
-            icon: const Icon(Icons.delete, size: 16),
+            // Matches Canvas mode's "Delete widget" button in
+            // studio_inspector.dart — same action, same icon weight.
+            icon: const Icon(Icons.delete_outline, size: 16),
             label: const Text('Delete node'),
             onPressed: () {
               final newNodes =

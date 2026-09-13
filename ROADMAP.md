@@ -368,9 +368,22 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       (text, tripstats' Porsche-pod row). See
       `tools/dashboard_renderer/test/example_dashboards_golden_test.dart`.
 - [ ] [P3] Dashboard description rich text / markdown
-- [ ] [P3] App-wide icon audit pass (studio + dashboard chrome) — icons have
-      been flagged twice as inconsistent; do this as one deliberate pass,
-      not per-widget patches
+- [x] [P3] App-wide icon audit pass (2026-09-13): three real findings, no
+      manufactured nitpicks. (1) Dashboard's top-bar title button
+      (`Icons.dashboard`, "Veschub · \$docName") and its adjacent dedicated
+      "Templates" button (`Icons.grid_view`) called the exact same
+      `onShowTemplates` callback — two different icons, same row, same
+      action. Nothing about tapping a dashboard's own name suggests it opens
+      the template picker, so made the title plain (non-interactive) rather
+      than picking one of the two icons to keep as a button. (2) Studio's
+      "Delete widget" (Canvas inspector) used `delete_outline` while "Delete
+      node" (Flow inspector) used filled `delete` for the identical action —
+      aligned Flow to `delete_outline`. (3) The layer panel's overlap
+      indicator used `warning_amber` next to a tooltip that explicitly says
+      "often fine" — swapped for `info_outline` (already Studio's
+      convention for this severity) so the icon doesn't oversell the
+      problem. Per-widget-kind icons already centralized this session via
+      `kindIcon()` were out of scope for this pass.
 
 ## Milestone 6: Navigation & GPS 🚧
 

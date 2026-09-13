@@ -129,10 +129,15 @@ class LayerPanel extends ConsumerWidget {
                             message:
                                 'Overlaps another widget — often fine, but '
                                 'check nothing important is hidden underneath',
+                            // Neutral info icon, not a warning triangle — the
+                            // message itself says this is often fine, so the
+                            // icon shouldn't visually signal a problem (same
+                            // Icons.info_outline used elsewhere in Studio for
+                            // this severity, e.g. studio_settings_screen.dart).
                             child: Icon(
-                              Icons.warning_amber,
+                              Icons.info_outline,
                               size: 13,
-                              color: Colors.amber.shade700,
+                              color: Colors.grey.shade600,
                             ),
                           ),
                         ],

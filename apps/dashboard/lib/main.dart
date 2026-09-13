@@ -373,9 +373,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             right: 0,
             child: AnimatedSlide(
               duration: const Duration(milliseconds: 250),
-              offset: _toolbarVisible
-                  ? Offset.zero
-                  : const Offset(0, -1),
+              offset: _toolbarVisible ? Offset.zero : const Offset(0, -1),
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 250),
                 opacity: _toolbarVisible ? 1.0 : 0.0,
@@ -402,8 +400,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final tx = w.transform[4];
     final ty = w.transform[5];
     final resolved = _resolved[w.id] ?? const <String, dynamic>{};
-    final width = (resolved['width'] as num?)?.toDouble() ?? kDefaultWidgetWidth;
-    final height = (resolved['height'] as num?)?.toDouble() ?? kDefaultWidgetHeight;
+    final width =
+        (resolved['width'] as num?)?.toDouble() ?? kDefaultWidgetWidth;
+    final height =
+        (resolved['height'] as num?)?.toDouble() ?? kDefaultWidgetHeight;
     return Positioned(
       key: key,
       left: tx,
@@ -444,15 +444,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             return Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 12, horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   child: Row(
                     children: [
                       Text('Select Template',
                           style: Theme.of(ctx).textTheme.titleMedium),
                       const Spacer(),
-                      Text(
-                          '${templates.length} templates',
+                      Text('${templates.length} templates',
                           style: Theme.of(ctx).textTheme.bodySmall),
                     ],
                   ),
@@ -491,8 +490,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                                   subtitle: Text(t.description,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis),
-                                  trailing: const Icon(
-                                      Icons.arrow_forward_ios,
+                                  trailing: const Icon(Icons.arrow_forward_ios,
                                       size: 16),
                                   onTap: () {
                                     _loadDocument(t.document);
@@ -545,8 +543,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           content: SizedBox(
             width: 400,
             child: entries.isEmpty
-                ? const Text(
-                    'No saved dashboards yet. Author one in Studio.')
+                ? const Text('No saved dashboards yet. Author one in Studio.')
                 : ListView.builder(
                     shrinkWrap: true,
                     itemCount: entries.length,
@@ -622,14 +619,23 @@ class _DashboardToolbar extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: TextButton.icon(
-              onPressed: onShowTemplates,
-              icon: const Icon(Icons.dashboard, size: 20),
-              label: Text(
-                'Veschub · $docName',
-                style: TextStyle(color: fg, fontSize: 13),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            // Plain label, not a button: it used to silently duplicate the
+            // dedicated "Templates" icon button below with a different icon
+            // (Icons.dashboard vs Icons.grid_view) for the exact same
+            // action — confusing, since nothing about a title reading the
+            // dashboard's own name suggests tapping it opens the template
+            // picker.
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.dashboard, size: 20, color: fg),
+                const SizedBox(width: 8),
+                Text(
+                  'Veschub · $docName',
+                  style: TextStyle(color: fg, fontSize: 13),
+                ),
+              ],
             ),
           ),
           const Spacer(),
