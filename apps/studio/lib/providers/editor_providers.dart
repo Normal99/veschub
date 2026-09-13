@@ -161,6 +161,8 @@ final canvasPreviewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.tempMotor: 55.0,
     TelemetryKey.currentMotor: 18.5,
     TelemetryKey.currentInput: 12.3,
+    TelemetryKey.focId: -2.1,
+    TelemetryKey.focIq: 17.8,
     TelemetryKey.fault: 0,
   });
   ref.onDispose(store.dispose);

@@ -35,6 +35,8 @@ final previewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.tempMosfet: 42.0,
     TelemetryKey.tempMotor: 55.0,
     TelemetryKey.currentMotor: 18.5,
+    TelemetryKey.focId: -2.1,
+    TelemetryKey.focIq: 17.8,
     TelemetryKey.fault: 0,
     TelemetryKey.tachometer: 403438,
     TelemetryKey.tachometerAbs: 403438,

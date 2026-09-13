@@ -289,6 +289,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         TelemetryKey.tempMotor: v.tempMotor,
         TelemetryKey.currentMotor: v.currentMotor,
         TelemetryKey.currentInput: v.currentInput,
+        TelemetryKey.focId: v.id,
+        TelemetryKey.focIq: v.iq,
         TelemetryKey.ampHoursCharged: v.ampHoursCharged,
         TelemetryKey.ampHoursDischarged: v.ampHoursDischarged,
         TelemetryKey.wattHoursCharged: v.wattHoursCharged,

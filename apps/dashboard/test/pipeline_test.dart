@@ -28,7 +28,7 @@ void main() {
       store.dispose();
     });
 
-    test('decodes telemetry and ingests all 14 keys', () async {
+    test('decodes telemetry and ingests all 16 keys', () async {
       final completer = Completer<void>();
       var frameCount = 0;
 
@@ -43,6 +43,8 @@ void main() {
             TelemetryKey.tempMotor: v.tempMotor,
             TelemetryKey.currentMotor: v.currentMotor,
             TelemetryKey.currentInput: v.currentInput,
+            TelemetryKey.focId: v.id,
+            TelemetryKey.focIq: v.iq,
             TelemetryKey.ampHoursCharged: v.ampHoursCharged,
             TelemetryKey.ampHoursDischarged: v.ampHoursDischarged,
             TelemetryKey.wattHoursCharged: v.wattHoursCharged,
@@ -70,6 +72,8 @@ void main() {
       expect(store.contains(TelemetryKey.tempMotor), isTrue);
       expect(store.contains(TelemetryKey.currentMotor), isTrue);
       expect(store.contains(TelemetryKey.currentInput), isTrue);
+      expect(store.contains(TelemetryKey.focId), isTrue);
+      expect(store.contains(TelemetryKey.focIq), isTrue);
       expect(store.contains(TelemetryKey.ampHoursCharged), isTrue);
       expect(store.contains(TelemetryKey.ampHoursDischarged), isTrue);
       expect(store.contains(TelemetryKey.wattHoursCharged), isTrue);

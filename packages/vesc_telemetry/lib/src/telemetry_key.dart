@@ -20,6 +20,10 @@ class TelemetryKey {
   static const tempMotor = 'temp.motor';
   static const tempMosfet = 'temp.mosfet';
 
+  /// FOC d/q-axis currents (only meaningful in FOC motor control mode).
+  static const focId = 'foc.id';
+  static const focIq = 'foc.iq';
+
   static const ampHoursCharged = 'amp_hours.charged';
   static const ampHoursDischarged = 'amp_hours.discharged';
   static const wattHoursCharged = 'watt_hours.charged';
@@ -45,6 +49,8 @@ class TelemetryKey {
     vIn,
     tempMotor,
     tempMosfet,
+    focId,
+    focIq,
     ampHoursCharged,
     ampHoursDischarged,
     wattHoursCharged,
