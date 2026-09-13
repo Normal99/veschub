@@ -379,6 +379,70 @@ competitor in the same space. Read: Dash-Studio.md, ---Creation-Tutorial,
   - Multi-screen dashboards (SimHub dashboards can have multiple
     screens/pages you switch between) — a bigger feature, not scoped.
 
+## Font system pass (2026-09-13)
+
+User feedback: the car-brand templates aren't accurate to source material
+in fonts, and "there is only a default font and only Bold" — investigated
+before fixing anything, per the guiding principle above.
+
+- [x] **FIXED — two real property bypasses** found via investigation
+      (`applyTextStyle` itself correctly merges `fontFamily`/`fontWeight`
+      symmetrically — the gap was upstream): `minigauge_widget.dart`'s
+      vertical-bar style variant hardcoded `FontWeight.bold` via a raw
+      `TextStyle` for both its label and main value, ignoring both
+      properties entirely regardless of what the inspector was set to;
+      `gauge_widget.dart`'s `_GaugePainter` threaded a `fontFamily` field
+      through to itself but never read it when painting tick labels, so a
+      chosen font never reached the small numeric labels on the arc (the
+      big center readout was already correct). Root cause of "only
+      Default/Bold": no template or palette preset ever set `fontFamily`
+      (all default to the shared Rajdhani), and most palette presets
+      default `fontWeight` to `'bold'`.
+- [x] **Distinct font per car-brand template** (2026-09-13): bundled 8 more
+      SIL OFL 1.1 fonts (Titillium Web, Barlow Condensed, Inter, Outfit,
+      Roboto, Manrope, Exo 2, Sora) alongside the existing Rajdhani/
+      Orbitron/Share Tech Mono, and gave each of the 9 templates its own
+      `fontFamily` (previously all 9 shared Rajdhani, only weight/
+      letterSpacing differed per the earlier "Template typographic
+      identity" pass): tesla-model3→Inter, porsche-taycan→Outfit,
+      bmw-classic→Titillium Web, audi-virtual-cockpit→Barlow Condensed,
+      vesc-mobile→Rajdhani (explicit), android-auto→Roboto (the real one —
+      Android Auto genuinely ships Roboto), carplay→Manrope, ford-digital→
+      Exo 2, vw-digital→Sora. None of the others are the manufacturer's
+      actual proprietary typeface (Tesla's Gotham, BMW Type, Audi Type,
+      Porsche Next, Apple SF Pro aren't freely licensable) — picked as free
+      stand-ins with a comparable feel, a judgment call per user direction
+      to just pick and go. Titillium Web/Barlow Condensed ship real static
+      weight files; the other six only exist as a single variable-font file
+      upstream, bundled as one asset like the existing single-weight Share
+      Tech Mono — their shape still differs correctly per brand, only their
+      weight-picker range is limited. Verified by rendering 3 of the 9
+      templates through `tools/dashboard_renderer` at full resolution (not
+      just the small gallery thumbnails) to visually confirm each font is
+      genuinely distinct, including gauge tick labels (confirming the bug
+      fix above).
+- [x] **Importable custom fonts** (2026-09-13): a "Custom Fonts" section in
+      Studio Settings — import a `.ttf`/`.otf` via the same `FilePicker`
+      pattern already used for dashboard/flow-graph JSON import, copy it
+      into the app's own support directory, register immediately via
+      `FontLoader` (usable without restarting), persist the family-name/
+      file-path reference. Shows up alongside bundled fonts in any
+      dashboard's font picker (`fontChoicesProvider` merges `kFontChoices`
+      with the persisted list reactively). `CustomFontEntry`/
+      `registerCustomFont`/`registerAllCustomFonts` live in
+      `packages/settings` (not studio-only) since the dashboard viewer app
+      needs to register the same fonts at its own startup to render a
+      dashboard with the fonts it was built with — only the import UI
+      itself is studio-specific. **Known limitation**: only works when both
+      apps run on the same machine/filesystem (this project's current
+      desktop-first setup) — true portability across separately-sandboxed
+      installs would need embedding the font bytes in the exported
+      `.veschub.json` itself, a bigger follow-up, not attempted. Verified
+      end-to-end on the real running app: imported a real `.ttf` via the
+      actual OS file picker, confirmed it persisted to disk, listed in
+      Settings, applied via the Canvas font picker, and removed cleanly
+      (including its file).
+
 ---
 
 ## Milestone 1: Studio MVP ✅
