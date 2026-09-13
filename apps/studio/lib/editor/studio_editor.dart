@@ -32,6 +32,28 @@ part 'studio_palette.dart';
 part 'studio_canvas_area.dart';
 part 'studio_inspector.dart';
 
+enum _MenuAction { newDashboard, open, export, import, settings, toggleLayers }
+
+/// A labeled row for the toolbar's overflow menu — an icon plus its name,
+/// so the less-frequent actions (new/open/export/import/settings/layers)
+/// don't have to be guessed from a bare icon.
+class _MenuRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _MenuRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 12),
+        Text(label),
+      ],
+    );
+  }
+}
+
 /// A starter paint program for newly dropped `paint` widgets: a fixed track
 /// circle with a filled circle whose radius is driven by the `$r` variable.
 const PaintProgram _samplePaintProgram = PaintProgram(ops: [
@@ -62,6 +84,10 @@ class StudioEditor extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Veschub Studio'),
         actions: [
+          // Only the highest-frequency actions get a bare icon button — the
+          // rest (new/open/export/import/settings/layers) are one tap away
+          // in the labeled overflow menu below, rather than seven
+          // indistinguishable icons in a row.
           IconButton(
             icon: const Icon(Icons.undo),
             onPressed: commands.canUndo ? commands.undo : null,
@@ -74,48 +100,58 @@ class StudioEditor extends ConsumerWidget {
           ),
           const VerticalDivider(),
           IconButton(
-            icon: const Icon(Icons.note_add),
-            onPressed: () => _newDashboard(context, ref),
-            tooltip: 'New dashboard',
-          ),
-          IconButton(
-            icon: const Icon(Icons.folder_open),
-            onPressed: () => _showOpenDialog(context, ref),
-            tooltip: 'Open',
-          ),
-          IconButton(
             icon: const Icon(Icons.save),
             onPressed: () => _save(context, ref),
             tooltip: 'Save',
           ),
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: () => _exportJson(context, ref),
-            tooltip: 'Export as .veschub.json',
-          ),
-          IconButton(
-            icon: const Icon(Icons.upload_file),
-            onPressed: () => _importJson(context, ref),
-            tooltip: 'Import .veschub.json',
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(context).pushNamed('/settings'),
-            tooltip: 'Settings',
-          ),
-          IconButton(
-            icon: Icon(
-              ref.watch(layersVisibleProvider)
-                  ? Icons.unfold_less
-                  : Icons.unfold_more,
-            ),
-            onPressed: () {
-              ref.read(layersVisibleProvider.notifier).state =
-                  !ref.read(layersVisibleProvider);
+          PopupMenuButton<_MenuAction>(
+            tooltip: 'More',
+            onSelected: (action) => switch (action) {
+              _MenuAction.newDashboard => _newDashboard(context, ref),
+              _MenuAction.open => _showOpenDialog(context, ref),
+              _MenuAction.export => _exportJson(context, ref),
+              _MenuAction.import => _importJson(context, ref),
+              _MenuAction.settings =>
+                Navigator.of(context).pushNamed('/settings'),
+              _MenuAction.toggleLayers => ref
+                  .read(layersVisibleProvider.notifier)
+                  .state = !ref.read(layersVisibleProvider),
             },
-            tooltip: ref.watch(layersVisibleProvider)
-                ? 'Shrink layer list'
-                : 'Expand layer list',
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: _MenuAction.newDashboard,
+                child: _MenuRow(icon: Icons.note_add, label: 'New dashboard'),
+              ),
+              const PopupMenuItem(
+                value: _MenuAction.open,
+                child: _MenuRow(icon: Icons.folder_open, label: 'Open'),
+              ),
+              const PopupMenuItem(
+                value: _MenuAction.export,
+                child: _MenuRow(
+                    icon: Icons.download, label: 'Export as .veschub.json'),
+              ),
+              const PopupMenuItem(
+                value: _MenuAction.import,
+                child: _MenuRow(
+                    icon: Icons.upload_file, label: 'Import .veschub.json'),
+              ),
+              const PopupMenuItem(
+                value: _MenuAction.settings,
+                child: _MenuRow(icon: Icons.settings, label: 'Settings'),
+              ),
+              PopupMenuItem(
+                value: _MenuAction.toggleLayers,
+                child: _MenuRow(
+                  icon: ref.watch(layersVisibleProvider)
+                      ? Icons.unfold_less
+                      : Icons.unfold_more,
+                  label: ref.watch(layersVisibleProvider)
+                      ? 'Shrink layer list'
+                      : 'Expand layer list',
+                ),
+              ),
+            ],
           ),
         ],
         bottom: PreferredSize(
