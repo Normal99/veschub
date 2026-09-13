@@ -11,6 +11,7 @@ import 'package:dashboard_runtime/dashboard_runtime.dart';
 
 export 'src/kind_icons.dart';
 export 'src/font_catalog.dart';
+export 'src/property_descriptions.dart';
 
 import 'widgets/appgrid_widget.dart';
 import 'widgets/bar_widget.dart';

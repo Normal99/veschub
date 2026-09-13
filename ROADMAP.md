@@ -753,7 +753,25 @@ few net-new pieces.
       a separate static copy, not generated from this file — golden tests
       ran unchanged, no regeneration needed. `built_in_templates.dart` (the
       4 generic starters) intentionally untouched.
-- [ ] [P3] In-app "what does this property do" examples/preview thumbnails
+- [x] [P3] In-app "what does this property do" — text descriptions done,
+      preview thumbnails not (2026-09-13). The property-row tooltip
+      (added earlier this session) just echoed the label and raw key back
+      (`Property "Background" (backgroundColor)`) — no actual explanation.
+      Added `packages/widgets_library/lib/src/property_descriptions.dart`:
+      `propertyDescription(key, fallbackLabel)`, a genuine one-line
+      explanation for ~90 property concepts, keyed by *base* key (numbered
+      slots like `label1`..`label4`, `unit2_3`, `section1Header` all
+      normalise to the same description as `label`/`unit`/`sectionHeader` —
+      most multi-stat widgets repeat a handful of concepts across 3-4 numbered
+      slots, so this covers far more of the actual 153 distinct manifest keys
+      than the count suggests) with a sensible fallback to the manifest label
+      for the long tail of one-off, highly kind-specific keys not worth a
+      bespoke entry. Visual preview thumbnails (an actual before/after image
+      per property) are a much bigger content-authoring investment and
+      weren't attempted — flagging rather than guessing at scope for that
+      part. Verified: `flutter analyze` clean, `flutter test` in `packages/
+      widgets_library` (132 tests, 1 new file) and `apps/studio` (34 tests)
+      both pass.
 
 ---
 

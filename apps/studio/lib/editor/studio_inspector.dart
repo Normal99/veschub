@@ -422,7 +422,7 @@ class _BindingField extends ConsumerWidget {
       ),
     );
     return Tooltip(
-      message: 'Property "${meta.label}" (${meta.key})',
+      message: propertyDescription(meta.key, meta.label),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
