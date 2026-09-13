@@ -25,6 +25,18 @@ const List<FontChoice> kFontChoices = [
   FontChoice(
       label: 'Share Tech Mono',
       fontFamily: 'packages/widgets_library/ShareTechMono'),
+  FontChoice(
+      label: 'Titillium Web',
+      fontFamily: 'packages/widgets_library/TitilliumWeb'),
+  FontChoice(
+      label: 'Barlow Condensed',
+      fontFamily: 'packages/widgets_library/BarlowCondensed'),
+  FontChoice(label: 'Inter', fontFamily: 'packages/widgets_library/Inter'),
+  FontChoice(label: 'Outfit', fontFamily: 'packages/widgets_library/Outfit'),
+  FontChoice(label: 'Roboto', fontFamily: 'packages/widgets_library/Roboto'),
+  FontChoice(label: 'Manrope', fontFamily: 'packages/widgets_library/Manrope'),
+  FontChoice(label: 'Exo 2', fontFamily: 'packages/widgets_library/Exo2'),
+  FontChoice(label: 'Sora', fontFamily: 'packages/widgets_library/Sora'),
 ];
 
 /// One selectable weight in the picker: [label] is shown to the user,

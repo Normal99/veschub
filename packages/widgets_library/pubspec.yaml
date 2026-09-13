@@ -67,3 +67,59 @@ flutter:
       fonts:
         - asset: lib/assets/fonts/ShareTechMono-Regular.ttf
           weight: 400
+    # The following 8 (SIL OFL 1.1 — see each OFL-<Family>.txt) exist to
+    # give the car-brand templates a distinct font per brand instead of all
+    # nine sharing Rajdhani — none of these are the real proprietary
+    # typeface a manufacturer actually ships (Tesla's Gotham, BMW Type,
+    # Audi Type, Porsche Next, Apple SF Pro are not freely licensable), they
+    # were picked as a free stand-in with a comparable feel. Also offered
+    # as general per-widget choices in the font picker, same as the three
+    # above.
+    #
+    # Titillium Web and Barlow Condensed ship real static weight files
+    # (bundled below); Inter/Outfit/Roboto/Manrope/Exo2/Sora only ship as a
+    # single variable-font file in Google's font repo — bundled as one
+    # asset at weight 400 like ShareTechMono, so picking a different
+    # fontWeight for these six won't select a truly distinct weight (Skia
+    # falls back to synthetic bold for heavier requests); the font's own
+    # shape/personality — the actual point of this pass — is unaffected.
+    - family: TitilliumWeb
+      fonts:
+        - asset: lib/assets/fonts/TitilliumWeb-Regular.ttf
+          weight: 400
+        - asset: lib/assets/fonts/TitilliumWeb-SemiBold.ttf
+          weight: 600
+        - asset: lib/assets/fonts/TitilliumWeb-Bold.ttf
+          weight: 700
+    - family: BarlowCondensed
+      fonts:
+        - asset: lib/assets/fonts/BarlowCondensed-Light.ttf
+          weight: 300
+        - asset: lib/assets/fonts/BarlowCondensed-Regular.ttf
+          weight: 400
+        - asset: lib/assets/fonts/BarlowCondensed-Medium.ttf
+          weight: 500
+    - family: Inter
+      fonts:
+        - asset: lib/assets/fonts/Inter-Variable.ttf
+          weight: 400
+    - family: Outfit
+      fonts:
+        - asset: lib/assets/fonts/Outfit-Variable.ttf
+          weight: 400
+    - family: Roboto
+      fonts:
+        - asset: lib/assets/fonts/Roboto-Variable.ttf
+          weight: 400
+    - family: Manrope
+      fonts:
+        - asset: lib/assets/fonts/Manrope-Variable.ttf
+          weight: 400
+    - family: Exo2
+      fonts:
+        - asset: lib/assets/fonts/Exo2-Variable.ttf
+          weight: 400
+    - family: Sora
+      fonts:
+        - asset: lib/assets/fonts/Sora-Variable.ttf
+          weight: 400

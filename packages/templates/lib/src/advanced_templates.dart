@@ -67,6 +67,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 120},
         "width": {"type": "literal", "value": 1000},
         "height": {"type": "literal", "value": 900},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -86,6 +87,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 200},
         "height": {"type": "literal", "value": 60},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -158,6 +160,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 450},
         "height": {"type": "literal", "value": 450},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -184,6 +187,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 450},
         "height": {"type": "literal", "value": 80},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -202,6 +206,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 160},
         "height": {"type": "literal", "value": 70},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -222,6 +227,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 240},
         "height": {"type": "literal", "value": 70},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Inter"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": -0.5}
       },
@@ -292,6 +298,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 0},
         "width": {"type": "literal", "value": 200},
         "height": {"type": "literal", "value": 140},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -340,6 +347,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 480},
         "height": {"type": "literal", "value": 480},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -359,6 +367,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 180},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -383,6 +392,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 400},
         "height": {"type": "literal", "value": 70},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -401,6 +411,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 180},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -421,6 +432,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 140},
         "height": {"type": "literal", "value": 120},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Outfit"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -464,6 +476,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 240},
         "height": {"type": "literal", "value": 240},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -490,6 +503,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 560},
         "height": {"type": "literal", "value": 560},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -518,6 +532,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 560},
         "height": {"type": "literal", "value": 560},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -544,6 +559,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 240},
         "height": {"type": "literal", "value": 240},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -562,6 +578,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 160},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -580,6 +597,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 6},
         "width": {"type": "literal", "value": 440},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/TitilliumWeb"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 1.0}
       },
@@ -641,6 +659,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -667,6 +686,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -692,6 +712,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 75},
         "height": {"type": "literal", "value": 280},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -717,6 +738,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 75},
         "height": {"type": "literal", "value": 280},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -735,6 +757,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 400},
         "height": {"type": "literal", "value": 40},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -753,6 +776,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 6},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/BarlowCondensed"},
         "fontWeight": {"type": "literal", "value": "w300"},
         "letterSpacing": {"type": "literal", "value": 1.5}
       },
@@ -788,6 +812,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 1920},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -815,6 +840,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 320},
         "height": {"type": "literal", "value": 320},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -842,6 +868,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 360},
         "height": {"type": "literal", "value": 360},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -869,6 +896,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 320},
         "height": {"type": "literal", "value": 320},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -896,6 +924,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 320},
         "height": {"type": "literal", "value": 320},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -923,6 +952,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 360},
         "height": {"type": "literal", "value": 360},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -950,6 +980,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 320},
         "height": {"type": "literal", "value": 320},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -977,6 +1008,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 12},
         "width": {"type": "literal", "value": 600},
         "height": {"type": "literal", "value": 600},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1004,6 +1036,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 280},
         "height": {"type": "literal", "value": 280},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1022,6 +1055,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 1920},
         "height": {"type": "literal", "value": 100},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Rajdhani"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1057,6 +1091,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 100},
         "height": {"type": "literal", "value": 720},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Roboto"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1092,6 +1127,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 420},
         "height": {"type": "literal", "value": 110},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Roboto"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1111,6 +1147,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 420},
         "height": {"type": "literal", "value": 140},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Roboto"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1130,6 +1167,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 615},
         "height": {"type": "literal", "value": 690},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Roboto"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1166,6 +1204,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 16},
         "width": {"type": "literal", "value": 120},
         "height": {"type": "literal", "value": 1020},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1185,6 +1224,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1204,6 +1244,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1223,6 +1264,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1242,6 +1284,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1261,6 +1304,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1280,6 +1324,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1299,6 +1344,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1318,6 +1364,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1337,6 +1384,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1356,6 +1404,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 24},
         "width": {"type": "literal", "value": 300},
         "height": {"type": "literal", "value": 400},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1374,6 +1423,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 200},
         "height": {"type": "literal", "value": 40},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Manrope"},
         "fontWeight": {"type": "literal", "value": "w600"},
         "letterSpacing": {"type": "literal", "value": -0.2}
       },
@@ -1416,6 +1466,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Exo2"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1441,6 +1492,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Exo2"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1477,6 +1529,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 640},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Exo2"},
         "fontWeight": {"type": "literal", "value": "w700"},
         "letterSpacing": {"type": "literal", "value": 0.0}
       },
@@ -1537,6 +1590,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -1558,6 +1612,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 240},
         "height": {"type": "literal", "value": 240},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -1583,6 +1638,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 520},
         "height": {"type": "literal", "value": 520},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -1604,6 +1660,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 8},
         "width": {"type": "literal", "value": 240},
         "height": {"type": "literal", "value": 240},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -1622,6 +1679,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 4},
         "width": {"type": "literal", "value": 400},
         "height": {"type": "literal", "value": 40},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
@@ -1640,6 +1698,7 @@ final advancedDashboardTemplates = <DashboardTemplate>[
         "padding": {"type": "literal", "value": 6},
         "width": {"type": "literal", "value": 600},
         "height": {"type": "literal", "value": 50},
+        "fontFamily": {"type": "literal", "value": "packages/widgets_library/Sora"},
         "fontWeight": {"type": "literal", "value": "w500"},
         "letterSpacing": {"type": "literal", "value": 0.3}
       },
