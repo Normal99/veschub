@@ -367,9 +367,16 @@ few net-new pieces.
 
 - [ ] [P1] First-run onboarding: guided "build your first dashboard" flow
       (distinct from the AI assistant — pure UI walkthrough)
-- [ ] [P1] Per-widget unit system: unit chosen per property (speed: km/h · mph ·
-      m/s; temp: °C · °F · K; etc.), replacing the global metric/imperial
-      toggle — reuse existing format-helper functions in `dashboard_model`
+- [x] [P1] Per-widget unit system (2026-09-13): added `TemperatureUnit`/`SpeedUnit`
+      enums + `convertTemperature`/`convertSpeed` to `widgets_library/src/format.dart`
+      (parse/suffix helpers included). Wired `sourceUnit`/`displayUnit` properties
+      into `digitalspeed_widget.dart` as the v1 widget — opt-in, no `displayUnit`
+      set means byte-identical old behaviour (raw value + literal `unit` string),
+      so no existing dashboard changes look. Added manifest entries + inspector
+      defaults + unit + widget tests (all green, no golden regressions). Extending
+      `sourceUnit`/`displayUnit` to other speed/temp-bearing widgets (minigauge's
+      temperature preset, gauge, bar) is the same pattern, left for a follow-up
+      pass rather than doing all of them in one sweep.
 - [ ] [P1] Template gallery: "start from a template, then tweak" made the
       default landing experience (Template mode already supports this —
       make it the first thing a new user sees)

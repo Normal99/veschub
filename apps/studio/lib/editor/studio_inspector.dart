@@ -170,6 +170,8 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'height') return const Binding.literal(value: 220);
     if (m.key == 'orientation')
       return const Binding.literal(value: 'horizontal');
+    if (m.key == 'sourceUnit') return const Binding.literal(value: 'kmh');
+    if (m.key == 'displayUnit') return const Binding.literal(value: '');
     if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');
     if (m.key == 'fontSize') return const Binding.literal(value: 20);
     if (m.key == 'fontWeight') return const Binding.literal(value: 'bold');

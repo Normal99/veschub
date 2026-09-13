@@ -3,6 +3,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import '../src/cosmetic_helpers.dart';
+import '../src/format.dart' show speedUnitFromString, speedUnitSuffix, convertSpeed;
 
 class DigitalSpeedWidget extends StatelessWidget {
   final ResolvedProperties properties;
@@ -10,8 +11,23 @@ class DigitalSpeedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = (properties['value'] as num?)?.toDouble() ?? 0;
-    final unit = properties['unit'] as String? ?? 'km/h';
+    final rawValue = (properties['value'] as num?)?.toDouble() ?? 0;
+    // `displayUnit` is opt-in: when unset, behaviour is identical to before
+    // this property existed (raw value, literal `unit` label) so existing
+    // dashboards render unchanged. Setting it converts from `sourceUnit`
+    // (what the bound value is already in) and overrides the suffix shown.
+    final displayUnitRaw = properties['displayUnit'] as String?;
+    final String unit;
+    final double value;
+    if (displayUnitRaw != null) {
+      final sourceUnit = speedUnitFromString(properties['sourceUnit'] as String?);
+      final displayUnit = speedUnitFromString(displayUnitRaw);
+      value = convertSpeed(rawValue, from: sourceUnit, to: displayUnit);
+      unit = speedUnitSuffix(displayUnit);
+    } else {
+      value = rawValue;
+      unit = properties['unit'] as String? ?? 'km/h';
+    }
     final color = Color((properties['color'] as int?) ?? 0xFFFFFFFF);
     final accent = Color((properties['accent'] as int?) ?? 0xFF888888);
     final fontSizeRaw = (properties['fontSize'] as num?) ?? 72.0;
@@ -45,21 +61,30 @@ class DigitalSpeedWidget extends StatelessWidget {
         child: Padding(
           padding: resolvePadding(properties),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(text, style: valueStyle),
-                  if (showUnit)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 6),
-                      child: Text(unit, style: unitStyle),
-                    ),
-                ],
+              // FittedBox absorbs cases where a converted value (e.g. "62.1"
+              // instead of "42") plus its unit suffix is a few pixels wider
+              // than the box, the same defensive pattern text_widget.dart
+              // and tripstats_widget.dart use for the same reason.
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(text, style: valueStyle),
+                    if (showUnit)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 6),
+                        child: Text(unit, style: unitStyle),
+                      ),
+                  ],
+                ),
               ),
               if (subLabel != null || subValue != null)
                 Padding(

@@ -72,3 +72,88 @@ String formatVolts(double volts) => '${formatNumber(volts, decimals: 1)} V';
 
 /// Formats a temperature in °C.
 String formatCelsius(double c) => '${formatNumber(c, decimals: 0)} °C';
+
+// ─────────────────────────────────────────────────────────────────
+// Per-widget unit conversion.
+//
+// VESC telemetry always arrives in one canonical unit per quantity
+// (temperature in °C, speed derived in m/s via erpmToWheelRpm +
+// wheelRpmToSpeed above). Not every user wants those units displayed,
+// though — one widget might want °F, another km/h, another mph on the
+// same dashboard. These helpers convert between a widget's declared
+// *source* unit (what its bound value is already in) and its *display*
+// unit (what to show), so that choice lives per-widget rather than as
+// one global metric/imperial toggle.
+
+enum TemperatureUnit { celsius, fahrenheit, kelvin }
+
+/// Parses a unit property string (e.g. `'fahrenheit'`), defaulting to
+/// Celsius for anything unrecognised — the canonical unit VESC telemetry
+/// itself uses, so an absent/invalid property is a safe no-op.
+TemperatureUnit temperatureUnitFromString(String? s) => switch (s) {
+      'fahrenheit' || 'f' => TemperatureUnit.fahrenheit,
+      'kelvin' || 'k' => TemperatureUnit.kelvin,
+      _ => TemperatureUnit.celsius,
+    };
+
+String temperatureUnitSuffix(TemperatureUnit u) => switch (u) {
+      TemperatureUnit.celsius => '°C',
+      TemperatureUnit.fahrenheit => '°F',
+      TemperatureUnit.kelvin => 'K',
+    };
+
+double _temperatureToCelsius(double value, TemperatureUnit from) =>
+    switch (from) {
+      TemperatureUnit.celsius => value,
+      TemperatureUnit.fahrenheit => (value - 32) * 5 / 9,
+      TemperatureUnit.kelvin => value - 273.15,
+    };
+
+double _celsiusTo(double celsius, TemperatureUnit to) => switch (to) {
+      TemperatureUnit.celsius => celsius,
+      TemperatureUnit.fahrenheit => celsius * 9 / 5 + 32,
+      TemperatureUnit.kelvin => celsius + 273.15,
+    };
+
+/// Converts [value] from [from] to [to] (any pair of temperature units).
+double convertTemperature(
+  double value, {
+  required TemperatureUnit from,
+  required TemperatureUnit to,
+}) =>
+    _celsiusTo(_temperatureToCelsius(value, from), to);
+
+enum SpeedUnit { kmh, mph, ms }
+
+/// Parses a unit property string (e.g. `'mph'`), defaulting to km/h.
+SpeedUnit speedUnitFromString(String? s) => switch (s) {
+      'mph' => SpeedUnit.mph,
+      'ms' || 'm/s' => SpeedUnit.ms,
+      _ => SpeedUnit.kmh,
+    };
+
+String speedUnitSuffix(SpeedUnit u) => switch (u) {
+      SpeedUnit.kmh => 'km/h',
+      SpeedUnit.mph => 'mph',
+      SpeedUnit.ms => 'm/s',
+    };
+
+double _speedToMs(double value, SpeedUnit from) => switch (from) {
+      SpeedUnit.ms => value,
+      SpeedUnit.kmh => value / 3.6,
+      SpeedUnit.mph => value * 0.44704,
+    };
+
+double _msTo(double ms, SpeedUnit to) => switch (to) {
+      SpeedUnit.ms => ms,
+      SpeedUnit.kmh => ms * 3.6,
+      SpeedUnit.mph => ms * 2.2369362920544025,
+    };
+
+/// Converts [value] from [from] to [to] (any pair of speed units).
+double convertSpeed(
+  double value, {
+  required SpeedUnit from,
+  required SpeedUnit to,
+}) =>
+    _msTo(_speedToMs(value, from), to);

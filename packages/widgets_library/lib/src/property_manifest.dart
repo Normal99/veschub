@@ -1167,6 +1167,17 @@ const List<PropertyMeta> _digitalspeed = [
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
+      key: 'sourceUnit',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Source unit (kmh/mph/ms)',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'displayUnit',
+      minLevel: CapabilityLevel.basic,
+      label: 'Display unit (kmh/mph/ms)',
+      safe: true,
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
       key: 'color',
       minLevel: CapabilityLevel.basic,
       label: 'Colour',

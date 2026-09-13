@@ -61,6 +61,87 @@ void main() {
     });
   });
 
+  group('temperature unit conversion', () {
+    test('celsius to fahrenheit and back', () {
+      expect(
+        convertTemperature(0,
+            from: TemperatureUnit.celsius, to: TemperatureUnit.fahrenheit),
+        32,
+      );
+      expect(
+        convertTemperature(100,
+            from: TemperatureUnit.celsius, to: TemperatureUnit.fahrenheit),
+        212,
+      );
+      expect(
+        convertTemperature(212,
+            from: TemperatureUnit.fahrenheit, to: TemperatureUnit.celsius),
+        closeTo(100, 0.001),
+      );
+    });
+
+    test('celsius to kelvin', () {
+      expect(
+        convertTemperature(0,
+            from: TemperatureUnit.celsius, to: TemperatureUnit.kelvin),
+        closeTo(273.15, 0.001),
+      );
+    });
+
+    test('same unit is a no-op', () {
+      expect(
+        convertTemperature(42,
+            from: TemperatureUnit.celsius, to: TemperatureUnit.celsius),
+        42,
+      );
+    });
+
+    test('parses unit strings, defaults to celsius', () {
+      expect(temperatureUnitFromString('fahrenheit'), TemperatureUnit.fahrenheit);
+      expect(temperatureUnitFromString('kelvin'), TemperatureUnit.kelvin);
+      expect(temperatureUnitFromString(null), TemperatureUnit.celsius);
+      expect(temperatureUnitFromString('bogus'), TemperatureUnit.celsius);
+    });
+
+    test('unit suffixes', () {
+      expect(temperatureUnitSuffix(TemperatureUnit.celsius), '°C');
+      expect(temperatureUnitSuffix(TemperatureUnit.fahrenheit), '°F');
+      expect(temperatureUnitSuffix(TemperatureUnit.kelvin), 'K');
+    });
+  });
+
+  group('speed unit conversion', () {
+    test('kmh to mph', () {
+      expect(
+        convertSpeed(100, from: SpeedUnit.kmh, to: SpeedUnit.mph),
+        closeTo(62.14, 0.01),
+      );
+    });
+
+    test('ms to kmh', () {
+      expect(
+        convertSpeed(10, from: SpeedUnit.ms, to: SpeedUnit.kmh),
+        closeTo(36.0, 0.001),
+      );
+    });
+
+    test('same unit is a no-op', () {
+      expect(convertSpeed(50, from: SpeedUnit.kmh, to: SpeedUnit.kmh), 50);
+    });
+
+    test('parses unit strings, defaults to kmh', () {
+      expect(speedUnitFromString('mph'), SpeedUnit.mph);
+      expect(speedUnitFromString('m/s'), SpeedUnit.ms);
+      expect(speedUnitFromString(null), SpeedUnit.kmh);
+    });
+
+    test('unit suffixes', () {
+      expect(speedUnitSuffix(SpeedUnit.kmh), 'km/h');
+      expect(speedUnitSuffix(SpeedUnit.mph), 'mph');
+      expect(speedUnitSuffix(SpeedUnit.ms), 'm/s');
+    });
+  });
+
   group('DashboardTheme', () {
     test('fromDocument resolves colours', () {
       final t = DashboardTheme.fromDocument(
