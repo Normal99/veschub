@@ -414,7 +414,43 @@ competitor in the same space. Read: Dash-Studio.md, ---Creation-Tutorial,
 - [x] JSON export / import (.veschub.json)
 - [x] Pipeline integration tests (3 tests)
 - [x] Settings: transport, auto-connect, data rate
-- [ ] [P2] Flow mode: add script/Dart-expression tab alongside node graph
+- [ ] [P2] Flow mode: add script/Dart-expression tab alongside node graph —
+      **still open as literally described; rescoped effort into a related,
+      higher-value gap instead** (2026-09-13). Studied
+      `evaluateGraph`/`FlowGraph` (node_graph package) and the existing
+      Formula binding's `evaluateFormula` (dashboard_runtime) before
+      starting: a text-entry "script" alternative to the node-graph canvas
+      would directly duplicate what Formula bindings already do at the
+      property level (both ultimately produce one value from an expression
+      over telemetry) — building a second, competing UI for the same job
+      without the node graph's actual advantage (multiple named outputs,
+      reusable sub-graphs) seemed like the wrong investment.
+  - Found the real, concrete gap instead: `evaluateFormula` — already used
+        by every Formula-binding property in the whole app — had **no
+        functions at all**, not even `min`/`max`/`clamp`. Only +, -, *, /,
+        ^, parens, and telemetry-key identifiers. A user wanting to clamp a
+        display range or take an absolute value had no way to do it in a
+        formula at all.
+  - Added `min(...)`, `max(...)`, `clamp(v, lo, hi)`, `abs(v)`, `round(v)`,
+        `floor(v)`, `ceil(v)`, `sqrt(v)` to the expression grammar in
+        `packages/dashboard_runtime/lib/src/formula_evaluator.dart` (a
+        proper recursive-descent extension: function calls are
+        `ident '(' args ')'`, checked before falling back to a telemetry-key
+        lookup). Added a tooltip on the Formula editor's icon listing the
+        available functions, and improved its hint text from the trivial
+        `erpm / 1000` to `clamp(erpm / 1000, 0, 30)` so the new capability
+        is actually discoverable, not just present.
+  - This file had **zero existing tests** despite being used by every
+        Formula binding in the app — added
+        `dashboard_runtime/test/formula_evaluator_test.dart` (15 tests)
+        covering both the pre-existing arithmetic behaviour (regression
+        coverage it never had) and every new function, including argument-
+        count validation and composition with telemetry lookups.
+  - Verified: `flutter analyze` clean, `flutter test` in
+        `packages/dashboard_runtime` (14 tests: 3 pre-existing + 11 new) and
+        `apps/studio` (34 tests) both pass. The literal "Flow-mode script
+        tab" UI is left undone — this is a deliberate rescoping, not a
+        silent skip.
 - [x] [P2] Flow mode: node-graph export/import (2026-09-13): `FlowGraph`
       already had `toJson`/`fromJson` (and an existing round-trip test in
       `node_graph/test/graph_test.dart`) — this was pure UI wiring, mirroring

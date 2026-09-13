@@ -987,13 +987,19 @@ class _FormulaEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(Icons.functions, size: 16, color: Colors.grey.shade500),
+        Tooltip(
+          message: 'A math expression. Telemetry keys (e.g. erpm, '
+              'temp.mosfet) and functions are available:\n'
+              'min(a, b, ...), max(a, b, ...), clamp(v, lo, hi),\n'
+              'abs(v), round(v), floor(v), ceil(v), sqrt(v)',
+          child: Icon(Icons.functions, size: 16, color: Colors.grey.shade500),
+        ),
         const SizedBox(width: 8),
         Expanded(
           child: TextField(
             controller: TextEditingController(text: expression),
             decoration: const InputDecoration(
-              hintText: 'erpm / 1000',
+              hintText: 'clamp(erpm / 1000, 0, 30)',
               isDense: true,
               contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               border: OutlineInputBorder(),
