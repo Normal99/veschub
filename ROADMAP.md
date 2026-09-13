@@ -442,6 +442,26 @@ before fixing anything, per the guiding principle above.
       actual OS file picker, confirmed it persisted to disk, listed in
       Settings, applied via the Canvas font picker, and removed cleanly
       (including its file).
+- [x] **FIXED — the actual root cause of "only Default/Bold"** (2026-09-13):
+      user pushback on the above — "It needs to have fonts per widget as
+      always... the only font family I can choose is Default" — led to
+      reproducing it live rather than assuming the per-template pass was
+      the issue. Real bug, more severe than anything above: `Autocomplete`
+      pre-fills the field with the current selection's label and filters
+      options by whatever text is already in the field, so opening either
+      picker without clearing it first only ever matched itself ("Default"
+      only matches "Default", "Bold (700)" only matches "Bold (700)") —
+      every other choice looked like it didn't exist unless you already
+      knew to clear the field and retype. Font selection was per-widget the
+      whole time (each widget instance already has its own `fontFamily`
+      property, template or not) — it just looked broken because the
+      picker itself couldn't be browsed. Fixed by clearing the field on
+      focus (shows the full list immediately, standard combobox behaviour)
+      and restoring the label on blur if nothing was picked, in both
+      `_FontFamilyEditor` and `_FontWeightEditor`. Added regression tests
+      for the exact broken interaction (tap with no typing → must show
+      multiple choices). Reproduced live on the running app before fixing,
+      confirmed fixed after.
 
 ---
 
