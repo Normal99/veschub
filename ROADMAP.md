@@ -272,8 +272,12 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       4 real gaps on first run (fontFamily/fontWeight/letterSpacing missing
       from 13 kinds, web missing backgroundColor, minigauge's orientation
       completely undeclared). See `widgets_library/test/manifest_matches_renderer_test.dart`.
-- [ ] [P1] Rotation handle on canvas + rotation property/field in the inspector
-      (parallel to `_PositionFields`), plus an anchor point for resize/rotate
+- [x] [P1] **Rotation property/field in the inspector** (2026-09-13) —
+      done; see `_PositionFields` in `studio_inspector.dart`.
+- [ ] [P1] Rotation handle on canvas (drag to rotate) — not yet done.
+      Needs its own drag-session type, a hit-test zone above the selection
+      bounds, and a decision on group-rotation pivot behavior for
+      multi-select. Anchor point for resize/rotate also still open.
 - [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
 - [x] [P1] Multiple selection with group operations (2026-09-13) — group-move
       already worked (TransformNodesCommand always applied to the whole
