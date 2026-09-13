@@ -10,8 +10,15 @@ import 'package:dashboard_model/dashboard_model.dart';
 
 /// Categories for grouping widget properties in the property inspector.
 enum PropertyCategory {
-  visuals('Visuals'),
+  // Declaration order matters beyond display: the inspector auto-expands
+  // only the first non-empty category for a freshly-selected widget (see
+  // _PropertiesInspector._buildProperties in studio_inspector.dart).
+  // Data Bindings goes first — "what value does this actually show" is the
+  // one thing every widget needs set and previously lost out to Visuals
+  // (label/unit/etc, present on almost every kind) for that auto-expand
+  // slot, making the binding editor easy to miss entirely on a fresh drop.
   dataBindings('Data Bindings'),
+  visuals('Visuals'),
   layoutAndSpacing('Layout & Spacing'),
   fontsAndColors('Fonts & Colors');
 

@@ -55,10 +55,8 @@ void main() {
     container.read(selectionModelProvider.notifier).set('test_text');
     await tester.pumpAndSettle();
 
-    // 'value' lives in the Data Bindings category, which isn't the first
-    // (auto-expanded) one for a text widget — Visuals is.
-    await tester.tap(find.text('Data Bindings'));
-    await tester.pumpAndSettle();
+    // 'value' lives in the Data Bindings category, which is now the first
+    // (auto-expanded) one for any widget that has one — no tap needed.
   }
 
   ProviderContainer canvasContainer() => ProviderContainer(overrides: [

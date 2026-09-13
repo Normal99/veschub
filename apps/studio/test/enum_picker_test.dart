@@ -47,6 +47,14 @@ void main() {
     await tester.drag(find.byType(GaugeWidget), const Offset(30, 15),
         warnIfMissed: false);
     await tester.pumpAndSettle();
+
+    // 'needleStyle' lives in Visuals, which for a gauge (which also has a
+    // 'value' Data Bindings property) isn't the first auto-expanded
+    // category anymore — Data Bindings deliberately wins that slot now.
+    await tester.ensureVisible(find.text('Visuals'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Visuals'));
+    await tester.pumpAndSettle();
   }
 
   // The property row's own static label ("Needle") and the picker field's

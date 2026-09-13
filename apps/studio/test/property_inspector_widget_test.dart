@@ -197,6 +197,15 @@ void main() {
       container.read(selectionModelProvider.notifier).set('test_gauge_slider');
       await tester.pumpAndSettle();
 
+      // The slider-bearing properties here (tickCount, arcWidth, etc.) are
+      // in Visuals, which isn't the first auto-expanded category for a
+      // gauge anymore — Data Bindings (value/min/max) deliberately is, so
+      // the binding editor is immediately visible on a fresh selection.
+      await tester.ensureVisible(find.text('Visuals'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Visuals'));
+      await tester.pumpAndSettle();
+
       // Verify numeric Slider widget renders for bounded property
       expect(find.byType(Slider), findsWidgets);
     });
