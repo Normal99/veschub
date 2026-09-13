@@ -170,6 +170,10 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'height') return const Binding.literal(value: 220);
     if (m.key == 'orientation')
       return const Binding.literal(value: 'horizontal');
+    // Speed (digitalspeed) and temperature (minigauge) both use
+    // sourceUnit/displayUnit keys with different string vocabularies;
+    // 'kmh' is a harmless default either way since displayUnit stays
+    // empty (off) until the user explicitly opts in.
     if (m.key == 'sourceUnit') return const Binding.literal(value: 'kmh');
     if (m.key == 'displayUnit') return const Binding.literal(value: '');
     if (m.key == 'needleStyle') return const Binding.literal(value: 'arc');

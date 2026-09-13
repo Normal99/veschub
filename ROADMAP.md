@@ -253,10 +253,25 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 
 ## Milestone 4: Dashboard Viewer Polish 🚧
 
-- [ ] [P1] Telemetry ingestion for remaining 4 keys (foc.id, foc.iq)
+- [x] [P1] Telemetry ingestion for remaining keys (2026-09-13): the roadmap's
+      "4 keys" count was stale — only `foc.id`/`foc.iq` were actually missing.
+      Root-caused: `vesc_proto`'s `TelemetryValues.fromPayload` already
+      decoded them correctly (`id`/`iq` fields, firmware-accurate scale), and
+      `vesc_telemetry/ingest.dart`'s `kValuesKeyMap` already had literal
+      `'foc.id'`/`'foc.iq'` string entries — but `TelemetryKey` itself had no
+      named constants for them, and the real call site
+      (`apps/dashboard/lib/main.dart`'s `_onPayload`) simply never copied
+      `v.id`/`v.iq` into the ingest map, silently dropping two fully-decoded
+      fields. Added `TelemetryKey.focId`/`focIq`, wired them into the ingest
+      map, and seeded them into both mock preview telemetry stores (Studio's
+      canvas and template previews) so they're bindable there too. Updated
+      `pipeline_test.dart`'s "ingests all N keys" test (14 → 16) to cover them.
 - [x] [P1] Per-widget size from document (via properties approach, no schema migration)
 - [ ] [P2] Dark / light theme obeying widget background colors
-- [ ] [P2] Metric / imperial unit conversion (per-widget, not global)
+- [x] [P2] Metric / imperial unit conversion (per-widget, not global) (2026-09-13):
+      same work as Milestone 10's "Per-widget unit system" item — see that
+      entry. v1 covers speed (`digitalspeed` widget); temperature conversion
+      helpers exist in `format.dart` too but aren't wired into a widget yet.
 - [ ] [P3] Dashboard app display modes: fullscreen, splitscreen, Pi-optimized
 
 ## Milestone 5: Studio Polish 🚧

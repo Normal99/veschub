@@ -4,6 +4,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:dashboard_runtime/dashboard_runtime.dart';
 import '../src/cosmetic_helpers.dart';
+import '../src/format.dart'
+    show temperatureUnitFromString, temperatureUnitSuffix, convertTemperature;
 
 class MiniGaugeWidget extends StatelessWidget {
   final ResolvedProperties properties;
@@ -11,13 +13,34 @@ class MiniGaugeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final value = propDouble(properties, 'value', 0.0);
-    final min = propDouble(properties, 'min', 0.0);
-    final max = propDouble(properties, 'max', 1.0);
+    final rawValue = propDouble(properties, 'value', 0.0);
+    final rawMin = propDouble(properties, 'min', 0.0);
+    final rawMax = propDouble(properties, 'max', 1.0);
+    // `displayUnit` is opt-in temperature conversion (this gauge is used for
+    // more than just temperature, so unset behaves exactly as before): when
+    // set, value/min/max are all converted together from `sourceUnit` so the
+    // fill fraction stays correct, and the unit suffix follows displayUnit.
+    final displayUnitRaw = properties['displayUnit'] as String?;
+    final double value;
+    final double min;
+    final double max;
+    final String? unit;
+    if (displayUnitRaw != null) {
+      final sourceUnit = temperatureUnitFromString(properties['sourceUnit'] as String?);
+      final displayUnit = temperatureUnitFromString(displayUnitRaw);
+      value = convertTemperature(rawValue, from: sourceUnit, to: displayUnit);
+      min = convertTemperature(rawMin, from: sourceUnit, to: displayUnit);
+      max = convertTemperature(rawMax, from: sourceUnit, to: displayUnit);
+      unit = temperatureUnitSuffix(displayUnit);
+    } else {
+      value = rawValue.toDouble();
+      min = rawMin.toDouble();
+      max = rawMax.toDouble();
+      unit = properties['unit'] as String?;
+    }
     final color = propColor(properties, 'color', 0xFFFFFFFF);
     final accent = Color((properties['accent'] as int?) ?? 0xFF888888);
     final label = properties['label'] as String?;
-    final unit = properties['unit'] as String?;
     final icon = properties['icon'] as String?;
     final fontSizeRaw = propDouble(properties, 'fontSize', 16.0);
     final style = properties['style'] as String? ?? 'arc';

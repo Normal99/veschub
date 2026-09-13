@@ -2148,6 +2148,17 @@ const List<PropertyMeta> _minigauge = [
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
+      key: 'sourceUnit',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Source temp. unit (celsius/fahrenheit/kelvin)',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'displayUnit',
+      minLevel: CapabilityLevel.basic,
+      label: 'Display temp. unit (celsius/fahrenheit/kelvin)',
+      safe: true,
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
       key: 'icon',
       minLevel: CapabilityLevel.basic,
       label: 'Icon',
