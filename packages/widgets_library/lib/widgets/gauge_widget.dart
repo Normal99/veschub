@@ -17,13 +17,20 @@ class GaugeWidget extends StatelessWidget {
     final max = propDouble(properties, 'max', 1.0);
     final color = propColor(properties, 'color', 0xFFFFFFFF);
     final accent = propColor(properties, 'accent', 0xFFFFFFFF);
-    final label = properties['label'] is String ? properties['label'] as String : null;
-    final unit = properties['unit'] is String ? properties['unit'] as String : null;
+    final label =
+        properties['label'] is String ? properties['label'] as String : null;
+    final unit =
+        properties['unit'] is String ? properties['unit'] as String : null;
     final fontSizeRaw = propDouble(properties, 'fontSize', 32.0);
 
     final centerValue = propDouble(properties, 'centerValue', value);
-    final centerUnit = (properties['centerUnit'] is String ? properties['centerUnit'] as String : null) ?? unit;
-    final subLabel = properties['subLabel'] is String ? properties['subLabel'] as String : null;
+    final centerUnit = (properties['centerUnit'] is String
+            ? properties['centerUnit'] as String
+            : null) ??
+        unit;
+    final subLabel = properties['subLabel'] is String
+        ? properties['subLabel'] as String
+        : null;
     final showCenterText = propBool(properties, 'showCenterText');
     final showTickLabels = propBool(properties, 'showTickLabels');
 
@@ -294,7 +301,8 @@ class _GaugePainter extends CustomPainter {
               text: v == v.roundToDouble()
                   ? v.toStringAsFixed(0)
                   : v.toStringAsFixed(1),
-              style: TextStyle(color: tickLabelColor, fontSize: 9),
+              style: TextStyle(
+                  color: tickLabelColor, fontSize: 9, fontFamily: fontFamily),
             ),
             textAlign: TextAlign.center,
             textDirection: TextDirection.ltr,
@@ -312,17 +320,19 @@ class _GaugePainter extends CustomPainter {
       // not draw its base through that spot — start it further out instead
       // of stabbing a wide triangle + hub through the number.
       final pivotRadius = avoidCenter ? radius * 0.4 : 0.0;
-      final pivot = center +
-          Offset(math.cos(a) * pivotRadius, math.sin(a) * pivotRadius);
+      final pivot =
+          center + Offset(math.cos(a) * pivotRadius, math.sin(a) * pivotRadius);
       final needle = Paint()
         ..style = PaintingStyle.fill
         ..color = color;
       final perpAngle = a + math.pi / 2;
       final baseWidth = avoidCenter ? 3.0 : 5.0;
       final base1 = pivot +
-          Offset(math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
+          Offset(
+              math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
       final base2 = pivot -
-          Offset(math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
+          Offset(
+              math.cos(perpAngle) * baseWidth, math.sin(perpAngle) * baseWidth);
       final path = Path()
         ..moveTo(tip.dx, tip.dy)
         ..lineTo(base1.dx, base1.dy)

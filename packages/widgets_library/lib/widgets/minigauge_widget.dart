@@ -26,7 +26,8 @@ class MiniGaugeWidget extends StatelessWidget {
     final double max;
     final String? unit;
     if (displayUnitRaw != null) {
-      final sourceUnit = temperatureUnitFromString(properties['sourceUnit'] as String?);
+      final sourceUnit =
+          temperatureUnitFromString(properties['sourceUnit'] as String?);
       final displayUnit = temperatureUnitFromString(displayUnitRaw);
       value = convertTemperature(rawValue, from: sourceUnit, to: displayUnit);
       min = convertTemperature(rawMin, from: sourceUnit, to: displayUnit);
@@ -60,16 +61,20 @@ class MiniGaugeWidget extends StatelessWidget {
           padding: resolvePadding(properties),
           child: style == 'bar'
               ? (isVertical
-                  ? _buildVerticalBar(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble())
-                  : _buildBar(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble()))
-              : _buildArc(t, value.toDouble(), color, accent, label, unit, icon, fontSizeRaw.toDouble()),
+                  ? _buildVerticalBar(t, value.toDouble(), color, accent, label,
+                      unit, icon, fontSizeRaw.toDouble())
+                  : _buildBar(t, value.toDouble(), color, accent, label, unit,
+                      icon, fontSizeRaw.toDouble()))
+              : _buildArc(t, value.toDouble(), color, accent, label, unit, icon,
+                  fontSizeRaw.toDouble()),
         ),
       ),
       properties,
     );
   }
 
-  Widget _buildArc(double t, double value, Color color, Color accent, String? label, String? unit, String? icon, double fontSize) {
+  Widget _buildArc(double t, double value, Color color, Color accent,
+      String? label, String? unit, String? icon, double fontSize) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -80,9 +85,13 @@ class MiniGaugeWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (icon != null) Icon(_iconFor(icon), color: accent, size: fontSize * 0.8),
+                if (icon != null)
+                  Icon(_iconFor(icon), color: accent, size: fontSize * 0.8),
                 if (icon != null && label != null) const SizedBox(width: 4),
-                if (label != null) Text(label, style: TextStyle(color: accent, fontSize: fontSize * 0.65)),
+                if (label != null)
+                  Text(label,
+                      style:
+                          TextStyle(color: accent, fontSize: fontSize * 0.65)),
               ],
             ),
           ),
@@ -90,7 +99,8 @@ class MiniGaugeWidget extends StatelessWidget {
           width: 60,
           height: 36,
           child: CustomPaint(
-            painter: _MiniArcPainter(t: t, color: color, trackColor: color.withValues(alpha: 0.15)),
+            painter: _MiniArcPainter(
+                t: t, color: color, trackColor: color.withValues(alpha: 0.15)),
           ),
         ),
         const SizedBox(height: 2),
@@ -102,14 +112,19 @@ class MiniGaugeWidget extends StatelessWidget {
             Text(
               _format(value),
               style: applyTextStyle(
-                TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w600, fontFeatures: const [FontFeature.tabularFigures()]),
+                TextStyle(
+                    color: color,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()]),
                 properties,
               ),
             ),
             if (unit != null)
               Padding(
                 padding: const EdgeInsets.only(left: 2),
-                child: Text(unit, style: TextStyle(color: accent, fontSize: fontSize * 0.55)),
+                child: Text(unit,
+                    style: TextStyle(color: accent, fontSize: fontSize * 0.55)),
               ),
           ],
         ),
@@ -117,22 +132,42 @@ class MiniGaugeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBar(double t, double value, Color color, Color accent, String? label, String? unit, String? icon, double fontSize) {
+  Widget _buildBar(double t, double value, Color color, Color accent,
+      String? label, String? unit, String? icon, double fontSize) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Row(
           children: [
-            if (icon != null) ...[Icon(_iconFor(icon), color: accent, size: fontSize * 0.8), const SizedBox(width: 4)],
-            if (label != null) Expanded(child: Text(label, style: TextStyle(color: accent, fontSize: fontSize * 0.65))),
+            if (icon != null) ...[
+              Icon(_iconFor(icon), color: accent, size: fontSize * 0.8),
+              const SizedBox(width: 4)
+            ],
+            if (label != null)
+              Expanded(
+                  child: Text(label,
+                      style:
+                          TextStyle(color: accent, fontSize: fontSize * 0.65))),
             Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(_format(value), style: applyTextStyle(TextStyle(color: color, fontSize: fontSize, fontWeight: FontWeight.w600, fontFeatures: const [FontFeature.tabularFigures()]), properties)),
-                if (unit != null) Padding(padding: const EdgeInsets.only(left: 2), child: Text(unit, style: TextStyle(color: accent, fontSize: fontSize * 0.55))),
+                Text(_format(value),
+                    style: applyTextStyle(
+                        TextStyle(
+                            color: color,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w600,
+                            fontFeatures: const [FontFeature.tabularFigures()]),
+                        properties)),
+                if (unit != null)
+                  Padding(
+                      padding: const EdgeInsets.only(left: 2),
+                      child: Text(unit,
+                          style: TextStyle(
+                              color: accent, fontSize: fontSize * 0.55))),
               ],
             ),
           ],
@@ -151,7 +186,8 @@ class MiniGaugeWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildVerticalBar(double t, double value, Color color, Color accent, String? label, String? unit, String? icon, double fontSize) {
+  Widget _buildVerticalBar(double t, double value, Color color, Color accent,
+      String? label, String? unit, String? icon, double fontSize) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -159,8 +195,11 @@ class MiniGaugeWidget extends StatelessWidget {
         if (icon != null || label != null)
           Column(
             children: [
-              if (icon != null) Icon(_iconFor(icon), color: accent, size: fontSize * 0.9),
-              if (label != null) Text(label, style: TextStyle(color: accent, fontSize: fontSize * 0.65, fontWeight: FontWeight.bold)),
+              if (icon != null)
+                Icon(_iconFor(icon), color: accent, size: fontSize * 0.9),
+              if (label != null)
+                Text(label,
+                    style: TextStyle(color: accent, fontSize: fontSize * 0.65)),
             ],
           ),
         Expanded(
@@ -182,7 +221,13 @@ class MiniGaugeWidget extends StatelessWidget {
         ),
         Text(
           unit != null ? '$unit ${_format(value)}' : _format(value),
-          style: TextStyle(color: color, fontSize: fontSize * 0.75, fontWeight: FontWeight.bold),
+          style: applyTextStyle(
+            TextStyle(
+                color: color,
+                fontSize: fontSize * 0.75,
+                fontWeight: FontWeight.w600),
+            properties,
+          ),
         ),
       ],
     );
@@ -208,7 +253,8 @@ class _MiniArcPainter extends CustomPainter {
   final Color color;
   final Color trackColor;
 
-  _MiniArcPainter({required this.t, required this.color, required this.trackColor});
+  _MiniArcPainter(
+      {required this.t, required this.color, required this.trackColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -233,5 +279,6 @@ class _MiniArcPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _MiniArcPainter old) => old.t != t || old.color != color;
+  bool shouldRepaint(covariant _MiniArcPainter old) =>
+      old.t != t || old.color != color;
 }
