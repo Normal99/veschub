@@ -538,6 +538,25 @@ a custom VESC variable.
       "Minimal" blank-ish starter preset from an earlier pass. Flagged back
       to the user rather than assumed: most of the "preset-locked" feeling
       may simply have been this same discoverability bug, now fixed.
+- [x] **FIXED — the actual bug, found by pushing further** (2026-09-14):
+      the previous entry's "discoverability bug, now fixed" claim turned
+      out to be incomplete — user reported, forcefully and specifically,
+      that a fresh Text widget still had no way to set its value.
+      Reproduced live end-to-end rather than trusting the earlier fix: root
+      cause was that 57 of 76 Data Bindings properties across the *entire*
+      widget library — including `value` on nearly every kind — required
+      `CapabilityLevel.advanced`, invisible on the `basic` level every
+      fresh session defaults to. The prior fix (Data Bindings auto-expands
+      first) was necessary but not sufficient: an empty, gated-away section
+      has nothing to expand. Rewrote every `dataBindings`-category
+      `PropertyMeta.minLevel` to `basic` (a small paren-depth-parsed script
+      across 57 call sites, not hand-editing each one) — binding a widget's
+      own displayed value is not an advanced concept, only its cosmetic/
+      layout/font knobs still gate above Basic. Verified live: dropped a
+      blank "Minimal" Text preset, confirmed "Value binding" is the first
+      thing shown, pre-filled with a friendly name ("Battery Voltage
+      (v_in)"), and that clicking it opens the full picker with every
+      telemetry key plus free-text custom-variable entry.
 
 ---
 
