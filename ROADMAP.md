@@ -519,6 +519,25 @@ a custom VESC variable.
   - Verified live on the running app (not just tests): reproduced the
         needleStyle bug's raw "arc" value on screen before fixing it,
         confirmed pickers show the full option list with real labels after.
+- [x] **FIXED — "I'm not seeing anywhere to set the values at all"**: root
+      cause was that the inspector auto-expands only the first non-empty
+      `PropertyCategory`, and `PropertyCategory.values` declared Visuals
+      before Data Bindings — so for nearly every kind (label/unit/icon/etc
+      are Visuals, present almost everywhere), Visuals won that slot and
+      Data Bindings (where the actual value/telemetry binding lives) stayed
+      collapsed, easy to miss on first encounter. Reordered so Data
+      Bindings is declared first: what value a widget actually shows is now
+      what you see immediately after dropping it, ahead of cosmetic
+      categories. Also raised in the same message: a request to de-
+      emphasize presets in favor of building from primitives (Text/Gauge/
+      Meter) with free binding to telemetry/formula/custom variables —
+      investigated and confirmed that capability already exists uniformly
+      for every property regardless of which preset (or none) a widget was
+      dropped from; presets only pre-fill starting values, they don't
+      restrict what you can rebind afterward. Gauge/Bar/Text already have a
+      "Minimal" blank-ish starter preset from an earlier pass. Flagged back
+      to the user rather than assumed: most of the "preset-locked" feeling
+      may simply have been this same discoverability bug, now fixed.
 
 ---
 
