@@ -516,6 +516,40 @@ few net-new pieces.
       scaling the step to the dropped widget's own size. Widget test added.
       Grid-snap (the other half of this line) not done — left as a smaller
       follow-up since overlap-avoidance was the actual pain point.
+- [x] [P2] Template typographic identity per car brand (2026-09-13): design
+      feedback was that the 9 advanced/car-brand templates "kinda look
+      similar" beyond color — confirmed the root cause was literal: zero
+      widget instances in `advanced_templates.dart` set `fontWeight` or
+      `letterSpacing`, so every template fell back to the same per-widget
+      default regardless of brand. Added both as literal properties on every
+      text-bearing widget instance (`gauge`, `text`, `tripstats`,
+      `minigauge`, `battery_range`, `gear_selector` — the kinds actually
+      present in this file that call `applyTextStyle`; `digitalspeed`,
+      `power`, `status`, `climate` aren't used by any instance here, and
+      `bar` was dropped despite being on the original candidate list because
+      `bar_widget.dart`'s value label uses a hardcoded `TextStyle`, not
+      `applyTextStyle`, so the properties would have been silently ignored;
+      `car_viz`/`statusbar` do call `applyTextStyle` for one minor sub-label
+      but were left out of scope per the brief). `fontFamily` stays the
+      shared bundled Rajdhani base app-wide (separate change) — this pass is
+      weight/spacing only, one fixed pair per template so it reads as a
+      system:
+      | template | fontWeight | letterSpacing |
+      |---|---|---|
+      | tesla-model3 | w300 | -0.5 |
+      | porsche-taycan | w500 | 0.3 |
+      | bmw-classic | w700 | 1.0 |
+      | audi-virtual-cockpit | w300 | 1.5 |
+      | vesc-mobile | w500 | 0.0 |
+      | android-auto | w500 | 0.0 |
+      | carplay | w600 | -0.2 |
+      | ford-digital | w700 | 0.0 |
+      | vw-digital | w500 | 0.3 |
+      59 widget instances touched across the 9 templates. Verified
+      `examples/*.veschub.json` (the dashboard_renderer golden fixtures) are
+      a separate static copy, not generated from this file — golden tests
+      ran unchanged, no regeneration needed. `built_in_templates.dart` (the
+      4 generic starters) intentionally untouched.
 - [ ] [P3] In-app "what does this property do" examples/preview thumbnails
 
 ---
