@@ -6,36 +6,26 @@ import 'package:dashboard_model/dashboard_model.dart';
 import 'package:editor_canvas/editor_canvas.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:widgets_library/widgets_library.dart' show kindIcon;
 
 import '../providers/editor_providers.dart';
 
 class LayerPanel extends ConsumerWidget {
   const LayerPanel({super.key});
 
-  static const _kindIcons = <String, IconData>{
-    'gauge': Icons.speed,
-    'bar': Icons.bar_chart,
-    'text': Icons.text_fields,
-    'chart': Icons.show_chart,
-    'status': Icons.info_outline,
-    'image': Icons.image,
-    'web': Icons.public,
-    'paint': Icons.brush,
-  };
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scene = ref.watch(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
-    final nodes = scene.nodes.toList()
-      ..sort((a, b) => b.z.compareTo(a.z));
+    final nodes = scene.nodes.toList()..sort((a, b) => b.z.compareTo(a.z));
 
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor)),
+            border: Border(
+                bottom: BorderSide(color: Theme.of(context).dividerColor)),
           ),
           child: Row(
             children: [
@@ -66,51 +56,93 @@ class LayerPanel extends ConsumerWidget {
               final kind = w?.kind ?? '?';
               final isSelected = selection.ids.contains(node.id);
               final isVisible = _isVisible(w);
+              final isLocked = _isLocked(w);
 
               return Container(
                 key: ValueKey(node.id),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withValues(alpha: 0.4)
                       : null,
                   border: Border(
-                    bottom: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.3)),
+                    bottom: BorderSide(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.3)),
                   ),
                 ),
-                child: ListTile(
-                  dense: true,
-                  leading: Icon(
-                    _kindIcons[kind] ?? Icons.widgets,
-                    size: 18,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
-                  ),
-                  title: Text(
-                    kind.capitalize(),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isVisible ? null : Colors.grey,
+                // ListTile paints its own background/ink on the nearest
+                // Material ancestor — without this, the Container's own
+                // background above hides them (a latent bug that never
+                // surfaced while the layer panel was only shown when
+                // explicitly toggled on).
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(
+                      kindIcon(kind),
+                      size: 18,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
                     ),
-                  ),
-                  subtitle: Text(
-                    '#${node.z} · ${node.id.substring(0, 8)}',
-                    style: const TextStyle(fontSize: 10),
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      isVisible ? Icons.visibility : Icons.visibility_off,
-                      size: 16,
+                    title: Text(
+                      kind.capitalize(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isVisible ? null : Colors.grey,
+                      ),
                     ),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () {
-                      _toggleVisible(ref, node, w, !isVisible);
+                    subtitle: Text(
+                      '#${node.z} · ${node.id.substring(0, 8)}',
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            isLocked ? Icons.lock : Icons.lock_open,
+                            size: 16,
+                            color: isLocked
+                                ? Theme.of(context).colorScheme.primary
+                                : null,
+                          ),
+                          tooltip: isLocked
+                              ? 'Unlock (allow selecting on canvas)'
+                              : 'Lock (skip on canvas clicks)',
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            _toggleLocked(ref, node, w, !isLocked);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            isVisible ? Icons.visibility : Icons.visibility_off,
+                            size: 16,
+                          ),
+                          tooltip: isVisible ? 'Hide' : 'Show',
+                          visualDensity: VisualDensity.compact,
+                          onPressed: () {
+                            _toggleVisible(ref, node, w, !isVisible);
+                          },
+                        ),
+                      ],
+                    ),
+                    // Locked layers can still be selected from this list —
+                    // locking only affects canvas clicks, matching how a real
+                    // user would expect to reach a widget they intentionally
+                    // locked in place.
+                    onTap: () {
+                      selection.setAll([node.id]);
                     },
                   ),
-                  onTap: () {
-                    selection.setAll([node.id]);
-                  },
                 ),
               );
             },
@@ -125,6 +157,25 @@ class LayerPanel extends ConsumerWidget {
     return w.properties['visible']
             ?.mapOrNull(literal: (b) => b.value as bool?) ??
         true;
+  }
+
+  bool _isLocked(WidgetInstance? w) {
+    if (w == null) return false;
+    return w.properties['locked']
+            ?.mapOrNull(literal: (b) => b.value as bool?) ??
+        false;
+  }
+
+  void _toggleLocked(
+      WidgetRef ref, CanvasNode node, WidgetInstance? w, bool value) {
+    final scene = ref.read(sceneModelProvider);
+    final props = Map<String, Binding>.from(w?.properties ?? {});
+    props['locked'] = Binding.literal(value: value);
+    final kind = w?.kind ?? 'text';
+    final updated = (w ?? WidgetInstance(id: node.id, kind: kind))
+        .copyWith(properties: props);
+    scene.upsert(node.copyWith(data: updated));
+    ref.read(isDirtyProvider.notifier).state = true;
   }
 
   void _toggleVisible(

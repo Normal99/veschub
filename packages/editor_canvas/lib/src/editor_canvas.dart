@@ -40,6 +40,14 @@ class EditorCanvas extends StatefulWidget {
   /// Whether to draw a grid overlay. Use with [gridSize] in [snapConfig].
   final bool showGrid;
 
+  /// Whether a node is locked (e.g. via a layer panel padlock). A locked
+  /// node is skipped during hit-testing entirely — it can't be selected,
+  /// moved, or resized by clicking on the canvas, and pointer events pass
+  /// through to whatever is underneath it. It can still be selected another
+  /// way (e.g. clicking its row in a layer list) since that doesn't go
+  /// through canvas hit-testing at all.
+  final bool Function(CanvasNode node)? isNodeLocked;
+
   const EditorCanvas({
     required this.scene,
     required this.selection,
@@ -52,6 +60,7 @@ class EditorCanvas extends StatefulWidget {
     this.onCommandExecuted,
     this.canvasSize,
     this.showGrid = false,
+    this.isNodeLocked,
     super.key,
   });
 
@@ -369,7 +378,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
   }
 
   String? hitTestNode(Offset p) => hitTest(
-        widget.scene.nodes,
+        widget.isNodeLocked == null
+            ? widget.scene.nodes
+            : widget.scene.nodes.where((n) => !widget.isNodeLocked!(n)),
         p,
         widget.nodeWidth,
         widget.nodeHeight,
@@ -393,7 +404,9 @@ class _EditorCanvasState extends State<EditorCanvas> {
   }
 
   Set<String> hitTestRectAll(Rect rect) => hitTestRect(
-        widget.scene.nodes,
+        widget.isNodeLocked == null
+            ? widget.scene.nodes
+            : widget.scene.nodes.where((n) => !widget.isNodeLocked!(n)),
         rect,
         widget.nodeWidth,
         widget.nodeHeight,

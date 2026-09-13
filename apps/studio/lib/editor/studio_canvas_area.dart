@@ -195,6 +195,12 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                         ),
                         onCommandExecuted: (_) =>
                             ref.read(isDirtyProvider.notifier).state = true,
+                        isNodeLocked: (node) {
+                          final w = node.data as WidgetInstance?;
+                          return w?.properties['locked']
+                                  ?.mapOrNull(literal: (b) => b.value as bool?) ??
+                              false;
+                        },
                         nodeBuilder: (node) {
                           final w = node.data as WidgetInstance?;
                           if (w == null) {

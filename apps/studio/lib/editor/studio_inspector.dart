@@ -89,6 +89,12 @@ class _PropertiesInspector extends ConsumerWidget {
       result.add(_PaintProgramEditor(node: node, widget: widget));
     }
 
+    // Only the first non-empty category starts open — landing on a newly
+    // selected widget with every section already expanded is overwhelming
+    // (SimHub's property grid keeps almost everything collapsed/flat by
+    // default too). The rest are one tap away.
+    var firstExpanded = false;
+
     for (final category in PropertyCategory.values) {
       final categoryMetas = categorized[category] ?? [];
       final filteredMetas = widget.kind == 'paint'
@@ -96,13 +102,15 @@ class _PropertiesInspector extends ConsumerWidget {
           : categoryMetas;
 
       if (filteredMetas.isNotEmpty) {
+        final expandThisOne = !firstExpanded;
+        firstExpanded = true;
         result.add(
           ExpansionTile(
             title: Text(
               category.label,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
-            initiallyExpanded: true,
+            initiallyExpanded: expandThisOne,
             dense: true,
             childrenPadding: const EdgeInsets.symmetric(horizontal: 4),
             children: [

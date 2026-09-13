@@ -104,14 +104,16 @@ class StudioEditor extends ConsumerWidget {
           IconButton(
             icon: Icon(
               ref.watch(layersVisibleProvider)
-                  ? Icons.layers_clear
-                  : Icons.layers,
+                  ? Icons.unfold_less
+                  : Icons.unfold_more,
             ),
             onPressed: () {
               ref.read(layersVisibleProvider.notifier).state =
                   !ref.read(layersVisibleProvider);
             },
-            tooltip: 'Toggle layer panel',
+            tooltip: ref.watch(layersVisibleProvider)
+                ? 'Shrink layer list'
+                : 'Expand layer list',
           ),
         ],
         bottom: PreferredSize(
@@ -144,11 +146,23 @@ class StudioEditor extends ConsumerWidget {
             children: [
               const _WidgetPalette(),
               Expanded(child: _CanvasArea()),
+              // Layers and properties are stacked in one column, always
+              // visible together — SimHub's Dash Studio keeps its component
+              // list permanently visible above the property grid rather
+              // than making them swap places, so you never lose sight of
+              // the layer hierarchy while editing a property.
               SizedBox(
                 width: 280,
-                child: ref.watch(layersVisibleProvider)
-                    ? const LayerPanel()
-                    : const _PropertiesInspector(),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: ref.watch(layersVisibleProvider) ? 320 : 140,
+                      child: const LayerPanel(),
+                    ),
+                    const Divider(height: 1),
+                    const Expanded(child: _PropertiesInspector()),
+                  ],
+                ),
               ),
             ],
           ),
