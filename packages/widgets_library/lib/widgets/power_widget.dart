@@ -30,7 +30,8 @@ class PowerWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(label, style: TextStyle(color: accent, fontSize: fontSizeRaw * 0.4)),
+              Text(label,
+                  style: TextStyle(color: accent, fontSize: fontSizeRaw * 0.4)),
               const SizedBox(height: 4),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -49,7 +50,9 @@ class PowerWidget extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text('W', style: TextStyle(color: accent, fontSize: fontSizeRaw * 0.45)),
+                  Text('W',
+                      style: TextStyle(
+                          color: accent, fontSize: fontSizeRaw * 0.45)),
                 ],
               ),
               if (showBars) ...[
@@ -77,7 +80,14 @@ class PowerWidget extends StatelessWidget {
                             return Container(
                               width: barW,
                               height: barH,
-                              margin: EdgeInsets.only(right: gap),
+                              // barW is sized for (totalBars - 1) gaps; a
+                              // margin on every bar including the last adds
+                              // one extra gap's worth of width, overflowing
+                              // by exactly `gap` px — found via a real drop
+                              // in the running app showing a 2px RenderFlex
+                              // overflow (gap == 2.0).
+                              margin: EdgeInsets.only(
+                                  right: i < totalBars - 1 ? gap : 0),
                               decoration: BoxDecoration(
                                 color: active ? c : c.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(1),
@@ -93,8 +103,13 @@ class PowerWidget extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('REGEN', style: TextStyle(color: regenColor.withValues(alpha: 0.7), fontSize: 9)),
-                    Text('POWER', style: TextStyle(color: color.withValues(alpha: 0.7), fontSize: 9)),
+                    Text('REGEN',
+                        style: TextStyle(
+                            color: regenColor.withValues(alpha: 0.7),
+                            fontSize: 9)),
+                    Text('POWER',
+                        style: TextStyle(
+                            color: color.withValues(alpha: 0.7), fontSize: 9)),
                   ],
                 ),
               ],

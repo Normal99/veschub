@@ -135,6 +135,16 @@ passed to the app, treating the first one as a `--target` override).
         (low clarity — a beginner may not know what the icons mean without
         hovering/guessing); `power_flow` is visually very thin/minimal
         compared to its neighbors. Neither is broken, just weak.
+- [x] **FIXED**: `power_widget.dart`'s bar row overflowed by exactly 2px at
+      the default drop size — found by actually dropping a "Power Meter"
+      preset in the live running app (not caught by any existing automated
+      test) and noticing Flutter's debug overflow banner. Root cause: the
+      bar-width formula sized each of the 20 bars assuming 19 gaps between
+      them, but every bar (including the last) got a right `margin`, adding
+      a 20th gap's worth of width — an off-by-one that overflows by exactly
+      `gap` (2.0px) regardless of container width. Fixed by omitting the
+      margin on the final bar; added `power_widget_test.dart` (verified it
+      actually fails without the fix by reverting it and re-running).
 - [x] [P2] **Genuinely minimal starter widgets** (2026-09-13): added a
       `Minimal` preset each to the `text` and `bar` palette entries in
       `studio_palette.dart` — bare number (transparent background, no
