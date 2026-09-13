@@ -279,7 +279,8 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       Needs its own drag-session type, a hit-test zone above the selection
       bounds, and a decision on group-rotation pivot behavior for
       multi-select. Anchor point for resize/rotate also still open.
-- [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
+- [x] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
+      (2026-09-13) — see `bar_widget_test.dart`.
 - [x] [P1] Multiple selection with group operations (2026-09-13) — group-move
       already worked (TransformNodesCommand always applied to the whole
       selection), but there was no way to build a multi-selection one
