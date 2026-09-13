@@ -25,6 +25,7 @@ import '../widgets/simple_color_picker.dart';
 import 'flow_mode.dart';
 import 'template_mode.dart';
 import 'layer_panel.dart';
+import 'keyboard_shortcuts.dart';
 
 part 'studio_palette.dart';
 part 'studio_canvas_area.dart';
@@ -142,29 +143,31 @@ class StudioEditor extends ConsumerWidget {
       ),
       body: switch (mode) {
         EditorMode.template => const TemplateMode(),
-        EditorMode.canvas => Row(
-            children: [
-              const _WidgetPalette(),
-              Expanded(child: _CanvasArea()),
-              // Layers and properties are stacked in one column, always
-              // visible together — SimHub's Dash Studio keeps its component
-              // list permanently visible above the property grid rather
-              // than making them swap places, so you never lose sight of
-              // the layer hierarchy while editing a property.
-              SizedBox(
-                width: 280,
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: ref.watch(layersVisibleProvider) ? 320 : 140,
-                      child: const LayerPanel(),
-                    ),
-                    const Divider(height: 1),
-                    const Expanded(child: _PropertiesInspector()),
-                  ],
+        EditorMode.canvas => CanvasKeyboardShortcuts(
+            child: Row(
+              children: [
+                const _WidgetPalette(),
+                Expanded(child: _CanvasArea()),
+                // Layers and properties are stacked in one column, always
+                // visible together — SimHub's Dash Studio keeps its component
+                // list permanently visible above the property grid rather
+                // than making them swap places, so you never lose sight of
+                // the layer hierarchy while editing a property.
+                SizedBox(
+                  width: 280,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: ref.watch(layersVisibleProvider) ? 320 : 140,
+                        child: const LayerPanel(),
+                      ),
+                      const Divider(height: 1),
+                      const Expanded(child: _PropertiesInspector()),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         EditorMode.flow => const FlowMode(),
       },

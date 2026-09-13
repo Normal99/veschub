@@ -8,6 +8,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import 'command_stack.dart';
@@ -170,7 +171,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
         );
       },
     );
-}
+  }
 
   Rect? _marqueeRect() {
     if (_marqueeStart == null || _marqueeCurrent == null) return null;
@@ -181,17 +182,28 @@ class _EditorCanvasState extends State<EditorCanvas> {
     final p = details.localPosition;
     final hit = hitTestNode(p);
     if (hit != null) {
-      if (!widget.selection.isSelected(hit)) {
-        if (!widget.selection.isMultiple) {
-          widget.selection.set(hit);
-        } else {
-          widget.selection.add(hit);
+      final shiftHeld = HardwareKeyboard.instance.isShiftPressed ||
+          HardwareKeyboard.instance.isControlPressed ||
+          HardwareKeyboard.instance.isMetaPressed;
+      if (shiftHeld) {
+        // Shift/Ctrl/Cmd-click toggles this node in or out of the current
+        // selection, the standard way to build up a multi-selection one
+        // click at a time (marquee-drag was previously the only way).
+        widget.selection.toggle(hit);
+        if (!widget.selection.isSelected(hit)) {
+          // Just deselected via toggle — nothing to drag from here.
+          setState(() {});
+          return;
         }
+      } else if (!widget.selection.isSelected(hit)) {
+        // Plain click on a node outside the current selection replaces it,
+        // matching standard selection UX (only a modifier key extends it).
+        widget.selection.set(hit);
       }
       final node = widget.scene[hit];
       if (node != null) {
-        final bounds =
-            transformedBounds(node, widget.nodeWidth(node), widget.nodeHeight(node));
+        final bounds = transformedBounds(
+            node, widget.nodeWidth(node), widget.nodeHeight(node));
         final corner = _hitTestCorner(p, bounds);
         if (corner != null) {
           final anchor = Offset(
@@ -249,10 +261,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
       final changes = <String, (Matrix4, Matrix4)>{};
       for (final entry in _drag!.startTransforms.entries) {
         final finalTransform = _dragTransforms[entry.key];
-        if (finalTransform != null &&
-            !_matrixEq(finalTransform, entry.value)) {
-          changes[entry.key] =
-              (entry.value.clone(), finalTransform.clone());
+        if (finalTransform != null && !_matrixEq(finalTransform, entry.value)) {
+          changes[entry.key] = (entry.value.clone(), finalTransform.clone());
           widget.scene.upsert(
             widget.scene[entry.key]!.copyWith(
               transform: finalTransform,
@@ -296,8 +306,8 @@ class _EditorCanvasState extends State<EditorCanvas> {
     final otherBounds = widget.scene.nodes
         .where((n) => !drag.startTransforms.containsKey(n.id))
         .map(
-          (n) => transformedBounds(
-              n, widget.nodeWidth(n), widget.nodeHeight(n)),
+          (n) =>
+              transformedBounds(n, widget.nodeWidth(n), widget.nodeHeight(n)),
         )
         .toList();
 
@@ -333,8 +343,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
     assert(_drag != null && _drag!.isResize);
     final drag = _drag!;
     final newDist = (current - drag.resizeAnchor).distance;
-    final scale =
-        drag.initialScale > 0 ? newDist / drag.initialScale : 1.0;
+    final scale = drag.initialScale > 0 ? newDist / drag.initialScale : 1.0;
     final clamped = scale.clamp(0.2, 5.0);
     final anchor = drag.resizeAnchor;
     for (final entry in drag.startTransforms.entries) {
@@ -395,8 +404,7 @@ class _EditorCanvasState extends State<EditorCanvas> {
       bounds.bottomLeft,
       bounds.bottomRight,
     ]) {
-      if ((p - corner).distanceSquared <=
-          _cornerHitRadius * _cornerHitRadius) {
+      if ((p - corner).distanceSquared <= _cornerHitRadius * _cornerHitRadius) {
         return corner;
       }
     }
@@ -508,8 +516,8 @@ class _OverlayPainter extends CustomPainter {
         id: node.id,
         transform: _currentTransform(node),
       );
-      final bounds = transformedBounds(
-          tempNode, nodeWidth(node), nodeHeight(node));
+      final bounds =
+          transformedBounds(tempNode, nodeWidth(node), nodeHeight(node));
       canvas.drawRect(bounds.inflate(2), _selectPaint);
       for (final corner in [
         bounds.topLeft,
