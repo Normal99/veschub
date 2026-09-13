@@ -301,8 +301,10 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       explicit typing-guard needed because `CallbackShortcuts` did not
       reliably defer to a focused text field on its own (verified by a
       failing test before the fix).
-- [ ] [P2] Golden-screenshot regression tests via `tools/dashboard_renderer`,
-      using the 9 example dashboards as visual baselines
+- [x] [P2] Golden-screenshot regression tests via `tools/dashboard_renderer`
+      (2026-09-13) — found and fixed 2 real overflow bugs on first run
+      (text, tripstats' Porsche-pod row). See
+      `tools/dashboard_renderer/test/example_dashboards_golden_test.dart`.
 - [ ] [P3] Dashboard description rich text / markdown
 - [ ] [P3] App-wide icon audit pass (studio + dashboard chrome) — icons have
       been flagged twice as inconsistent; do this as one deliberate pass,
