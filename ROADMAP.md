@@ -131,10 +131,24 @@ passed to the app, treating the first one as a `--target` override).
         before it draws a line, and a static single-frame render never
         gets a second sample. The real running dashboard app updates
         telemetry continuously, so this doesn't reproduce there.
-  - Remaining, not fixed: `warnings` shows icons with no text labels
-        (low clarity — a beginner may not know what the icons mean without
-        hovering/guessing); `power_flow` is visually very thin/minimal
-        compared to its neighbors. Neither is broken, just weak.
+  - `warnings` shows icons with no text labels (low clarity — a beginner
+        may not know what the icons mean without hovering/guessing);
+        `power_flow` is visually very thin/minimal compared to its
+        neighbors. Neither is broken, just weak.
+        **Both fixed 2026-09-13**: `warnings` got a new `showLabels`
+        property (default true, same pattern as appgrid/car_viz) printing
+        each warning's own message under its icon instead of only on
+        hover (tooltip stays too, for the full message). `power_flow` got
+        a thicker default bar (4px → 8px), a visible track border at 0%
+        fill (same fix `bar_widget.dart` already had), pill-shaped
+        corners, and a bolt/charging icon so direction reads at a glance
+        instead of only via which side the bar fills from. Neither widget
+        had a dedicated test before this — added one file each. Verified
+        visually via `tools/dashboard_renderer` with real fonts loaded
+        (golden tests render text as blank boxes) by rendering the full
+        Tesla template from the `templates` package directly, since none
+        of the 9 static `examples/*.veschub.json` happen to use
+        `power_flow`.
 - [x] **FIXED**: `power_widget.dart`'s bar row overflowed by exactly 2px at
       the default drop size — found by actually dropping a "Power Meter"
       preset in the live running app (not caught by any existing automated
