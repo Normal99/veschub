@@ -157,10 +157,15 @@ shell — looped manually instead). **228/228 tests pass** across
 `widgets_library` (102), `apps/dashboard`, `apps/studio` (23, including
 the new end-to-end drag/select/inspect flow).
 
-- [ ] [P1] **`packages/node_graph_editor` has zero test files** — 466 lines
-      of interactive Flow-mode canvas code (drag nodes, connect sockets,
-      delete edges) with no automated coverage at all. This is the
-      biggest test-coverage gap in the monorepo.
+- [x] [P1] **`packages/node_graph_editor` test coverage** (2026-09-13) —
+      5 tests covering drop-from-palette, drag, socket-connect, edge
+      delete, node select. Writing the drag test with a realistic
+      sidebar-next-to-canvas harness (matching flow_mode.dart's actual
+      layout) immediately found a real bug: node dragging mixed local
+      pan-start coordinates with global pan-update coordinates, silently
+      baking the editor's own screen offset into every drag. Fixed via
+      delta-based movement. Textbook case for why this item was flagged
+      as the biggest coverage gap.
 
 ## SimHub UX research (2026-09-13)
 
