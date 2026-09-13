@@ -436,32 +436,16 @@ class _BindingField extends ConsumerWidget {
                     style: const TextStyle(fontWeight: FontWeight.w500),
                   ),
                 ),
-                _BindingTypeChip(
-                  label: 'Lit',
-                  tooltipMessage: 'Literal value',
-                  active: binding is LiteralBinding,
-                  onTap: () => _commit(ref, const Binding.literal(value: 0)),
-                ),
-                _BindingTypeChip(
-                  label: 'Tel',
-                  tooltipMessage: 'Telemetry binding',
-                  active: binding is TelemetryBinding,
-                  onTap: () =>
+                _BindingIndicator(
+                  binding: binding,
+                  onLiteral: () =>
+                      _commit(ref, const Binding.literal(value: 0)),
+                  onTelemetry: () =>
                       _commit(ref, const Binding.telemetry(key: 'erpm')),
-                ),
-                _BindingTypeChip(
-                  label: 'F(x)',
-                  tooltipMessage: 'Formula expression',
-                  active: binding is FormulaBinding,
-                  onTap: () => _commit(
+                  onFormula: () => _commit(
                       ref, const Binding.formula(expression: 'erpm / 1000')),
-                ),
-                _BindingTypeChip(
-                  label: 'Graph',
-                  tooltipMessage: 'Graph binding',
-                  active: binding is GraphBinding,
-                  onTap: () =>
-                      _commit(ref, Binding.graph(graphId: '', output: '')),
+                  onGraph: () => _commit(
+                      ref, const Binding.graph(graphId: '', output: '')),
                 ),
               ],
             ),
@@ -505,43 +489,102 @@ class _BindingField extends ConsumerWidget {
   }
 }
 
-class _BindingTypeChip extends StatelessWidget {
-  final String label;
-  final String tooltipMessage;
-  final bool active;
-  final VoidCallback onTap;
-  const _BindingTypeChip({
-    required this.label,
-    required this.tooltipMessage,
-    required this.active,
-    required this.onTap,
+enum _BindingKind { literal, telemetry, formula, graph }
+
+const Map<_BindingKind, IconData> _bindingKindIcons = {
+  _BindingKind.literal: Icons.edit_outlined,
+  _BindingKind.telemetry: Icons.sensors,
+  _BindingKind.formula: Icons.functions,
+  _BindingKind.graph: Icons.share,
+};
+
+const Map<_BindingKind, String> _bindingKindLabels = {
+  _BindingKind.literal: 'Literal value',
+  _BindingKind.telemetry: 'Telemetry binding',
+  _BindingKind.formula: 'Formula expression',
+  _BindingKind.graph: 'Graph binding',
+};
+
+/// A single compact indicator for a property's binding type — replaces four
+/// always-visible Lit/Tel/F(x)/Graph chips with one icon whose color encodes
+/// state (grey = static literal, green = dynamically bound), matching
+/// SimHub Dash Studio's binding-indicator pattern. Tapping opens a popup to
+/// switch binding type; the actual value editor stays below, unchanged.
+class _BindingIndicator extends StatelessWidget {
+  final Binding binding;
+  final VoidCallback onLiteral;
+  final VoidCallback onTelemetry;
+  final VoidCallback onFormula;
+  final VoidCallback onGraph;
+  const _BindingIndicator({
+    required this.binding,
+    required this.onLiteral,
+    required this.onTelemetry,
+    required this.onFormula,
+    required this.onGraph,
   });
+
+  _BindingKind get _kind => binding.map(
+        literal: (_) => _BindingKind.literal,
+        telemetry: (_) => _BindingKind.telemetry,
+        formula: (_) => _BindingKind.formula,
+        graph: (_) => _BindingKind.graph,
+      );
+
+  void _onSelected(_BindingKind kind) {
+    switch (kind) {
+      case _BindingKind.literal:
+        onLiteral();
+      case _BindingKind.telemetry:
+        onTelemetry();
+      case _BindingKind.formula:
+        onFormula();
+      case _BindingKind.graph:
+        onGraph();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final kind = _kind;
+    final bound = kind != _BindingKind.literal;
+    final color = bound ? Colors.green.shade600 : Colors.grey.shade500;
     return Tooltip(
-      message: tooltipMessage,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.only(left: 4),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: active
-                ? Theme.of(context).colorScheme.primaryContainer
-                : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: active
-                  ? Theme.of(context).colorScheme.onPrimaryContainer
-                  : Colors.grey.shade700,
-            ),
-          ),
-        ),
+      message: '${_bindingKindLabels[kind]} — tap to change binding type',
+      child: PopupMenuButton<_BindingKind>(
+        tooltip: '',
+        padding: EdgeInsets.zero,
+        icon: Icon(_bindingKindIcons[kind], size: 18, color: color),
+        onSelected: _onSelected,
+        itemBuilder: (context) => _BindingKind.values
+            .map(
+              (k) => PopupMenuItem(
+                value: k,
+                child: Row(
+                  children: [
+                    Icon(
+                      _bindingKindIcons[k],
+                      size: 16,
+                      color: k == kind
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _bindingKindLabels[k]!,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (k == kind) ...[
+                      const SizedBox(width: 8),
+                      const Icon(Icons.check, size: 16),
+                    ],
+                  ],
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
   }

@@ -29,14 +29,19 @@ void main() {
   }
 
   group('Property Inspector Tier 1: UI Layout & Category Accordions', () {
-    testWidgets('T1.1: Shows empty selection placeholder when no widget is selected', (tester) async {
+    testWidgets(
+        'T1.1: Shows empty selection placeholder when no widget is selected',
+        (tester) async {
       await tester.pumpWidget(buildTestableStudio());
       await tester.pumpAndSettle();
 
-      expect(find.text('Select a widget to edit its properties'), findsOneWidget);
+      expect(
+          find.text('Select a widget to edit its properties'), findsOneWidget);
     });
 
-    testWidgets('T1.2: Renders categorized property fields when a widget is selected', (tester) async {
+    testWidgets(
+        'T1.2: Renders categorized property fields when a widget is selected',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -64,7 +69,8 @@ void main() {
           },
         ),
       );
-      container.read(capabilityLevelProvider.notifier).state = CapabilityLevel.expert;
+      container.read(capabilityLevelProvider.notifier).state =
+          CapabilityLevel.expert;
       container.read(sceneModelProvider.notifier).add(node);
       container.read(selectionModelProvider.notifier).set('test_gauge');
       await tester.pumpAndSettle();
@@ -78,7 +84,9 @@ void main() {
       expect(find.text('Fonts & Colors'), findsWidgets);
     });
 
-    testWidgets('T1.3: Tooltips exist on inspector controls and mode switch chips', (tester) async {
+    testWidgets(
+        'T1.3: Tooltips exist on inspector controls and mode switch chips',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -105,13 +113,28 @@ void main() {
       container.read(selectionModelProvider.notifier).set('test_text');
       await tester.pumpAndSettle();
 
-      // Verify Tooltip widgets exist for delete button and binding field chips
+      // Verify Tooltip widgets exist for delete button and the binding
+      // indicator (now a single consolidated icon per property, not four
+      // always-visible chips — see _BindingIndicator in studio_inspector.dart).
       expect(find.byTooltip('Delete widget'), findsOneWidget);
-      expect(find.byTooltip('Literal value'), findsWidgets);
-      expect(find.byTooltip('Telemetry binding'), findsWidgets);
+      expect(
+        find.byWidgetPredicate((w) =>
+            w is Tooltip && (w.message?.startsWith('Literal value') ?? false)),
+        findsWidgets,
+      );
+
+      // Tapping the indicator opens a popup surfacing the other binding
+      // types to switch to.
+      await tester.tap(find.byIcon(Icons.edit_outlined).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Telemetry binding'), findsOneWidget);
+      expect(find.text('Formula expression'), findsOneWidget);
+      expect(find.text('Graph binding'), findsOneWidget);
     });
 
-    testWidgets('T1.4: Direct Hex color entry handles #RRGGBB format correctly on inspector fields', (tester) async {
+    testWidgets(
+        'T1.4: Direct Hex color entry handles #RRGGBB format correctly on inspector fields',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -143,7 +166,9 @@ void main() {
       expect(StudioEditor.parseHexColor('FF4FC3F7'), equals(0xFF4FC3F7));
     });
 
-    testWidgets('T1.5: Numeric slider scrubbing renders and clamps within min/max bounds', (tester) async {
+    testWidgets(
+        'T1.5: Numeric slider scrubbing renders and clamps within min/max bounds',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -178,7 +203,9 @@ void main() {
   });
 
   group('Property Inspector Tier 2: Boundary & Corner Cases', () {
-    testWidgets('T2.1: Invalid hex format displays validation fallback without breaking state', (tester) async {
+    testWidgets(
+        'T2.1: Invalid hex format displays validation fallback without breaking state',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -209,7 +236,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('T2.2: Telemetry key filter field filters target key strings dynamically in dropdown', (tester) async {
+    testWidgets(
+        'T2.2: Telemetry key filter field filters target key strings dynamically in dropdown',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -248,7 +277,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('T2.3: Deselecting widget returns inspector to clean placeholder view', (tester) async {
+    testWidgets(
+        'T2.3: Deselecting widget returns inspector to clean placeholder view',
+        (tester) async {
       final container = ProviderContainer(overrides: [
         // These tests exercise the Canvas-mode inspector; the app now
         // lands on the Template gallery by default, so force Canvas here.
@@ -265,7 +296,8 @@ void main() {
       final node = CanvasNode(
         id: 'temp_node',
         transform: Matrix4.identity(),
-        data: const WidgetInstance(id: 'temp_node', kind: 'text', properties: {}),
+        data:
+            const WidgetInstance(id: 'temp_node', kind: 'text', properties: {}),
       );
       container.read(sceneModelProvider.notifier).add(node);
       container.read(selectionModelProvider.notifier).set('temp_node');
@@ -276,7 +308,8 @@ void main() {
       container.read(selectionModelProvider.notifier).clear();
       await tester.pumpAndSettle();
 
-      expect(find.text('Select a widget to edit its properties'), findsOneWidget);
+      expect(
+          find.text('Select a widget to edit its properties'), findsOneWidget);
     });
   });
 }
