@@ -268,7 +268,22 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
       canvas and template previews) so they're bindable there too. Updated
       `pipeline_test.dart`'s "ingests all N keys" test (14 → 16) to cover them.
 - [x] [P1] Per-widget size from document (via properties approach, no schema migration)
-- [ ] [P2] Dark / light theme obeying widget background colors
+- [x] [P2] Dark / light theme obeying widget background colors (2026-09-13):
+      `DashboardTheme`/`DashboardThemeProvider`/`ThemePreference` all already
+      existed correctly designed, and `ThemeMode` was already wired into the
+      real `MaterialApp` — but the real gap was one level deeper. Any widget
+      that reads the ambient theme (`status`/`web`/`chart`, via
+      `DashboardThemeProvider.of(context)`) silently fell back to the
+      hardcoded `DashboardTheme.dark` default in the actual dashboard
+      viewer, because `ViewerScreen` never provided one at all — so those
+      widgets ignored both the document's own colors AND the user's light/
+      dark preference, always dark regardless of app chrome. Fixed by
+      wrapping the dashboard content in a `DashboardThemeProvider` built via
+      `DashboardTheme.fromDocument`, with `brightness` taken from
+      `Theme.of(context).brightness` (already correctly resolves
+      `ThemeMode.system`) so user preference actually reaches widget-level
+      theming. Added tests confirming a real (non-default) theme is
+      provided, and that its brightness follows the resolved `ThemeMode`.
 - [x] [P2] Metric / imperial unit conversion (per-widget, not global) (2026-09-13):
       same work as Milestone 10's "Per-widget unit system" item — see that
       entry. Covers speed (`digitalspeed`) and temperature (`minigauge`).

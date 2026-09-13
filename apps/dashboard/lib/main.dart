@@ -322,20 +322,34 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Dashboard content
+          // Dashboard content. Wrapped in a DashboardThemeProvider so widgets
+          // that read the ambient theme (status/web/chart, etc.) get a real
+          // theme instead of silently falling back to DashboardTheme.dark —
+          // previously true even when the app itself was in light mode, since
+          // nothing here ever provided one. Brightness follows the resolved
+          // app ThemeMode (Theme.of(context).brightness already accounts for
+          // ThemeMode.system), while background/accent still come from the
+          // document itself, same as before.
           Center(
             child: FittedBox(
               child: SizedBox(
                 width: doc.canvas.width,
                 height: doc.canvas.height,
-                child: ColoredBox(
-                  color: Color(doc.background),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      for (final w in doc.widgets)
-                        _positioned(w, key: ValueKey(w.id)),
-                    ],
+                child: DashboardThemeProvider(
+                  theme: DashboardTheme.fromDocument(
+                    backgroundArgb: doc.background,
+                    accentArgb: doc.accent,
+                    brightness: Theme.of(context).brightness,
+                  ),
+                  child: ColoredBox(
+                    color: Color(doc.background),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        for (final w in doc.widgets)
+                          _positioned(w, key: ValueKey(w.id)),
+                      ],
+                    ),
                   ),
                 ),
               ),
