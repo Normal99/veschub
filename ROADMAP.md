@@ -269,9 +269,10 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 - [x] [P1] More chart properties: lineWidth, showGrid, gridColor, smoothCurve, fillArea, fillColor
 - [x] [P1] More font properties: fontWeight, letterSpacing
 - [x] [P1] More cosmetic: opacity, padding, width, height, visible — across all 7 widget kinds
-- [ ] [P0] Manifest-vs-renderer audit test: assert every `props[...]` a widget
-      renderer reads has a matching `PropertyMeta` entry (prevents the
-      text/chart drift class found during the AI-dashboards push)
+- [x] [P0] Manifest-vs-renderer audit test (2026-09-13) — found and fixed
+      4 real gaps on first run (fontFamily/fontWeight/letterSpacing missing
+      from 13 kinds, web missing backgroundColor, minigauge's orientation
+      completely undeclared). See `widgets_library/test/manifest_matches_renderer_test.dart`.
 - [ ] [P1] Rotation handle on canvas + rotation property/field in the inspector
       (parallel to `_PositionFields`), plus an anchor point for resize/rotate
 - [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
