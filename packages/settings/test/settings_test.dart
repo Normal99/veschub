@@ -15,6 +15,7 @@ void main() {
       expect(service.themeMode, ThemePreference.system);
       expect(service.transport, TransportPreference.auto);
       expect(service.onboardingDone, isFalse);
+      expect(service.canvasHintDismissed, isFalse);
     });
 
     test('load reads persisted values', () async {
@@ -49,12 +50,16 @@ void main() {
       await service.markOnboardingDone();
       expect(service.onboardingDone, isTrue);
 
+      await service.markCanvasHintDismissed();
+      expect(service.canvasHintDismissed, isTrue);
+
       // A fresh service instance reflects the persisted values.
       final reloaded = await createSettingsService();
       expect(reloaded.capabilityLevel, CapabilityLevel.advanced);
       expect(reloaded.themeMode, ThemePreference.light);
       expect(reloaded.transport, TransportPreference.usb);
       expect(reloaded.onboardingDone, isTrue);
+      expect(reloaded.canvasHintDismissed, isTrue);
     });
 
     test('unknown persisted values fall back to defaults', () async {

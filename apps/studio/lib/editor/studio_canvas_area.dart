@@ -163,11 +163,16 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                       data: WidgetInstance(
                         id: id,
                         kind: kind,
-                        properties: tplProps ?? StudioEditor.defaultProperties(kind),
+                        properties:
+                            tplProps ?? StudioEditor.defaultProperties(kind),
                       ),
                     );
                     commands.execute(AddNodeCommand(node));
                     ref.read(isDirtyProvider.notifier).state = true;
+                    // A widget has now been dropped at least once — the
+                    // first-drop hint has done its job, don't show it again
+                    // even if the user later deletes everything.
+                    ref.read(settingsServiceProvider).markCanvasHintDismissed();
                   },
                   builder: (context, candidate, rejected) {
                     final borderColor = candidate.isNotEmpty
@@ -184,44 +189,58 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                                 .surface
                                 .withValues(alpha: 0.98),
                       ),
-                      child: EditorCanvas(
-                        scene: scene,
-                        selection: selection,
-                        commands: commands,
-                        canvasSize: Size(canvasSize.width, canvasSize.height),
-                        showGrid: ref.watch(gridVisibleProvider),
-                        snapConfig: SnapConfig(
-                          enableCenterSnap: ref.watch(centerSnapEnabledProvider),
-                        ),
-                        onCommandExecuted: (_) =>
-                            ref.read(isDirtyProvider.notifier).state = true,
-                        isNodeLocked: (node) {
-                          final w = node.data as WidgetInstance?;
-                          return w?.properties['locked']
-                                  ?.mapOrNull(literal: (b) => b.value as bool?) ??
-                              false;
-                        },
-                        nodeBuilder: (node) {
-                          final w = node.data as WidgetInstance?;
-                          if (w == null) {
-                            return const Center(child: Text('No data'));
-                          }
-                          final store =
-                              ref.read(canvasPreviewTelemetryProvider);
-                          return buildWidget(w, _resolve(w, store));
-                        },
-                        nodeWidth: (node) {
-                          final w = node.data as WidgetInstance?;
-                          final p = w?.properties['width']
-                              ?.mapOrNull(literal: (b) => b.value);
-                          return (p as num?)?.toDouble() ?? kDefaultNodeWidth;
-                        },
-                        nodeHeight: (node) {
-                          final h = node.data as WidgetInstance?;
-                          final p = h?.properties['height']
-                              ?.mapOrNull(literal: (b) => b.value);
-                          return (p as num?)?.toDouble() ?? kDefaultNodeHeight;
-                        },
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          EditorCanvas(
+                            scene: scene,
+                            selection: selection,
+                            commands: commands,
+                            canvasSize:
+                                Size(canvasSize.width, canvasSize.height),
+                            showGrid: ref.watch(gridVisibleProvider),
+                            snapConfig: SnapConfig(
+                              enableCenterSnap:
+                                  ref.watch(centerSnapEnabledProvider),
+                            ),
+                            onCommandExecuted: (_) =>
+                                ref.read(isDirtyProvider.notifier).state = true,
+                            isNodeLocked: (node) {
+                              final w = node.data as WidgetInstance?;
+                              return w?.properties['locked']?.mapOrNull(
+                                      literal: (b) => b.value as bool?) ??
+                                  false;
+                            },
+                            nodeBuilder: (node) {
+                              final w = node.data as WidgetInstance?;
+                              if (w == null) {
+                                return const Center(child: Text('No data'));
+                              }
+                              final store =
+                                  ref.read(canvasPreviewTelemetryProvider);
+                              return buildWidget(w, _resolve(w, store));
+                            },
+                            nodeWidth: (node) {
+                              final w = node.data as WidgetInstance?;
+                              final p = w?.properties['width']
+                                  ?.mapOrNull(literal: (b) => b.value);
+                              return (p as num?)?.toDouble() ??
+                                  kDefaultNodeWidth;
+                            },
+                            nodeHeight: (node) {
+                              final h = node.data as WidgetInstance?;
+                              final p = h?.properties['height']
+                                  ?.mapOrNull(literal: (b) => b.value);
+                              return (p as num?)?.toDouble() ??
+                                  kDefaultNodeHeight;
+                            },
+                          ),
+                          if (scene.length == 0 &&
+                              !ref
+                                  .watch(settingsServiceProvider)
+                                  .canvasHintDismissed)
+                            const _FirstDropHint(),
+                        ],
                       ),
                     );
                   },
@@ -322,5 +341,45 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
       if (v != null) out[entry.key] = v;
     }
     return out;
+  }
+}
+
+/// A one-time, dismissible hint pointing a first-time user at the palette —
+/// shown only while the canvas is empty and never dismissed before. Ignores
+/// pointer events so it never blocks the drag-drop it's explaining.
+class _FirstDropHint extends ConsumerWidget {
+  const _FirstDropHint();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest
+                  .withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.arrow_back,
+                    color: Theme.of(context).colorScheme.primary),
+                const SizedBox(height: 8),
+                Text(
+                  'Drag a widget from the palette to add it here',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -365,8 +365,26 @@ build a working dashboard without external help — before AI is even involved.
 This is largely Milestone 5 items viewed through a "first-run" lens, plus a
 few net-new pieces.
 
-- [ ] [P1] First-run onboarding: guided "build your first dashboard" flow
-      (distinct from the AI assistant — pure UI walkthrough)
+- [x] [P1] First-run onboarding (2026-09-13): the "build your first dashboard"
+      guided flow is now split across two pieces rather than one big wizard —
+      (1) Template mode is the default landing (previous item), which is
+      itself a guided "pick a starter, see it live, tweak, save" path; (2) for
+      the from-scratch path, added a one-time dismissible `_FirstDropHint`
+      overlay ("Drag a widget from the palette to add it here") shown centred
+      on Canvas mode only while the scene is empty and the hint has never
+      been dismissed (`SettingsService.canvasHintDismissed`, persisted).
+      Dismissed permanently on first successful drop, not just while widgets
+      exist — deleting everything later doesn't bring it back. Chose this
+      over expanding the static onboarding carousel (studio_onboarding.dart)
+      because it's contextual — the hint appears exactly where and when the
+      user needs it, on the actual canvas, rather than a wall of text shown
+      once well before the canvas exists. Caught and fixed a real bug along
+      the way: wrapping EditorCanvas in a Stack (to layer the hint) silently
+      changed its constraints from tight to loose (Stack defaults to
+      StackFit.loose), which collapsed the canvas's effective hit-test size
+      and broke keyboard shortcuts/selection in tests without any visible
+      symptom — fixed via `StackFit.expand`. Added widget tests for
+      show/hide/permanent-dismissal and settings-service persistence.
 - [x] [P1] Per-widget unit system (2026-09-13): added `TemperatureUnit`/`SpeedUnit`
       enums + `convertTemperature`/`convertSpeed` to `widgets_library/src/format.dart`
       (parse/suffix helpers included). Wired `sourceUnit`/`displayUnit` properties

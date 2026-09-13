@@ -27,6 +27,7 @@ class SettingsService extends ChangeNotifier {
   static const _keyTheme = 'settings.themeMode';
   static const _keyTransport = 'settings.transport';
   static const _keyOnboardingDone = 'settings.onboardingDone';
+  static const _keyCanvasHintDismissed = 'settings.canvasHintDismissed';
   static const _keyAutoConnect = 'settings.autoConnect';
   static const _keyDataRate = 'settings.dataRate';
 
@@ -36,6 +37,7 @@ class SettingsService extends ChangeNotifier {
   ThemePreference _theme = ThemePreference.system;
   TransportPreference _transport = TransportPreference.auto;
   bool _onboardingDone = false;
+  bool _canvasHintDismissed = false;
   bool _autoConnect = true;
   int _dataRate = 10;
 
@@ -50,6 +52,10 @@ class SettingsService extends ChangeNotifier {
 
   /// Whether first-run onboarding has been completed.
   bool get onboardingDone => _onboardingDone;
+
+  /// Whether the "drag a widget here" first-time Canvas hint has been
+  /// dismissed (either explicitly, or implicitly by dropping a widget).
+  bool get canvasHintDismissed => _canvasHintDismissed;
 
   /// Auto-connect to the preferred transport on app launch.
   bool get autoConnect => _autoConnect;
@@ -66,6 +72,8 @@ class SettingsService extends ChangeNotifier {
     _theme = _decodeTheme(_prefs!.getString(_keyTheme));
     _transport = _decodeTransport(_prefs!.getString(_keyTransport));
     _onboardingDone = _prefs!.getBool(_keyOnboardingDone) ?? false;
+    _canvasHintDismissed =
+        _prefs!.getBool(_keyCanvasHintDismissed) ?? false;
     _autoConnect = _prefs!.getBool(_keyAutoConnect) ?? true;
     _dataRate = _prefs!.getInt(_keyDataRate) ?? 10;
     if (_dataRate < 5 || _dataRate > 50) _dataRate = 10;
@@ -93,6 +101,12 @@ class SettingsService extends ChangeNotifier {
   Future<void> markOnboardingDone() async {
     _onboardingDone = true;
     await _prefs?.setBool(_keyOnboardingDone, true);
+    notifyListeners();
+  }
+
+  Future<void> markCanvasHintDismissed() async {
+    _canvasHintDismissed = true;
+    await _prefs?.setBool(_keyCanvasHintDismissed, true);
     notifyListeners();
   }
 

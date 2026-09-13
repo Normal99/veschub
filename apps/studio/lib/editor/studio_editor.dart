@@ -17,6 +17,7 @@ import 'package:paint_dsl/paint_dsl.dart';
 import 'package:node_graph/node_graph.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:settings/settings.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
