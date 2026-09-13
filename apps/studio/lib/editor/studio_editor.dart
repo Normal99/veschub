@@ -7,6 +7,7 @@ library;
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:dashboard_model/dashboard_model.dart';
 import 'package:editor_canvas/editor_canvas.dart';

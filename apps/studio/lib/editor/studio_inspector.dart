@@ -40,36 +40,37 @@ class _PropertiesInspector extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Row(
-            children: [
-              Text('Properties', style: Theme.of(context).textTheme.titleSmall),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, size: 20),
-                tooltip: 'Delete widget',
-                onPressed: () {
-                  ref
-                      .read(commandStackProvider)
-                      .execute(RemoveNodesCommand([node]));
-                  ref.read(selectionModelProvider).clear();
-                  ref.read(isDirtyProvider.notifier).state = true;
-                },
+            Row(
+              children: [
+                Text('Properties',
+                    style: Theme.of(context).textTheme.titleSmall),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  tooltip: 'Delete widget',
+                  onPressed: () {
+                    ref
+                        .read(commandStackProvider)
+                        .execute(RemoveNodesCommand([node]));
+                    ref.read(selectionModelProvider).clear();
+                    ref.read(isDirtyProvider.notifier).state = true;
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (widget != null) ...[
+              _Field(label: 'ID', value: widget.id),
+              _Field(label: 'Kind', value: widget.kind),
+              const SizedBox(height: 4),
+              _PositionFields(node: node),
+              const Divider(),
+              ..._PropertiesInspector._buildProperties(
+                node,
+                widget,
+                level: ref.watch(capabilityLevelProvider),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          if (widget != null) ...[
-            _Field(label: 'ID', value: widget.id),
-            _Field(label: 'Kind', value: widget.kind),
-            const SizedBox(height: 4),
-            _PositionFields(node: node),
-            const Divider(),
-            ..._PropertiesInspector._buildProperties(
-              node,
-              widget,
-              level: ref.watch(capabilityLevelProvider),
-            ),
-          ],
           ],
         ),
       ),
@@ -177,57 +178,129 @@ class _PositionFields extends ConsumerWidget {
   final CanvasNode node;
   const _PositionFields({required this.node});
 
+  /// Current rotation in degrees, decoded from the transform's 2x2 linear
+  /// part. NodeTransforms.compose builds translate*rotationZ(θ)*scale, so
+  /// for entries a=cos·s, b=sin·s (column 0), θ = atan2(b, a) regardless of
+  /// the (uniform, positive) scale factor.
+  double _rotationDegrees(Matrix4 t) {
+    final a = t.entry(0, 0);
+    final b = t.entry(1, 0);
+    return math.atan2(b, a) * 180 / math.pi;
+  }
+
+  double _uniformScale(Matrix4 t) {
+    final a = t.entry(0, 0);
+    final b = t.entry(1, 0);
+    final s = math.sqrt(a * a + b * b);
+    return s == 0 ? 1.0 : s;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final x = node.transform.entry(0, 3).toInt();
     final y = node.transform.entry(1, 3).toInt();
+    final rotation = _rotationDegrees(node.transform).round();
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 80,
-          child: Text(
-            'Position',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-          ),
-        ),
-        SizedBox(
-          width: 62,
-          child: TextFormField(
-            initialValue: x.toString(),
-            keyboardType: TextInputType.number,
-            style: const TextStyle(fontSize: 12),
-            decoration: InputDecoration(
-              labelText: 'X',
-              labelStyle: const TextStyle(fontSize: 10),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: 4, horizontal: 6),
-              border: const OutlineInputBorder(),
+        Row(
+          children: [
+            SizedBox(
+              width: 80,
+              child: Text(
+                'Position',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
             ),
-            onFieldSubmitted: (v) => _commitPosition(ref, 'x', v),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 62,
-          child: TextFormField(
-            initialValue: y.toString(),
-            keyboardType: TextInputType.number,
-            style: const TextStyle(fontSize: 12),
-            decoration: InputDecoration(
-              labelText: 'Y',
-              labelStyle: const TextStyle(fontSize: 10),
-              isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                  vertical: 4, horizontal: 6),
-              border: const OutlineInputBorder(),
+            SizedBox(
+              width: 62,
+              child: TextFormField(
+                initialValue: x.toString(),
+                keyboardType: TextInputType.number,
+                style: const TextStyle(fontSize: 12),
+                decoration: InputDecoration(
+                  labelText: 'X',
+                  labelStyle: const TextStyle(fontSize: 10),
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  border: const OutlineInputBorder(),
+                ),
+                onFieldSubmitted: (v) => _commitPosition(ref, 'x', v),
+              ),
             ),
-            onFieldSubmitted: (v) => _commitPosition(ref, 'y', v),
-          ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 62,
+              child: TextFormField(
+                initialValue: y.toString(),
+                keyboardType: TextInputType.number,
+                style: const TextStyle(fontSize: 12),
+                decoration: InputDecoration(
+                  labelText: 'Y',
+                  labelStyle: const TextStyle(fontSize: 10),
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  border: const OutlineInputBorder(),
+                ),
+                onFieldSubmitted: (v) => _commitPosition(ref, 'y', v),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            SizedBox(
+              width: 80,
+              child: Text(
+                'Rotation',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+            ),
+            SizedBox(
+              width: 62,
+              child: TextFormField(
+                key: ValueKey('rotation_${node.id}_$rotation'),
+                initialValue: rotation.toString(),
+                keyboardType:
+                    const TextInputType.numberWithOptions(signed: true),
+                style: const TextStyle(fontSize: 12),
+                decoration: InputDecoration(
+                  labelText: '°',
+                  labelStyle: const TextStyle(fontSize: 10),
+                  isDense: true,
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+                  border: const OutlineInputBorder(),
+                ),
+                onFieldSubmitted: (v) => _commitRotation(ref, v),
+              ),
+            ),
+          ],
         ),
       ],
     );
+  }
+
+  void _commitRotation(WidgetRef ref, String raw) {
+    final degrees = double.tryParse(raw);
+    if (degrees == null) return;
+    final oldT = node.transform.clone();
+    final translation =
+        Offset(node.transform.entry(0, 3), node.transform.entry(1, 3));
+    final scale = _uniformScale(node.transform);
+    final newT = NodeTransforms.compose(
+      translation: translation,
+      scale: scale,
+      rotation: degrees * math.pi / 180,
+    );
+    ref.read(commandStackProvider).execute(
+          TransformNodesCommand({node.id: (oldT, newT)}),
+        );
+    ref.read(isDirtyProvider.notifier).state = true;
   }
 
   void _commitPosition(WidgetRef ref, String axis, String raw) {
@@ -332,7 +405,8 @@ class _BindingField extends ConsumerWidget {
                   label: 'Tel',
                   tooltipMessage: 'Telemetry binding',
                   active: binding is TelemetryBinding,
-                  onTap: () => _commit(ref, const Binding.telemetry(key: 'erpm')),
+                  onTap: () =>
+                      _commit(ref, const Binding.telemetry(key: 'erpm')),
                 ),
                 _BindingTypeChip(
                   label: 'F(x)',
