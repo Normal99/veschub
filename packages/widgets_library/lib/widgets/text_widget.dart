@@ -21,8 +21,10 @@ class TextWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final value = properties['value'];
-    final label = properties['label'] is String ? properties['label'] as String : null;
-    final unit = properties['unit'] is String ? properties['unit'] as String : null;
+    final label =
+        properties['label'] is String ? properties['label'] as String : null;
+    final unit =
+        properties['unit'] is String ? properties['unit'] as String : null;
     final color = propInt(properties, 'color', 0xFFFFFFFF);
     final fontSizeRaw = propDouble(properties, 'fontSize', 40.0);
 
@@ -46,28 +48,36 @@ class TextWidget extends StatelessWidget {
 
     final content = Padding(
       padding: resolvePadding(properties),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (label != null) Text(label, style: labelStyle),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Flexible(
-                child: Text(text,
-                    style: valueStyle, overflow: TextOverflow.ellipsis),
-              ),
-              if (unit != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Text(unit, style: labelStyle),
-                ),
-            ],
-          ),
-        ],
+      // FittedBox absorbs the case where label+value+unit is a few pixels
+      // taller than the widget's box (a small height, a long label, or —
+      // as found by a golden-regression test — slightly different font
+      // metrics between platforms) by scaling down instead of throwing a
+      // RenderFlex overflow. Same defensive pattern tripstats_widget.dart's
+      // _StatTile already uses for the same reason.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (label != null) Text(label, style: labelStyle),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(text, style: valueStyle),
+                if (unit != null)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Text(unit, style: labelStyle),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
 

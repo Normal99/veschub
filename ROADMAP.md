@@ -78,12 +78,9 @@ main editor file), compared against the reference dashboards.
 - [x] [P2] **Inspector empty state** (2026-09-13) — now shows canvas size,
       background/accent colour swatches, with the "select a widget" hint
       as a footer instead of the only content.
-- [ ] [P2] **Toolbar icons have no visible labels** — undo/redo, new/open/
-      save/export, settings, and layers are all icon-only in the top-right
-      toolbar. Tooltips may exist on hover but a first-time user scanning
-      the bar can't tell them apart at a glance; consider a labeled overflow
-      menu for the less-frequent ones (export, settings) and keep only
-      undo/redo/save as bare icons.
+- [x] [P2] **Toolbar icon labels** (2026-09-13) — new/open/export/import/
+      settings/layers-toggle moved into a labeled overflow `PopupMenuButton`
+      (icon + text per row). Only Undo/Redo/Save remain as bare icons.
 
 ## Widget rendering audit (2026-09-13)
 

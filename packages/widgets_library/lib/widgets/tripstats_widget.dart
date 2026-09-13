@@ -13,7 +13,9 @@ class TripStatsWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = propColor(properties, 'color', 0xFFFFFFFF);
     final accent = propColor(properties, 'accent', 0xFF888888);
-    final layoutStyle = properties['layoutStyle'] is String ? properties['layoutStyle'] as String : 'standard';
+    final layoutStyle = properties['layoutStyle'] is String
+        ? properties['layoutStyle'] as String
+        : 'standard';
 
     if (layoutStyle == 'tesla_grid' || layoutStyle == '3x3') {
       return _buildTeslaGrid(context, color, accent);
@@ -23,18 +25,42 @@ class TripStatsWidget extends StatelessWidget {
       return _buildPorschePod(context, color, accent);
     }
 
-    final label1 = (properties['label1'] is String ? properties['label1'] as String : null) ?? 'Distance';
+    final label1 = (properties['label1'] is String
+            ? properties['label1'] as String
+            : null) ??
+        'Distance';
     final value1 = properties['value1'];
-    final unit1 = (properties['unit1'] is String ? properties['unit1'] as String : null) ?? 'km';
-    final label2 = (properties['label2'] is String ? properties['label2'] as String : null) ?? 'Time';
+    final unit1 = (properties['unit1'] is String
+            ? properties['unit1'] as String
+            : null) ??
+        'km';
+    final label2 = (properties['label2'] is String
+            ? properties['label2'] as String
+            : null) ??
+        'Time';
     final value2 = properties['value2'];
-    final unit2 = (properties['unit2'] is String ? properties['unit2'] as String : null) ?? 'min';
-    final label3 = (properties['label3'] is String ? properties['label3'] as String : null) ?? 'Avg Speed';
+    final unit2 = (properties['unit2'] is String
+            ? properties['unit2'] as String
+            : null) ??
+        'min';
+    final label3 = (properties['label3'] is String
+            ? properties['label3'] as String
+            : null) ??
+        'Avg Speed';
     final value3 = properties['value3'];
-    final unit3 = (properties['unit3'] is String ? properties['unit3'] as String : null) ?? 'km/h';
-    final label4 = (properties['label4'] is String ? properties['label4'] as String : null) ?? 'Energy';
+    final unit3 = (properties['unit3'] is String
+            ? properties['unit3'] as String
+            : null) ??
+        'km/h';
+    final label4 = (properties['label4'] is String
+            ? properties['label4'] as String
+            : null) ??
+        'Energy';
     final value4 = properties['value4'];
-    final unit4 = (properties['unit4'] is String ? properties['unit4'] as String : null) ?? 'Wh';
+    final unit4 = (properties['unit4'] is String
+            ? properties['unit4'] as String
+            : null) ??
+        'Wh';
     final columns = propInt(properties, 'columns', 2).clamp(1, 6);
     final fontSizeRaw = propDouble(properties, 'fontSize', 20.0);
 
@@ -52,23 +78,28 @@ class TripStatsWidget extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final rows = (items.length / columns).ceil();
-              final itemHeight = rows > 0 ? (constraints.maxHeight / rows) : constraints.maxHeight;
+              final itemHeight = rows > 0
+                  ? (constraints.maxHeight / rows)
+                  : constraints.maxHeight;
               return Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: items.map((item) => SizedBox(
-                  width: ((constraints.maxWidth - 8) / columns).clamp(1.0, double.infinity),
-                  height: (itemHeight - 8).clamp(1.0, double.infinity),
-                  child: _StatTile(
-                    label: item.label,
-                    value: _format(item.value),
-                    unit: item.unit,
-                    color: color,
-                    accent: accent,
-                    fontSize: fontSizeRaw.toDouble(),
-                    properties: properties,
-                  ),
-                )).toList(),
+                children: items
+                    .map((item) => SizedBox(
+                          width: ((constraints.maxWidth - 8) / columns)
+                              .clamp(1.0, double.infinity),
+                          height: (itemHeight - 8).clamp(1.0, double.infinity),
+                          child: _StatTile(
+                            label: item.label,
+                            value: _format(item.value),
+                            unit: item.unit,
+                            color: color,
+                            accent: accent,
+                            fontSize: fontSizeRaw.toDouble(),
+                            properties: properties,
+                          ),
+                        ))
+                    .toList(),
               );
             },
           ),
@@ -106,7 +137,8 @@ class TripStatsWidget extends StatelessWidget {
             children: [
               Text(
                 header,
-                style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                    color: color, fontSize: 20, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 24),
               _buildRow(l1, '$v1 $u1', color, accent),
@@ -125,20 +157,35 @@ class TripStatsWidget extends StatelessWidget {
   }
 
   Widget _buildRow(String label, String valueStr, Color color, Color accent) {
+    // Both sides are Flexible with ellipsis rather than fixed-size Text:
+    // this row's fixed fontSizes (18/20) can overflow a narrower pod width
+    // than the "Since 2:03 PM" header was designed around — found by a
+    // golden-regression test (51px horizontal overflow on the stock
+    // porsche_taycan.veschub.json example).
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: accent.withValues(alpha: 0.85), fontSize: 18, fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            label,
+            style: TextStyle(
+                color: accent.withValues(alpha: 0.85),
+                fontSize: 18,
+                fontWeight: FontWeight.w500),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
-        Text(
-          valueStr,
-          style: TextStyle(
-            color: color,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            fontFeatures: const [FontFeature.tabularFigures()],
+        Flexible(
+          child: Text(
+            valueStr,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              color: color,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
@@ -154,7 +201,8 @@ class TripStatsWidget extends StatelessWidget {
     final s1V3 = _format(properties['section1Val3']);
     final s1U3 = properties['unit1_3'] as String? ?? 'Wh/km';
 
-    final s2Header = properties['section2Header'] as String? ?? 'Since last charge';
+    final s2Header =
+        properties['section2Header'] as String? ?? 'Since last charge';
     final s2V1 = _format(properties['section2Val1']);
     final s2U1 = properties['unit2_1'] as String? ?? 'km';
     final s2V2 = _format(properties['section2Val2']);
@@ -178,9 +226,12 @@ class TripStatsWidget extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildSection(s1Header, s1V1, s1U1, s1V2, s1U2, s1V3, s1U3, color, accent),
-              _buildSection(s2Header, s2V1, s2U1, s2V2, s2U2, s2V3, s2U3, color, accent),
-              _buildSection(s3Header, s3V1, s3U1, s3V2, s3U2, s3V3, s3U3, color, accent),
+              _buildSection(
+                  s1Header, s1V1, s1U1, s1V2, s1U2, s1V3, s1U3, color, accent),
+              _buildSection(
+                  s2Header, s2V1, s2U1, s2V2, s2U2, s2V3, s2U3, color, accent),
+              _buildSection(
+                  s3Header, s3V1, s3U1, s3V2, s3U2, s3V3, s3U3, color, accent),
             ],
           ),
         ),
@@ -191,25 +242,36 @@ class TripStatsWidget extends StatelessWidget {
 
   Widget _buildSection(
     String header,
-    String v1, String u1,
-    String v2, String u2,
-    String v3, String u3,
-    Color color, Color accent,
+    String v1,
+    String u1,
+    String v2,
+    String u2,
+    String v3,
+    String u3,
+    Color color,
+    Color accent,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           children: [
-            Expanded(child: Container(height: 1, color: accent.withValues(alpha: 0.25))),
+            Expanded(
+                child: Container(
+                    height: 1, color: accent.withValues(alpha: 0.25))),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Text(
                 header,
-                style: TextStyle(color: accent.withValues(alpha: 0.75), fontSize: 14, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                    color: accent.withValues(alpha: 0.75),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500),
               ),
             ),
-            Expanded(child: Container(height: 1, color: accent.withValues(alpha: 0.25))),
+            Expanded(
+                child: Container(
+                    height: 1, color: accent.withValues(alpha: 0.25))),
           ],
         ),
         const SizedBox(height: 8),
@@ -240,7 +302,10 @@ class TripStatsWidget extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           unit,
-          style: TextStyle(color: accent.withValues(alpha: 0.7), fontSize: 13, fontWeight: FontWeight.w500),
+          style: TextStyle(
+              color: accent.withValues(alpha: 0.7),
+              fontSize: 13,
+              fontWeight: FontWeight.w500),
         ),
       ],
     );
@@ -314,7 +379,8 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(label, style: TextStyle(color: accent, fontSize: fontSize * 0.5)),
+          Text(label,
+              style: TextStyle(color: accent, fontSize: fontSize * 0.5)),
           const SizedBox(height: 2),
           Row(
             crossAxisAlignment: CrossAxisAlignment.baseline,
