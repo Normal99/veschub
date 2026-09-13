@@ -20,7 +20,10 @@ void main() {
 
   Widget buildTestableStudio({List<Override> overrides = const []}) {
     return ProviderScope(
-      overrides: overrides,
+      overrides: [
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+        ...overrides,
+      ],
       child: const StudioApp(),
     );
   }
@@ -34,7 +37,11 @@ void main() {
     });
 
     testWidgets('T1.2: Renders categorized property fields when a widget is selected', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -72,7 +79,11 @@ void main() {
     });
 
     testWidgets('T1.3: Tooltips exist on inspector controls and mode switch chips', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -101,7 +112,11 @@ void main() {
     });
 
     testWidgets('T1.4: Direct Hex color entry handles #RRGGBB format correctly on inspector fields', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -129,7 +144,11 @@ void main() {
     });
 
     testWidgets('T1.5: Numeric slider scrubbing renders and clamps within min/max bounds', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -160,7 +179,11 @@ void main() {
 
   group('Property Inspector Tier 2: Boundary & Corner Cases', () {
     testWidgets('T2.1: Invalid hex format displays validation fallback without breaking state', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -187,7 +210,11 @@ void main() {
     });
 
     testWidgets('T2.2: Telemetry key filter field filters target key strings dynamically in dropdown', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
@@ -222,7 +249,11 @@ void main() {
     });
 
     testWidgets('T2.3: Deselecting widget returns inspector to clean placeholder view', (tester) async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(overrides: [
+        // These tests exercise the Canvas-mode inspector; the app now
+        // lands on the Template gallery by default, so force Canvas here.
+        editorModeProvider.overrideWith((ref) => EditorMode.canvas),
+      ]);
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,

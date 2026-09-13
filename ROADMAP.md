@@ -377,9 +377,21 @@ few net-new pieces.
       `sourceUnit`/`displayUnit` to other speed/temp-bearing widgets (minigauge's
       temperature preset, gauge, bar) is the same pattern, left for a follow-up
       pass rather than doing all of them in one sweep.
-- [ ] [P1] Template gallery: "start from a template, then tweak" made the
-      default landing experience (Template mode already supports this —
-      make it the first thing a new user sees)
+- [x] [P1] Template gallery as default landing (2026-09-13): `editorModeProvider`
+      now defaults to `EditorMode.template` instead of `canvas`. Also fixed two
+      latent gaps this exposed: (1) the "Open dashboard" dialog never forced
+      Canvas mode after loading a document, so opening a save while in
+      Template mode would leave the gallery on screen over the loaded scene —
+      now sets mode to canvas on open, same as "New dashboard" already did;
+      (2) `_TemplatePreview`'s card thumbnails hardcoded every widget into a
+      300×220 box regardless of its own declared width/height, which the
+      Porsche trip-stats pod (designed for 480×480, with 70/50px fixed
+      padding) overflowed by 114px — previously invisible because Template
+      mode was never the boot screen in any test. Fixed to read
+      `properties['width']`/`['height']` the same way the real Canvas editor
+      does (`studio_canvas_area.dart`'s nodeWidth/nodeHeight). Updated 5 studio
+      tests that assumed Canvas-mode boot to explicitly switch modes first;
+      all pass, no golden regressions.
 - [ ] [P2] Contextual tooltips/help already added for property rows (see
       `PROJECT.md` #5) — extend the same pattern to canvas tools and palette
 - [ ] [P2] Smart-default widget sizing/positioning when dropped on canvas

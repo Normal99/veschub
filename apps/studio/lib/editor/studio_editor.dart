@@ -461,6 +461,8 @@ class StudioEditor extends ConsumerWidget {
                             id: e.id,
                             name: e.name,
                           );
+                          ref.read(editorModeProvider.notifier).state =
+                              EditorMode.canvas;
                           Navigator.of(context).pop();
                         },
                       );

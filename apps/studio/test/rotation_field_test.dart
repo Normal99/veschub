@@ -27,6 +27,11 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: StudioApp()));
     await tester.pumpAndSettle();
 
+    // Fresh launch lands on the Template gallery; switch to Canvas mode
+    // to reach the palette, matching a real user's first action.
+    await tester.tap(find.text('Canvas'));
+    await tester.pumpAndSettle();
+
     final source = find.text('Speedometer');
     final target = find.byType(DragTarget<Map<String, dynamic>>);
     await tester.drag(

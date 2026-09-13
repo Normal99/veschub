@@ -36,6 +36,12 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: StudioApp()));
     await tester.pumpAndSettle();
 
+    // A fresh launch lands on the Template gallery (friendlier for a
+    // first-time user); switch to Canvas mode the same way a real user
+    // would, by tapping the mode switcher, to reach the manual-creation flow.
+    await tester.tap(find.text('Canvas'));
+    await tester.pumpAndSettle();
+
     // Sanity: nothing on canvas yet, inspector shows the empty placeholder.
     expect(find.byType(GaugeWidget), findsNothing);
     expect(find.text('Select a widget to edit its properties'), findsOneWidget);

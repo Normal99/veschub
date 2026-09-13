@@ -12,14 +12,26 @@ void main() {
     });
   });
 
-  testWidgets('studio editor boots in Canvas mode', (tester) async {
+  testWidgets('studio editor boots in Template mode', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: StudioApp()));
     await tester.pumpAndSettle();
 
     expect(find.text('Veschub Studio'), findsOneWidget);
-    expect(find.text('Canvas'), findsWidgets);
+    // Fresh launch lands on the Template gallery, not a blank canvas — a
+    // friendlier default for a first-time user (see editorModeProvider).
+    expect(find.text('Choose a starter dashboard'), findsOneWidget);
+  });
+
+  testWidgets('switching to Canvas mode shows the palette and empty inspector',
+      (tester) async {
+    await tester.pumpWidget(const ProviderScope(child: StudioApp()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Canvas'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Widgets'), findsOneWidget);
-    // No selection on boot -> the inspector shows the placeholder.
+    // No selection on switch -> the inspector shows the placeholder.
     expect(find.text('Select a widget to edit its properties'), findsOneWidget);
   });
 

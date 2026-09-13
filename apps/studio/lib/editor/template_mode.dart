@@ -252,12 +252,23 @@ class _TemplatePreview extends StatelessWidget {
               ),
               child: Stack(
                 children: [
+                  // Uses the widget's own declared width/height, same as the
+                  // real Canvas editor (see studio_canvas_area.dart's
+                  // nodeWidth/nodeHeight) — a hardcoded 300x220 box here
+                  // clipped some widgets (e.g. the Porsche trip-stats pod,
+                  // designed for 480x480) badly enough to overflow.
                   for (final w in document.widgets)
                     Positioned(
                       left: w.transform[4],
                       top: w.transform[5],
-                      width: 300,
-                      height: 220,
+                      width: (w.properties['width']
+                                  ?.mapOrNull(literal: (b) => b.value) as num?)
+                              ?.toDouble() ??
+                          300,
+                      height: (w.properties['height']
+                                  ?.mapOrNull(literal: (b) => b.value) as num?)
+                              ?.toDouble() ??
+                          220,
                       child: buildWidget(w, _resolve(w)),
                     ),
                 ],

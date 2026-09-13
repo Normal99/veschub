@@ -49,8 +49,13 @@ final idGeneratorProvider = Provider<IdGenerator>((ref) {
 });
 
 /// The active editor mode (Template/Canvas/Flow).
+///
+/// Defaults to Template so a fresh launch lands on "start from a template,
+/// then tweak" rather than a blank canvas — friendlier for a first-time
+/// user. Explicit flows (New Dashboard, Open) force Canvas mode themselves
+/// once they have something to show.
 final editorModeProvider = StateProvider<EditorMode>((ref) {
-  return EditorMode.canvas;
+  return EditorMode.template;
 });
 
 /// The active capability level (gates which props/handles are visible).
