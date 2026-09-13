@@ -90,6 +90,33 @@ void main() {
   });
 
   testWidgets(
+      'Tapping the font family field without typing shows every choice, '
+      'not just the current selection', (tester) async {
+    // Regression test for a real bug: Autocomplete pre-fills the field with
+    // the current value's label and filters options by the field's current
+    // text, so opening it without clearing first only ever matched itself
+    // ("Default" only matches the "Default" entry) — every other bundled
+    // font looked like it didn't exist unless you already knew to clear the
+    // field and retype. Just tapping the field (no typing) must show the
+    // full catalogue.
+    await _dropAndSelectGauge(tester);
+    await _expandFontsAndColors(tester);
+
+    await tester.ensureVisible(find.text('Default'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Default'));
+    await tester.pumpAndSettle();
+
+    // The options popup is a lazily-built, scrollable ListView capped at
+    // 220px tall, so only checking entries near the top (not e.g. the 9th
+    // of 12 bundled fonts) — this is about proving the list isn't filtered
+    // down to just "Default" anymore, not about scrolling a popup.
+    expect(find.text('Rajdhani'), findsOneWidget);
+    expect(find.text('Orbitron'), findsOneWidget);
+    expect(find.text('Share Tech Mono'), findsOneWidget);
+  });
+
+  testWidgets(
       'Font weight defaults to a real weight and offers a searchable '
       'dropdown of every accepted value', (tester) async {
     await _dropAndSelectGauge(tester);
@@ -118,6 +145,25 @@ void main() {
       ),
     );
     expect(rendered.any((t) => t.style?.fontWeight == FontWeight.w600), isTrue);
+  });
+
+  testWidgets(
+      'Tapping the font weight field without typing shows every choice, '
+      'not just the current selection', (tester) async {
+    // Same regression as the font-family case above, same fix.
+    await _dropAndSelectGauge(tester);
+    await _expandFontsAndColors(tester);
+
+    await tester.ensureVisible(find.text('Bold (700)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Bold (700)'));
+    await tester.pumpAndSettle();
+
+    // Same caveat as the font-family test above re: the popup's scrollable
+    // window — checking entries near the top of the 9-weight list.
+    expect(find.text('Regular (400)'), findsOneWidget);
+    expect(find.text('Medium (500)'), findsOneWidget);
+    expect(find.text('Semi Bold (600)'), findsOneWidget);
   });
 
   testWidgets(

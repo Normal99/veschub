@@ -801,13 +801,30 @@ class _FontFamilyEditor extends ConsumerWidget {
       },
       onSelected: (f) => onChanged(f.fontFamily),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-        return TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          style: const TextStyle(fontSize: 12),
-          decoration: const InputDecoration(
-            isDense: true,
-            suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+        // Autocomplete pre-fills the field with the current selection's
+        // label, and filters options by whatever text is currently in the
+        // field — so opening the field without clearing it first only ever
+        // matches itself (e.g. "Default" matches only the "Default" entry),
+        // making every other choice look like it doesn't exist. Clearing on
+        // focus shows the full list immediately, matching a standard
+        // combobox; restoring the label on blur if nothing was picked keeps
+        // the field showing the actual current value at rest.
+        return Focus(
+          onFocusChange: (hasFocus) {
+            if (hasFocus) {
+              controller.clear();
+            } else if (controller.text != current.label) {
+              controller.text = current.label;
+            }
+          },
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              isDense: true,
+              suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+            ),
           ),
         );
       },
@@ -850,13 +867,23 @@ class _FontWeightEditor extends StatelessWidget {
       },
       onSelected: (f) => onChanged(f.value),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-        return TextFormField(
-          controller: controller,
-          focusNode: focusNode,
-          style: const TextStyle(fontSize: 12),
-          decoration: const InputDecoration(
-            isDense: true,
-            suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+        // See _FontFamilyEditor's fieldViewBuilder — same fix, same reason.
+        return Focus(
+          onFocusChange: (hasFocus) {
+            if (hasFocus) {
+              controller.clear();
+            } else if (controller.text != current.label) {
+              controller.text = current.label;
+            }
+          },
+          child: TextFormField(
+            controller: controller,
+            focusNode: focusNode,
+            style: const TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              isDense: true,
+              suffixIcon: Icon(Icons.arrow_drop_down, size: 18),
+            ),
           ),
         );
       },
