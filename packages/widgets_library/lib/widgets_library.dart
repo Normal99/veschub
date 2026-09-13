@@ -22,6 +22,7 @@ import 'widgets/climate_widget.dart';
 import 'widgets/digitalspeed_widget.dart';
 import 'widgets/gauge_widget.dart';
 import 'widgets/gear_selector_widget.dart';
+import 'widgets/gps_widget.dart';
 import 'widgets/image_widget.dart';
 import 'widgets/map_widget.dart';
 import 'widgets/minigauge_widget.dart';
@@ -49,6 +50,7 @@ export 'widgets/climate_widget.dart';
 export 'widgets/digitalspeed_widget.dart';
 export 'widgets/gauge_widget.dart';
 export 'widgets/gear_selector_widget.dart';
+export 'widgets/gps_widget.dart';
 export 'widgets/image_widget.dart';
 export 'widgets/map_widget.dart';
 export 'widgets/minigauge_widget.dart';
@@ -177,6 +179,11 @@ final Map<String, WidgetKind> builtInWidgets = {
     id: 'gear_selector',
     level: CapabilityLevel.basic,
     render: (p) => GearSelectorWidget(properties: p),
+  ),
+  'gps': WidgetKind(
+    id: 'gps',
+    level: CapabilityLevel.basic,
+    render: (p) => GpsWidget(properties: p),
   ),
   'battery_range': WidgetKind(
     id: 'battery_range',

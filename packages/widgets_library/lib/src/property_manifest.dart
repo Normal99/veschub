@@ -3106,6 +3106,143 @@ const List<PropertyMeta> _map = [
       category: PropertyCategory.layoutAndSpacing),
 ];
 
+const List<PropertyMeta> _gps = [
+  PropertyMeta(
+      key: 'speed',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Speed binding',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'altitude',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Altitude binding',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'lat',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Latitude binding',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'lon',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Longitude binding',
+      category: PropertyCategory.dataBindings),
+  PropertyMeta(
+      key: 'unit',
+      minLevel: CapabilityLevel.basic,
+      label: 'Speed unit',
+      safe: true,
+      category: PropertyCategory.visuals),
+  PropertyMeta(
+      key: 'showCoordinates',
+      minLevel: CapabilityLevel.basic,
+      label: 'Show coordinates',
+      safe: true,
+      category: PropertyCategory.visuals),
+  PropertyMeta(
+      key: 'color',
+      minLevel: CapabilityLevel.basic,
+      label: 'Colour',
+      safe: true,
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'accent',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Accent colour',
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'fontSize',
+      minLevel: CapabilityLevel.basic,
+      label: 'Font size',
+      safe: true,
+      category: PropertyCategory.fontsAndColors,
+      min: 12,
+      max: 80,
+      step: 1),
+  PropertyMeta(
+      key: 'fontFamily',
+      minLevel: CapabilityLevel.basic,
+      label: 'Font family',
+      safe: true,
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'fontWeight',
+      minLevel: CapabilityLevel.basic,
+      label: 'Font weight',
+      safe: true,
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'letterSpacing',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Letter spacing',
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'backgroundColor',
+      minLevel: CapabilityLevel.basic,
+      label: 'Background',
+      safe: true,
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'borderRadius',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Corner radius',
+      category: PropertyCategory.layoutAndSpacing,
+      min: 0,
+      max: 48,
+      step: 1),
+  PropertyMeta(
+      key: 'borderWidth',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Border width',
+      category: PropertyCategory.layoutAndSpacing,
+      min: 0,
+      max: 12,
+      step: 1),
+  PropertyMeta(
+      key: 'borderColor',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Border colour',
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'shadowColor',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Shadow colour',
+      category: PropertyCategory.fontsAndColors),
+  PropertyMeta(
+      key: 'shadowBlur',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Shadow blur',
+      category: PropertyCategory.layoutAndSpacing,
+      min: 0,
+      max: 32,
+      step: 1),
+  PropertyMeta(
+      key: 'shadowOffsetY',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Shadow offset Y',
+      category: PropertyCategory.layoutAndSpacing,
+      min: -20,
+      max: 20,
+      step: 1),
+  PropertyMeta(
+      key: 'padding',
+      minLevel: CapabilityLevel.basic,
+      label: 'Padding',
+      safe: true,
+      category: PropertyCategory.layoutAndSpacing,
+      min: 0,
+      max: 48,
+      step: 1),
+  PropertyMeta(
+      key: 'opacity',
+      minLevel: CapabilityLevel.advanced,
+      label: 'Opacity',
+      category: PropertyCategory.visuals,
+      min: 0,
+      max: 1,
+      step: 0.05),
+];
+
 const List<PropertyMeta> _gear_selector = [
   PropertyMeta(
       key: 'currentGear',
@@ -3602,6 +3739,7 @@ const Map<String, List<PropertyMeta>> propertyManifest = {
   'car_viz': _car_viz,
   'map': _map,
   'gear_selector': _gear_selector,
+  'gps': _gps,
   'battery_range': _battery_range,
   'power_flow': _power_flow,
 };

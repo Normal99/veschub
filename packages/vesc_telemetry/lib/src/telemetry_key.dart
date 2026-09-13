@@ -39,6 +39,7 @@ class TelemetryKey {
   static const gpsLon = 'gps.lon';
   static const gpsSpeed = 'gps.speed';
   static const gpsHeading = 'gps.heading';
+  static const gpsAltitude = 'gps.altitude';
 
   /// All keys, useful for tests and the studio palette.
   static const all = <String>[
@@ -62,5 +63,6 @@ class TelemetryKey {
     gpsLon,
     gpsSpeed,
     gpsHeading,
+    gpsAltitude,
   ];
 }

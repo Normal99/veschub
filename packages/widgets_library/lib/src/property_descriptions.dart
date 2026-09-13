@@ -108,8 +108,11 @@ const Map<String, String> _descriptions = {
   'mapStyle':
       'Visual style of the map: a decorative graphic (vector/satellite) or '
           'real OpenStreetMap tiles (osm), centred on lat/lon.',
-  'lat': 'Latitude to centre the map on.',
-  'lon': 'Longitude to centre the map on.',
+  'lat': 'Latitude — the map centres on it, or the GPS panel displays it.',
+  'lon': 'Longitude — the map centres on it, or the GPS panel displays it.',
+  'speed': 'The bound speed value.',
+  'altitude': 'The bound altitude value.',
+  'showCoordinates': 'Whether the latitude/longitude text is shown.',
   'zoom': 'Map zoom level — higher numbers zoom in closer.',
   'heading': 'Compass direction, in degrees, the position marker points.',
   'showRing': 'Whether a status ring is drawn around the icon.',

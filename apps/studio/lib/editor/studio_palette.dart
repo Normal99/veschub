@@ -18,7 +18,14 @@ const Map<String, List<String>> _paletteCategories = {
   ],
   'Text & Data': ['text', 'status', 'tripstats', 'warnings'],
   'Charts': ['bar', 'chart'],
-  'Car Status': ['car_viz', 'gear_selector', 'battery_range', 'climate', 'map'],
+  'Car Status': [
+    'car_viz',
+    'gear_selector',
+    'battery_range',
+    'climate',
+    'map',
+    'gps'
+  ],
   'Media & Controls': ['music', 'appgrid', 'statusbar'],
   'Custom': ['image', 'web', 'paint'],
 };
@@ -867,6 +874,26 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'accent': L(0xFF00E5FF),
           'width': L(400),
           'height': L(300)
+        },
+      ),
+    ],
+    'gps': [
+      (
+        name: 'GPS Panel',
+        icon: Icons.gps_fixed,
+        props: {
+          'speed': T('gps.speed'),
+          'altitude': T('gps.altitude'),
+          'lat': T('gps.lat'),
+          'lon': T('gps.lon'),
+          'unit': L('km/h'),
+          'showCoordinates': L(true),
+          'color': L(0xFFFFFFFF),
+          'accent': L(0xFF00E5FF),
+          'fontSize': L(36),
+          'padding': L(12),
+          'width': L(260),
+          'height': L(150)
         },
       ),
     ],

@@ -30,6 +30,7 @@ IconData kindIcon(String kind) => switch (kind) {
       'battery_range' => Icons.battery_charging_full,
       'power_flow' => Icons.sync_alt,
       'gear_selector' => Icons.swap_vert,
+      'gps' => Icons.gps_fixed,
       _ => Icons.widgets,
     };
 
@@ -60,5 +61,6 @@ String kindDescription(String kind) => switch (kind) {
       'battery_range' => 'Battery percentage plus estimated remaining range.',
       'power_flow' => 'An animated power-flow diagram (battery/motor/regen).',
       'gear_selector' => 'A P/R/N/D gear-selector indicator.',
+      'gps' => 'Speed, altitude, and coordinates in one compact panel.',
       _ => 'A dashboard widget.',
     };

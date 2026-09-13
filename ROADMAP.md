@@ -590,7 +590,39 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 
 ## Milestone 6: Navigation & GPS 🚧
 
-- [ ] [P2] GPS widget (speed, altitude, coordinates)
+- [x] [P2] GPS widget (speed, altitude, coordinates) (2026-09-13): a new
+      `gps` kind (`gps_widget.dart`) — a compact composite panel distinct
+      from the `map` kind's live tile view, showing speed (large), altitude,
+      and lat/lon coordinates together, the way a real GPS-equipped
+      instrument cluster does. Added `TelemetryKey.gpsAltitude` (`gps.
+      altitude`) to complete the GPS namespace — `gpsLat`/`gpsLon`/
+      `gpsSpeed`/`gpsHeading` already existed. Registered as a proper first-
+      class kind (icon, description, property manifest, palette preset,
+      category) following the exact same pattern as every other built-in
+      widget — this is a legitimate composite (like `tripstats`/`climate`),
+      not the kind of monolithic single-purpose widget flagged earlier this
+      session, since combining a few related GPS readings into one panel is
+      genuinely useful and the primitives (`text`/`minigauge`) remain
+      equally available for anyone who'd rather build their own layout.
+  - Found and fixed a real overflow bug while writing the widget test: my
+        own first-draft "GPS Panel" preset (`220×120` box, `fontSize: 36`)
+        overflowed its own default size — three stacked lines don't fit that
+        tightly. Wrapped the content in `FittedBox(fit: BoxFit.scaleDown)`,
+        the same defensive pattern `text_widget.dart`/`tripstats_widget.
+        dart`/`digitalspeed_widget.dart` already use for exactly this
+        failure mode, and bumped the preset's default box to `260×150`.
+  - Seeded `gps.altitude`/`gps.speed` into both Studio preview telemetry
+        stores alongside the existing `gps.lat`/`gps.lon`/`gps.heading`
+        seeds (added for the map widget) so the preset renders meaningfully
+        while editing.
+  - Verified: `flutter analyze` clean (0 errors) across every touched file,
+        `flutter test` in `packages/vesc_telemetry` (5 tests), `packages/
+        widgets_library` (138 tests, 1 new file — including the manifest-
+        drift and kind-description completeness checks, both of which
+        exercise the new kind automatically), and `apps/studio` (34 tests)
+        all pass. Confirmed live in the running app (screenshot on
+        workspace 21): speed/altitude/coordinates all render correctly with
+        no background box and no overflow.
 - [x] [P2] Map widget (OpenStreetMap tile layer) (2026-09-13): the existing
       `map` kind's `_MapCanvasPainter` was purely decorative — hand-drawn
       fake roads, not a real map. Added `flutter_map`/`latlong2` and a new

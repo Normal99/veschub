@@ -46,6 +46,7 @@ final previewTelemetryProvider = Provider<TelemetryStore>((ref) {
     TelemetryKey.gpsLat: 52.52,
     TelemetryKey.gpsLon: 13.405,
     TelemetryKey.gpsHeading: 45.0,
+    TelemetryKey.gpsAltitude: 34.0,
     // Custom keys used by advanced example dashboards.
     'speed': 0.0,
     'battery_pct': 85.0,
