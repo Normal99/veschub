@@ -19,6 +19,71 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
     return box.globalToLocal(globalPos);
   }
 
+  Size _declaredSize(Map<String, Binding> properties) {
+    double read(String key, double fallback) {
+      final p = properties[key]?.mapOrNull(literal: (b) => b.value);
+      return (p as num?)?.toDouble() ?? fallback;
+    }
+
+    return Size(
+      read('width', kDefaultNodeWidth),
+      read('height', kDefaultNodeHeight),
+    );
+  }
+
+  /// Nudges [dropPos] to the nearest nearby spot (in a small expanding
+  /// spiral) whose [size] box doesn't overlap any existing node, clamped to
+  /// stay on the canvas. Falls back to the original drop position if every
+  /// candidate is still occupied (a densely-packed canvas) — overlap here is
+  /// a papercut to avoid, not something to block on.
+  Offset _avoidOverlap(
+    Offset dropPos,
+    Size size,
+    List<CanvasNode> existingNodes,
+    Size canvasSize,
+  ) {
+    Offset clamp(Offset p) => Offset(
+          p.dx.clamp(0.0, math.max(0.0, canvasSize.width - size.width)),
+          p.dy.clamp(0.0, math.max(0.0, canvasSize.height - size.height)),
+        );
+
+    bool overlapsAny(Offset p) {
+      final candidate = Rect.fromLTWH(p.dx, p.dy, size.width, size.height);
+      for (final n in existingNodes) {
+        final w =
+            _declaredSize((n.data as WidgetInstance?)?.properties ?? const {});
+        if (transformedBounds(n, w.width, w.height).overlaps(candidate)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    final first = clamp(dropPos);
+    if (!overlapsAny(first)) return first;
+
+    // Scaled to the widget's own footprint (plus a gap) — a fixed step
+    // shorter than the widget itself could never actually clear an overlap
+    // no matter how many rings it searched.
+    final step = math.max(size.width, size.height) * 0.55 + 16;
+    for (var ring = 1; ring <= 8; ring++) {
+      for (final delta in [
+        Offset(step * ring, 0),
+        Offset(0, step * ring),
+        Offset(step * ring, step * ring),
+        Offset(-step * ring, 0),
+        Offset(0, -step * ring),
+        Offset(-step * ring, -step * ring),
+        Offset(step * ring, -step * ring),
+        Offset(-step * ring, step * ring),
+      ]) {
+        final candidatePos = clamp(dropPos + delta);
+        if (!overlapsAny(candidatePos)) return candidatePos;
+      }
+    }
+    return first;
+  }
+
   @override
   Widget build(BuildContext context) {
     final scene = ref.watch(sceneModelProvider);
@@ -156,15 +221,23 @@ class _CanvasAreaState extends ConsumerState<_CanvasArea> {
                     final tplProps =
                         details.data['props'] as Map<String, Binding>?;
                     final id = ref.read(idGeneratorProvider).next();
-                    final localPos = _toCanvasPosition(details.offset);
+                    final properties =
+                        tplProps ?? StudioEditor.defaultProperties(kind);
+                    final size = _declaredSize(properties);
+                    final dropPos = _toCanvasPosition(details.offset);
+                    final localPos = _avoidOverlap(
+                      dropPos,
+                      size,
+                      scene.nodes,
+                      Size(canvasSize.width, canvasSize.height),
+                    );
                     final node = CanvasNode(
                       id: id,
                       transform: NodeTransforms.compose(translation: localPos),
                       data: WidgetInstance(
                         id: id,
                         kind: kind,
-                        properties:
-                            tplProps ?? StudioEditor.defaultProperties(kind),
+                        properties: properties,
                       ),
                     );
                     commands.execute(AddNodeCommand(node));

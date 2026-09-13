@@ -412,8 +412,21 @@ few net-new pieces.
       all pass, no golden regressions.
 - [ ] [P2] Contextual tooltips/help already added for property rows (see
       `PROJECT.md` #5) — extend the same pattern to canvas tools and palette
-- [ ] [P2] Smart-default widget sizing/positioning when dropped on canvas
-      (avoid overlap, snap to nearest empty grid cell)
+- [x] [P2] Smart-default widget positioning when dropped on canvas (2026-09-13):
+      dropping a widget onto a spot already covered by another now nudges it
+      to the nearest clear spot (`_avoidOverlap` in `studio_canvas_area.dart`,
+      an expanding-ring search using the same `transformedBounds` helper the
+      layer panel's overlap-warning icon already relies on) instead of
+      stacking them exactly on top of each other; falls back to the drop
+      position unchanged if the canvas is too dense to find a clear spot
+      nearby, since overlap is sometimes intentional (see `findOverlappingNodes`'s
+      own doc comment) and this is a papercut fix, not a hard constraint.
+      Caught a real bug in my own first pass: the search step was a fixed
+      32px, shorter than most widgets' own footprint (300px+), so it could
+      never actually search far enough to clear an overlap — fixed by
+      scaling the step to the dropped widget's own size. Widget test added.
+      Grid-snap (the other half of this line) not done — left as a smaller
+      follow-up since overlap-avoidance was the actual pain point.
 - [ ] [P3] In-app "what does this property do" examples/preview thumbnails
 
 ---
