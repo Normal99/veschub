@@ -481,7 +481,33 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 - [x] [P2] Metric / imperial unit conversion (per-widget, not global) (2026-09-13):
       same work as Milestone 10's "Per-widget unit system" item — see that
       entry. Covers speed (`digitalspeed`) and temperature (`minigauge`).
-- [ ] [P3] Dashboard app display modes: fullscreen, splitscreen, Pi-optimized
+- [x] [P3] Dashboard app display modes — partial (2026-09-13): the two
+      genuinely "Pi-optimized"/kiosk-relevant pieces. New
+      `apps/dashboard/lib/display_settings.dart` (`DisplaySettings`,
+      app-local — not `packages/settings`, since Studio never needs to know
+      about these; same persisted-`ChangeNotifier` pattern as
+      `SettingsService`): **keep screen awake** (via `wakelock_plus`,
+      defaults on — a display mounted in a vehicle shouldn't sleep
+      mid-drive) and **immersive fullscreen** (hides OS status/nav bars via
+      `SystemChrome.setEnabledSystemUIMode`, defaults *off* since some
+      devices need a swipe-from-edge gesture to reveal them again and that
+      shouldn't be a surprise). Both exposed as toggles in a new "Display"
+      settings section. The existing tap-top-edge-to-reveal auto-hiding
+      toolbar already covered casual "mostly fullscreen" viewing.
+  - **Not done** (left for a follow-up, deliberately not guessed at):
+        splitscreen (rendering two dashboards side by side is a materially
+        bigger feature — layout, a second `DashboardRuntime`/telemetry
+        store, its own UI for picking the second dashboard — not a
+        settings toggle); a dedicated "Pi-optimized" layout/density preset
+        beyond keep-awake/immersive (unclear what this should concretely
+        mean without a real Pi + small display to test against).
+  - Verified: `flutter analyze` clean, `flutter test` (11 tests, 2 new
+        files) and a Linux debug build both pass. `wakelock_plus` calls are
+        wrapped in try/catch — a platform with no wakelock channel
+        registered (a test environment, or a platform this plugin doesn't
+        support) shouldn't crash a settings toggle over it; this is also
+        what let the test suite exercise the real setter path without
+        mocking the platform channel.
 
 ## Milestone 5: Studio Polish 🚧
 

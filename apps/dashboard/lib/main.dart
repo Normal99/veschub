@@ -25,7 +25,9 @@ import 'package:vesc_transport/vesc_transport.dart';
 import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+import 'display_settings.dart';
 import 'onboarding/dashboard_onboarding.dart';
 import 'settings/dashboard_settings_screen.dart';
 
@@ -321,6 +323,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final doc = _runtime.document;
+    // Applied every build (idempotent — the platform channel no-ops if
+    // already in the requested mode) rather than only on toggle, so a
+    // fresh launch with immersive mode already enabled from a prior
+    // session actually starts immersive instead of waiting for the user
+    // to touch the setting again.
+    final immersive = ref.watch(displaySettingsProvider).immersiveFullscreen;
+    SystemChrome.setEnabledSystemUIMode(
+      immersive ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+    );
     return Scaffold(
       body: Stack(
         children: [
