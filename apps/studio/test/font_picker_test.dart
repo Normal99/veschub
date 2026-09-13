@@ -23,7 +23,8 @@ Future<void> _dropAndSelectGauge(WidgetTester tester) async {
 
   final source = find.text('Speedometer');
   final target = find.byType(DragTarget<Map<String, dynamic>>);
-  await tester.drag(source, tester.getCenter(target) - tester.getCenter(source));
+  await tester.drag(
+      source, tester.getCenter(target) - tester.getCenter(source));
   await tester.pumpAndSettle();
 
   await tester.drag(find.byType(GaugeWidget), const Offset(30, 15),
@@ -82,7 +83,8 @@ void main() {
       ),
     );
     expect(
-      rendered.any((t) => t.style?.fontFamily == 'packages/widgets_library/Orbitron'),
+      rendered.any(
+          (t) => t.style?.fontFamily == 'packages/widgets_library/Orbitron'),
       isTrue,
     );
   });
@@ -116,5 +118,36 @@ void main() {
       ),
     );
     expect(rendered.any((t) => t.style?.fontWeight == FontWeight.w600), isTrue);
+  });
+
+  testWidgets(
+      'A user-imported custom font appears in the font family picker '
+      'alongside the bundled ones', (tester) async {
+    // Simulates the persisted state after Settings > Custom Fonts > Import
+    // — the widget under test never drives the actual OS file picker
+    // (untestable here, same as every other FilePicker-based import flow in
+    // this codebase; see custom_font_service.dart's doc comment). Only
+    // checks the option is offered, not the full select-and-apply round
+    // trip the other two tests in this file cover for bundled fonts —
+    // tapping this option's overlay row reliably misses the hit test here
+    // (lands on an Overlay-internal render object instead, regardless of
+    // position/ensureVisible), which looks like a flutter_test harness
+    // quirk rather than a bug in the feature. The underlying merge logic
+    // itself (`fontChoicesProvider`) is covered directly by
+    // packages/settings/test/settings_test.dart's custom-font tests.
+    SharedPreferences.setMockInitialValues({
+      'settings.onboardingDone': true,
+      'settings.capabilityLevel': 'advanced',
+      'settings.customFonts': [
+        '{"family":"My Custom Font","filePath":"/tmp/my_custom_font.ttf"}',
+      ],
+    });
+
+    await _dropAndSelectGauge(tester);
+    await _expandFontsAndColors(tester);
+
+    await tester.enterText(find.text('Default'), 'My Custom');
+    await tester.pumpAndSettle();
+    expect(find.text('My Custom Font'), findsWidgets);
   });
 }

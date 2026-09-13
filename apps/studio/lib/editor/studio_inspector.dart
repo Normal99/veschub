@@ -773,14 +773,15 @@ class _LiteralEditorState extends State<_LiteralEditor> {
 /// Built on [Autocomplete] since that's the stock Flutter widget for
 /// "type to filter, pick from a dropdown," matching what most other
 /// programs' font pickers do rather than inventing a bespoke one.
-class _FontFamilyEditor extends StatelessWidget {
+class _FontFamilyEditor extends ConsumerWidget {
   final String value;
   final ValueChanged<String> onChanged;
   const _FontFamilyEditor({required this.value, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) {
-    final current = kFontChoices.firstWhere(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final choices = ref.watch(fontChoicesProvider);
+    final current = choices.firstWhere(
       (f) => f.fontFamily == value,
       orElse: () => FontChoice(label: value, fontFamily: value),
     );
@@ -795,8 +796,8 @@ class _FontFamilyEditor extends StatelessWidget {
       displayStringForOption: (f) => f.label,
       optionsBuilder: (textEditingValue) {
         final q = textEditingValue.text.trim().toLowerCase();
-        if (q.isEmpty) return kFontChoices;
-        return kFontChoices.where((f) => f.label.toLowerCase().contains(q));
+        if (q.isEmpty) return choices;
+        return choices.where((f) => f.label.toLowerCase().contains(q));
       },
       onSelected: (f) => onChanged(f.fontFamily),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {

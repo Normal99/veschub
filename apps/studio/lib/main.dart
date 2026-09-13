@@ -17,6 +17,7 @@ import 'settings/studio_settings_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await createSettingsService();
+  await registerAllCustomFonts(settings);
   runApp(
     ProviderScope(
       overrides: [settingsServiceProvider.overrideWith((ref) => settings)],

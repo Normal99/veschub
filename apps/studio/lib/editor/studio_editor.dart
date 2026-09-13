@@ -22,6 +22,7 @@ import 'package:vesc_telemetry/vesc_telemetry.dart';
 import 'package:widgets_library/widgets_library.dart';
 
 import '../document_bridge.dart';
+import '../fonts/font_choices_provider.dart';
 import '../providers/editor_providers.dart';
 import '../widgets/simple_color_picker.dart';
 import 'flow_mode.dart';

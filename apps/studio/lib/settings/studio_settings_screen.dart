@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:settings/settings.dart';
 
+import '../fonts/custom_font_service.dart';
+
 class StudioSettingsScreen extends ConsumerWidget {
   const StudioSettingsScreen({super.key});
 
@@ -54,6 +56,33 @@ class StudioSettingsScreen extends ConsumerWidget {
               onChanged: (v) =>
                   v == null ? null : settings.setCapabilityLevel(v),
             ),
+          ),
+          const _SectionHeader('Custom Fonts'),
+          for (final font in settings.customFonts)
+            ListTile(
+              leading: const Icon(Icons.font_download_outlined),
+              title:
+                  Text(font.family, style: TextStyle(fontFamily: font.family)),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete_outline),
+                tooltip: 'Remove custom font',
+                onPressed: () => removeCustomFont(settings, font),
+              ),
+            ),
+          ListTile(
+            leading: const Icon(Icons.add),
+            title: const Text('Import font (.ttf / .otf)'),
+            subtitle: const Text(
+              'Available in any dashboard\'s font picker afterwards.',
+            ),
+            onTap: () async {
+              final family = await importCustomFont(settings);
+              if (family != null && context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Imported "$family"')),
+                );
+              }
+            },
           ),
           const Divider(),
           const ListTile(

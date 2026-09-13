@@ -73,5 +73,53 @@ void main() {
       expect(service.themeMode, ThemePreference.system);
       expect(service.transport, TransportPreference.auto);
     });
+
+    test('custom fonts: empty by default', () async {
+      final service = await createSettingsService();
+      expect(service.customFonts, isEmpty);
+    });
+
+    test('addCustomFont persists, notifies, and survives a reload', () async {
+      final service = await createSettingsService();
+      var notified = 0;
+      service.addListener(() => notified++);
+
+      await service.addCustomFont(
+        const CustomFontEntry(family: 'My Font', filePath: '/tmp/my_font.ttf'),
+      );
+      expect(service.customFonts, hasLength(1));
+      expect(service.customFonts.single.family, 'My Font');
+      expect(notified, 1);
+
+      final reloaded = await createSettingsService();
+      expect(reloaded.customFonts, hasLength(1));
+      expect(reloaded.customFonts.single.filePath, '/tmp/my_font.ttf');
+    });
+
+    test(
+        'addCustomFont with an existing family name replaces it, not duplicates it',
+        () async {
+      final service = await createSettingsService();
+      await service.addCustomFont(
+        const CustomFontEntry(family: 'My Font', filePath: '/tmp/v1.ttf'),
+      );
+      await service.addCustomFont(
+        const CustomFontEntry(family: 'My Font', filePath: '/tmp/v2.ttf'),
+      );
+      expect(service.customFonts, hasLength(1));
+      expect(service.customFonts.single.filePath, '/tmp/v2.ttf');
+    });
+
+    test('removeCustomFont drops the entry and persists the removal', () async {
+      final service = await createSettingsService();
+      await service.addCustomFont(
+        const CustomFontEntry(family: 'My Font', filePath: '/tmp/my_font.ttf'),
+      );
+      await service.removeCustomFont('My Font');
+      expect(service.customFonts, isEmpty);
+
+      final reloaded = await createSettingsService();
+      expect(reloaded.customFonts, isEmpty);
+    });
   });
 }

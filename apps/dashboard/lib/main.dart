@@ -44,6 +44,7 @@ final dashboardDatabaseProvider = Provider<DashboardDatabase>((ref) {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final settings = await createSettingsService();
+  await registerAllCustomFonts(settings);
   runApp(
     ProviderScope(
       overrides: [settingsServiceProvider.overrideWith((ref) => settings)],
