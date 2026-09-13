@@ -45,7 +45,6 @@ class _NodeEditorState extends State<NodeEditor> {
 
   // Node drag state.
   String? _draggingNode;
-  Offset _dragOffset = Offset.zero;
 
   GraphPoint _toGraph(Offset screen) =>
       GraphPoint((screen.dx - _pan.dx) / _zoom, (screen.dy - _pan.dy) / _zoom);
@@ -107,12 +106,22 @@ class _NodeEditorState extends State<NodeEditor> {
                         onPanStart: (details) {
                           if (_dragSourceNode != null) return;
                           _draggingNode = node.id;
-                          _dragOffset = details.localPosition;
                         },
                         onPanUpdate: (details) {
                           if (_draggingNode != node.id) return;
-                          final newPos = _toGraph(
-                            details.globalPosition - _dragOffset,
+                          // Move by the incremental delta (zoom-adjusted)
+                          // rather than recomputing an absolute position
+                          // from a mix of local pan-start and global
+                          // pan-update coordinates — that mix silently
+                          // added the editor's own screen offset (e.g. a
+                          // palette sidebar to its left) into every drag,
+                          // making nodes jump when dragged in the real app
+                          // layout (caught by node_editor_test.dart using
+                          // a harness with a sidebar, not by testing the
+                          // editor alone at the screen origin).
+                          final newPos = GraphPoint(
+                            node.position.x + details.delta.dx / _zoom,
+                            node.position.y + details.delta.dy / _zoom,
                           );
                           final updated = node.copyWith(position: newPos);
                           final newNodes = widget.graph.nodes
@@ -294,12 +303,14 @@ class _NodeCard extends StatelessWidget {
                   children: [
                     for (final socket in node.inputs)
                       _SocketRow(
+                        dotKey: ValueKey('socket_${node.id}_${socket.id}_in'),
                         socket: socket,
                         isOutput: false,
                         onTap: (pos) => onSocketTap(socket.id, false, pos),
                       ),
                     for (final socket in node.outputs)
                       _SocketRow(
+                        dotKey: ValueKey('socket_${node.id}_${socket.id}_out'),
                         socket: socket,
                         isOutput: true,
                         onTap: (pos) => onSocketTap(socket.id, true, pos),
@@ -330,11 +341,13 @@ class _NodeCard extends StatelessWidget {
 }
 
 class _SocketRow extends StatelessWidget {
+  final Key dotKey;
   final Socket socket;
   final bool isOutput;
   final void Function(Offset pos) onTap;
 
   const _SocketRow({
+    required this.dotKey,
     required this.socket,
     required this.isOutput,
     required this.onTap,
@@ -346,7 +359,7 @@ class _SocketRow extends StatelessWidget {
       mainAxisAlignment:
           isOutput ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: [
-        if (!isOutput) _SocketDot(socket: socket, onTap: onTap),
+        if (!isOutput) _SocketDot(key: dotKey, socket: socket, onTap: onTap),
         if (!isOutput)
           Padding(
             padding: const EdgeInsets.only(left: 4),
@@ -357,7 +370,7 @@ class _SocketRow extends StatelessWidget {
             padding: const EdgeInsets.only(right: 4),
             child: Text(socket.label, style: const TextStyle(fontSize: 11)),
           ),
-        if (isOutput) _SocketDot(socket: socket, onTap: onTap),
+        if (isOutput) _SocketDot(key: dotKey, socket: socket, onTap: onTap),
       ],
     );
   }
@@ -367,7 +380,7 @@ class _SocketDot extends StatelessWidget {
   final Socket socket;
   final void Function(Offset pos) onTap;
 
-  const _SocketDot({required this.socket, required this.onTap});
+  const _SocketDot({super.key, required this.socket, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
