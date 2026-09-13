@@ -163,6 +163,44 @@ the new end-to-end drag/select/inspect flow).
       delete edges) with no automated coverage at all. This is the
       biggest test-coverage gap in the monorepo.
 
+## SimHub UX research (2026-09-13)
+
+Cloned `https://github.com/SHWotever/SimHub.wiki.git` directly (rather
+than a summarized fetch) to read the Dash Studio docs/tutorial and view
+the actual editor GIFs — SimHub is a widely-used, beginner-friendly
+competitor in the same space. Read: Dash-Studio.md, ---Creation-Tutorial,
+-Editor-Overview, ---Bindings, -Designer-Shortcuts, -Overlays,
+-performance. Concrete findings applied this session:
+
+- [x] **Layer locking with click-through**, closing the item above.
+- [x] **Layers list permanently visible above the property grid**
+      (previously a toggle swapped the whole right panel between the two
+      — see the "guiding principle" note above about tools people can
+      use themselves; not being able to see your layer list while editing
+      properties is exactly the kind of friction that principle is about).
+- [x] **Only one property section starts expanded**, not all four at
+      once — SimHub's own grid is mostly flat and what few collapsible
+      groups it has default open, so the closer read of the ask is
+      "don't dump everything expanded on every selection," not "closed by
+      default."
+- Not yet applied, worth a future pass:
+  - SimHub's binding indicator is a *single* icon per property whose
+    color encodes state (gray = static, green = bound) that opens an
+    editor popup on click — more compact than our 4 always-visible
+    Lit/Tel/F(x)/Graph chips per row. Worth revisiting if the inspector
+    still feels dense once the above lands.
+  - "Smart" pre-bound components (SimHub's Gear widget works with zero
+    configuration the instant it's added) — most of our palette presets
+    already do this (bound to a sensible telemetry key), but it's worth
+    an explicit audit pass to confirm every preset qualifies, especially
+    any added going forward.
+  - SimHub keyboard shortcuts (`ctrl+a` select all, arrow keys nudge,
+    `ctrl+alt+arrow` resize, `del` delete) — overlaps with the existing
+    "Keyboard shortcuts" P2 item in Milestone 5, not newly discovered but
+    now backed by a concrete reference list.
+  - Multi-screen dashboards (SimHub dashboards can have multiple
+    screens/pages you switch between) — a bigger feature, not scoped.
+
 ---
 
 ## Milestone 1: Studio MVP ✅
@@ -239,7 +277,10 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 - [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
 - [ ] [P1] Multiple selection with group operations
 - [x] [P2] Layer panel: reorder widgets by z-height, visibility toggle
-- [ ] [P2] Layer panel: per-layer lock, matching the original z-height ask
+- [x] [P2] Layer panel: per-layer lock (2026-09-13, see "SimHub UX
+      research" below) — locking skips a widget entirely during canvas
+      hit-testing (click/marquee) while it stays selectable from the
+      layer row itself.
 - [ ] [P2] Cut / copy / paste between dashboards
 - [ ] [P2] Keyboard shortcuts (delete, copy, undo, redo)
 - [ ] [P2] Golden-screenshot regression tests via `tools/dashboard_renderer`,
