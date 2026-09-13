@@ -142,6 +142,66 @@ passed to the app, treating the first one as a `--target` override).
       zero padding), alongside the existing styled/car-brand presets rather
       than replacing them. `gauge` already had a comparable `Minimal Arc`
       preset from before this session.
+- [x] [P1] **Palette presets: no more default background boxes, muted
+      colours don't pop** (2026-09-13): user feedback was blunt — "none of
+      these widgets should have a background by default", and defaults
+      "look muted and don't pop how you expect" for a dashboard. Audited
+      every preset in `apps/studio/lib/editor/studio_palette.dart`'s
+      `_templates` map (all 16 kinds that actually have presets) against
+      `resolveBoxDecoration` in `packages/widgets_library/lib/src/
+      cosmetic_helpers.dart` (confirmed default `backgroundColor` is
+      `0x00000000`, default `borderRadius`/`borderWidth` are `0`).
+  - Stripped `backgroundColor`/`borderRadius`/`borderWidth`/`borderColor`
+        from 31 presets across `gauge` (BMW Amber, Audi Sport, Porsche
+        Green), `bar` (Horizontal, Vertical), `text` (Sans, Compact),
+        `chart` (Line Chart, Area Chart), `digitalspeed` (all three),
+        `music` (Player, Mini), `tripstats` (both), `power` (both —
+        this is the "Power Meter" the user called out directly),
+        `warnings` (Warning Icons), `minigauge` (all three), `appgrid`
+        (both), `statusbar` (Top Bar), `climate` (both), `car_viz`
+        (Lane Assist), `map` (Navigation), `battery_range`. Left
+        `bar > Wide Card` (explicit card look, name says so) and the
+        `Minimal` presets (already correct) untouched.
+  - **Judgment call**: checked each kind's renderer in
+        `packages/widgets_library/lib/widgets/` before deleting
+        `borderRadius` blindly — `bar_widget.dart` reuses the same
+        `borderRadius` prop to shape the track/fill pill itself (not
+        just an outer box), so bar presets keep `borderRadius` and only
+        lose `backgroundColor`. `image_widget.dart` and `web_widget.dart`
+        use `borderRadius` to round the actual image/webview content
+        (a legitimate "framed" look, not a pointless box), so `image`
+        and `web` presets were left alone entirely.
+  - **Judgment call**: kept `status > Pill`'s background — read
+        `status_widget.dart` and its own doc comment calls it "a coloured
+        pill + label... top-of-dashboard health indicator"; the widget
+        always draws a severity-coloured border regardless of props, so
+        the pill/badge look is baked into the widget's own design, not a
+        removable decorative box. `status > Inline` (already transparent)
+        is the clean alternative for anyone who doesn't want that.
+  - Added `'fontWeight': L('bold')` to primary-value props on presets
+        whose renderer hardcodes a thin default weight and the preset
+        didn't already override it: `power` (both, default `w300`),
+        `climate` (both, default `w300`), `digitalspeed` Compact/With Sub
+        (default `w200`). Left `digitalspeed > Tesla Style`'s deliberate
+        `w200` alone — that thin weight is the point of the preset name.
+        Most other kinds' primary readouts already hardcode `w500`–`w700`
+        in their renderers regardless of props, so no change was needed
+        there; likewise most primary `color` values were already vivid
+        (saturated green/orange/red/cyan) — the "muted" complaint turned
+        out to be almost entirely the dark navy/black background boxes
+        (`0xFF111122`, `0xFF0D0D1A`, `0xFF1A1A2E`, etc.) rather than the
+        foreground colours themselves; removing those boxes is most of
+        the "pop" fix.
+  - `power_flow`'s one preset (`kW Bar`) and `gear_selector`'s one preset
+        (`PRND`) already had `backgroundColor: 0x00000000` — no change
+        needed, confirming these two were already compliant.
+  - Verified: `flutter analyze`/`dart format` clean on the changed file;
+        full `flutter test` in `apps/studio` (33 tests), `packages/
+        widgets_library` (125 tests), and `tools/dashboard_renderer`
+        (10 tests) all pass with zero golden diffs — the golden tests
+        that drag a "Speedometer" preset onto the canvas were unaffected
+        because that preset (built via the `_dial()` helper) already had
+        a transparent background and wasn't touched.
 
 ## Full test sweep (2026-09-13)
 
