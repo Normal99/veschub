@@ -275,14 +275,27 @@ Pick this back up once the UI/tooling/AI tracks below are in good shape.
 - [ ] [P1] Rotation handle on canvas + rotation property/field in the inspector
       (parallel to `_PositionFields`), plus an anchor point for resize/rotate
 - [ ] [P1] Bar properties: barRadius, showValue, gradient, gradientColor
-- [ ] [P1] Multiple selection with group operations
+- [x] [P1] Multiple selection with group operations (2026-09-13) — group-move
+      already worked (TransformNodesCommand always applied to the whole
+      selection), but there was no way to build a multi-selection one
+      click at a time. Added shift/ctrl/cmd-click toggle via
+      `SelectionModel.toggle()` (existed, was never called); plain click
+      on something outside the selection now replaces it instead of adding.
 - [x] [P2] Layer panel: reorder widgets by z-height, visibility toggle
 - [x] [P2] Layer panel: per-layer lock (2026-09-13, see "SimHub UX
       research" below) — locking skips a widget entirely during canvas
       hit-testing (click/marquee) while it stays selectable from the
       layer row itself.
-- [ ] [P2] Cut / copy / paste between dashboards
-- [ ] [P2] Keyboard shortcuts (delete, copy, undo, redo)
+- [x] [P2] Cut / copy / paste between dashboards (2026-09-13) —
+      `NodeClipboard` was fully built and tested but never wired to any
+      UI; now bound to Ctrl/Cmd+C/X/V. In-memory, session-scoped, so it
+      survives switching to a different dashboard document.
+- [x] [P2] Keyboard shortcuts: delete, copy, undo, redo (2026-09-13) — plus
+      select-all and arrow-key nudge, matching SimHub's documented set.
+      See `apps/studio/lib/editor/keyboard_shortcuts.dart` — note the
+      explicit typing-guard needed because `CallbackShortcuts` did not
+      reliably defer to a focused text field on its own (verified by a
+      failing test before the fix).
 - [ ] [P2] Golden-screenshot regression tests via `tools/dashboard_renderer`,
       using the 9 example dashboards as visual baselines
 - [ ] [P3] Dashboard description rich text / markdown
