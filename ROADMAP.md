@@ -212,6 +212,20 @@ passed to the app, treating the first one as a `--target` override).
         that drag a "Speedometer" preset onto the canvas were unaffected
         because that preset (built via the `_dial()` helper) already had
         a transparent background and wasn't touched.
+- [x] [P2] **"We don't need a Power meter, we need a meter + text" — a
+      primitive-based alternative** (2026-09-13): the user's underlying
+      complaint about the `power` kind wasn't really about its background
+      (already fixed above) but about it being a single-purpose, non-
+      decomposable composite widget when the same "wattage at a glance" job
+      should be buildable from general-purpose primitives. Deleting the
+      `power` kind/renderer was explicitly out of scope (breaking change for
+      any saved dashboard already using it, and the user said "presets do
+      have their place... don't disregard them" — not a mandate to remove
+      anything). Instead added a `Power` preset to `minigauge` (bound to the
+      same `power` telemetry key, reusing its existing `icon: 'power'` →
+      `Icons.bolt` mapping) so the primitive path is now equally one drag
+      away in the palette, not just theoretically possible. A plain `text`
+      widget bound to `power` already covered the "just the reading" case.
 - [x] [P1] **Widget font system — no custom font existed at all** (2026-09-13):
       "the widget font system is a little scuffed" turned out to be literal —
       `grep -r "fonts:" apps/*/pubspec.yaml` and a search for `.ttf`/`.otf`

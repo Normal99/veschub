@@ -650,6 +650,29 @@ class _WidgetPalette extends ConsumerStatefulWidget {
     ],
     'minigauge': [
       (
+        // A primitive-based alternative to the dedicated `power` kind: the
+        // same "wattage at a glance" job, built from a general-purpose
+        // gauge instead of a single-purpose composite widget. Users aren't
+        // limited to the bundled Power Meter — this (or a plain `text`
+        // bound to the same key) works just as well and is more flexible
+        // to restyle piece by piece.
+        name: 'Power',
+        icon: Icons.bolt,
+        props: {
+          'value': T('power'),
+          'min': L(-5000),
+          'max': L(5000),
+          'label': L('Power'),
+          'unit': L('W'),
+          'icon': L('power'),
+          'style': L('arc'),
+          'color': L(0xFF00FF88),
+          'accent': L(0xFF888888),
+          'fontSize': L(16),
+          'padding': L(8)
+        },
+      ),
+      (
         name: 'Battery',
         icon: Icons.battery_full,
         props: {
