@@ -10,19 +10,50 @@ class _PropertiesInspector extends ConsumerWidget {
     final selection = ref.watch(selectionModelProvider);
 
     if (selection.isEmpty) {
+      // Rather than waste the whole panel on a placeholder message, show
+      // canvas-level properties — the things that matter when nothing is
+      // selected (background/accent colour). Named dashboard properties
+      // (size, name) are already editable elsewhere (canvas toolbar, save
+      // dialog) so aren't duplicated here.
+      final canvasSize = ref.watch(canvasSizeProvider);
       return Container(
         decoration: BoxDecoration(
           border: Border(left: BorderSide(color: Colors.grey.shade300)),
         ),
-        child: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'Select a widget to edit its properties',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Canvas', style: Theme.of(context).textTheme.titleSmall),
+            const SizedBox(height: 4),
+            Text(
+              '${canvasSize.width.toInt()} × ${canvasSize.height.toInt()}',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
             ),
-          ),
+            const Divider(height: 24),
+            _CanvasColorRow(
+              label: 'Background',
+              value: ref.watch(backgroundProvider),
+              onChanged: (c) {
+                ref.read(backgroundProvider.notifier).state = c;
+                ref.read(isDirtyProvider.notifier).state = true;
+              },
+            ),
+            const SizedBox(height: 12),
+            _CanvasColorRow(
+              label: 'Accent',
+              value: ref.watch(accentProvider),
+              onChanged: (c) {
+                ref.read(accentProvider.notifier).state = c;
+                ref.read(isDirtyProvider.notifier).state = true;
+              },
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Select a widget to edit its properties',
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+            ),
+          ],
         ),
       );
     }
@@ -974,6 +1005,49 @@ class _PaintProgramEditorState extends ConsumerState<_PaintProgramEditor> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// A labeled colour-swatch row for canvas-level properties (background,
+/// accent), reusing the same SimpleColorPicker dialog the template-tweak
+/// panel uses so the picker UI never drifts between the two.
+class _CanvasColorRow extends StatelessWidget {
+  final String label;
+  final int value;
+  final ValueChanged<int> onChanged;
+  const _CanvasColorRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(label, style: const TextStyle(fontSize: 13)),
+        ),
+        GestureDetector(
+          onTap: () async {
+            final picked = await showDialog<int>(
+              context: context,
+              builder: (context) => SimpleColorPicker(current: value),
+            );
+            if (picked != null) onChanged(picked);
+          },
+          child: Container(
+            width: 40,
+            height: 28,
+            decoration: BoxDecoration(
+              color: Color(value),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.black26),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
