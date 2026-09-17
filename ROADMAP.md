@@ -745,6 +745,58 @@ widget test rather than guessed at:
   Strengthened it, and added `slider_property_test.dart` covering the
   numeric-field case specifically.
 
+## The real slider bug: the inspector never refreshed after a commit (2026-09-17)
+
+The previous entry's "no slider-specific bug found" was wrong — the user
+came back with "Still cant move the sliders at all" after restarting, and
+pushed for a real fix rather than accepting the shrug. Re-reproduced live,
+carefully this time: zoomed into a screenshot to get the slider thumb's
+exact pixel position, then dragged with 20 granular intermediate mouse
+moves rather than a single jump. The thumb still didn't move and the
+readout still said "10.0" — **but the actual gauge preview on the canvas
+re-rendered with a visibly denser ring of tick labels**, proving the
+underlying value *had* changed (to somewhere near the slider's max) even
+though the slider's own display never updated. That mismatch was the real
+clue: the commit path was never broken, only the inspector's own display
+of it.
+
+**Root cause**: `_PropertiesInspector.build()` (`apps/studio/lib/editor/
+studio_inspector.dart`) called `ref.read(sceneModelProvider)` — a one-time
+snapshot — instead of `ref.watch(sceneModelProvider)`. Worse, being
+declared as a `const` widget, it doesn't even get rebuilt by its parent's
+own top-level rebuild (`StudioEditor` watches `commandStackProvider` and
+re-runs `build()` on every command, but Flutter skips re-invoking `build()`
+on an unchanged `const` widget instance entirely — there's nothing for the
+parent rebuild to "reach"). So the inspector only ever refreshed when
+`selectionModelProvider` itself changed; every property edit committed
+correctly to the model (confirmed independently — the canvas preview,
+which does watch the scene directly, always reflected changes instantly)
+but the inspector kept displaying stale props otherwise. A `Slider` has no
+local memory of its dragged position — its displayed value is purely
+`(widget.value as num).clamp(min, max)` recomputed fresh every render — so
+with a stale `widget.value` forever frozen, it visibly never moved. Text
+fields and enum pickers partially masked the same underlying bug by
+showing whatever the user just typed/selected locally in their own
+`TextEditingController`/`Autocomplete` state, independent of whether the
+"official" value ever round-tripped back into view.
+
+**Fixed** with a one-line change (`read` → `watch`). Verified the fix
+addresses the real mechanism, not just the symptom: wrote
+`inspector_reactivity_test.dart`, which commits a property change directly
+through the scene model (bypassing all UI interaction, isolating exactly
+this reactivity gap) and asserts the rendered `Slider.value` reflects it.
+Confirmed the test fails against the old `read` (expects 40.0, gets 10.0)
+and passes against `watch`. Then live-verified end to end on a real
+running build, using the same precise drag technique both times: with the
+old code, the slider stayed stuck at "10.0" while the gauge rendering
+changed underneath; with the fix, the slider and its readout both
+correctly track to "43.0".
+
+This also means every other property control in the inspector was subject
+to the same staleness whenever a commit happened without the selection
+changing — this fix isn't slider-specific, it's the inspector's whole
+reactivity model being corrected.
+
 ---
 
 ## Milestone 1: Studio MVP ✅
