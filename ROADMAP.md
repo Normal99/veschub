@@ -625,11 +625,10 @@ UI — "USERS DONT SIT ON JSON FILES."
       alongside the main RPM needle. Verified live: all three rendered
       side-by-side are now visually and geometrically distinct, not
       recolors of one shape.
-- [~] **"No overview, not intuitive" at the whole-program level**: partially
-      addressed as a side effect of the fixes above (capability level is
-      now visible and live-editable from the canvas toolbar instead of
-      hidden in Settings with wrong copy), but the broader complaint —
-      no onboarding/tour, 20+ widget kinds with no guided starting point
+- [~] **"No overview, not intuitive" at the whole-program level**: not
+      resolved this pass — see the capability-level removal entry directly
+      below for one contributing piece of it. The broader complaint — no
+      onboarding/tour, 20+ widget kinds with no guided starting point
       beyond the template gallery — is a real, larger design question this
       pass didn't have scope to fully resolve. Not claiming this is done.
 
@@ -650,6 +649,55 @@ either already UI-only or was fixed to be during this pass.
 - [ ] Broader onboarding/overview pass — a guided first-run path beyond the
       template gallery, given 20+ widget kinds and three editor modes
       (Template/Canvas/Flow) with no explanation of when to use which.
+
+## Capability-level (Basic/Advanced/Expert) system removed entirely (2026-09-17)
+
+User feedback, immediately following the audit above: the just-added
+Canvas-toolbar level dropdown ("There is no advanced anymore is there i
+dont think there is a toggle") and a direct, unambiguous instruction —
+remove the whole Basic/Advanced/Expert concept completely, it does not fit
+this project.
+
+Before removing, audited every `CapabilityLevel` consumer in the monorepo
+to see what actually depended on it, rather than assuming the property
+inspector was the only one:
+- `PropertyMeta.minLevel` — **live**: this was the one thing actually
+  filtering anything (the inspector).
+- `WidgetInstance.level` (dashboard_model) — serialized into every saved
+  `.veschub.json` as `"level": "basic"`, never read back anywhere.
+- `DashboardTemplate.level` (dashboard_model/templates) — never consulted
+  by `template_mode.dart` to filter the template gallery.
+- `WidgetKind.level` (widgets_library's `builtInWidgets` registry) — never
+  consulted by `studio_palette.dart`, which only ever reads `.keys`.
+- `NodeKindDef.level` (node_graph's node catalog) — never consulted by
+  `flow_mode.dart`.
+- `transformsUnlockedAt()` and `WidgetDescriptor` — dead code, exercised
+  only by their own tests, called from nowhere in the app.
+
+So beyond the property inspector, the entire concept was inert scaffolding
+that never gated anything — confirmed via `grep`, not assumed.
+
+**Removed completely**, not hidden or defaulted differently:
+`CapabilityLevel` enum, `PropertyMeta.minLevel` (and the `level` parameter
+threaded through `visibleProperties`/`categorizedProperties`/
+`propertiesByCategory`/`getPropertiesByCategory`), `WidgetInstance.level`,
+`DashboardTemplate.level`, `WidgetKind.level`, `NodeKindDef.level`,
+`SettingsService.capabilityLevel`/`setCapabilityLevel` and its persisted
+pref key, `capabilityLevelProvider`, the Canvas-toolbar dropdown added
+minutes earlier in this same pass, and the "Default capability level" row
+in Settings. `transformsUnlockedAt`/`WidgetDescriptor` deleted as dead code
+found along the way.
+
+**Net effect**: every property is now shown for every widget, always —
+there is nothing left to unlock. `EditorMode` (Template/Canvas/Flow, the
+segmented toolbar switcher) is a separate, unrelated concept and is
+unaffected by this removal.
+
+Verified: `grep -rln "CapabilityLevel\|capabilityLevel"` across the entire
+repo returns nothing; zero analyzer errors across all 19 melos packages
+(`melos exec -- flutter analyze`); full test suites green in every
+affected package, with tests that exercised the removed gating rewritten
+to assert the new always-visible behavior rather than deleted outright.
 
 ---
 
