@@ -560,6 +560,40 @@ a custom VESC variable.
 
 ---
 
+## Full Studio UX audit (2026-09-17)
+
+User feedback, most forceful yet: typing in a property field "can't even
+make a space"; the whole program "feels clumsy," "unintuitive," "has no
+overview"; named presets like "Porsche Green" "don't mean anything, they
+are just the regular gauge with green"; the gauge can't be customized to a
+different ring layout; "some widgets have weird unknown suffix's." Explicit
+ask: a full audit of every widget kind and every property, reflecting
+honestly on whether a user can build what they want entirely through the
+UI — "USERS DONT SIT ON JSON FILES."
+
+- [x] **FIXED — can't type a space in a text property**: `_LiteralEditor`
+      committed on every keystroke (`onChanged`), which round-tripped
+      through the parent and back via `didUpdateWidget`, overwriting
+      `_controller.text` mid-typing — a trailing space is exactly the kind
+      of edit that round-trip silently erases. Fixed by committing only on
+      blur/submit via a `FocusNode` listener, matching every other property
+      editor in the inspector. Regression test
+      (`literal_editor_typing_test.dart`) verifies both the submit path and
+      the blur path independently.
+- [ ] Full audit of every widget kind's properties for remaining cryptic/
+      unpickable values beyond the 10 already fixed in the picker pass
+      above.
+- [ ] Assess whether named car-brand gauge presets are structurally distinct
+      or cosmetic-only recolors; decide on a fix.
+- [ ] Investigate gauge ring/arc layout customization (user specifically
+      wants control over "where the ring encapsulates") — what's possible
+      today via `sweepAngle`/`startAngle`/`arcWidth` vs. what's missing.
+- [ ] Address "no overview, not intuitive" at the whole-program level.
+- [ ] Central deliverable: an honest, evidence-based answer to "can a user
+      build any dashboard entirely through the UI, no JSON required?"
+
+---
+
 ## Milestone 1: Studio MVP ✅
 
 - [x] Drag-drop widgets onto canvas
