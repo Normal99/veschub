@@ -21,7 +21,6 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({
       'settings.onboardingDone': true,
-      'settings.capabilityLevel': 'advanced',
     });
   });
 

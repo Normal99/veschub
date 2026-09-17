@@ -140,32 +140,18 @@ void main() {
     });
 
     testWidgets(
-        'XF3: Capability Level Filter + Property Manifest + Inspector Visibility Validation',
+        'XF3: Property Manifest + Inspector Visibility Validation — every '
+        'property is always visible, there is no capability-level gating',
         (tester) async {
-      final basicGaugeProps = visibleProperties('gauge', CapabilityLevel.basic);
-      final advancedGaugeProps =
-          visibleProperties('gauge', CapabilityLevel.advanced);
-      final expertGaugeProps =
-          visibleProperties('gauge', CapabilityLevel.expert);
+      final gaugeProps = allProperties('gauge');
+      final keys = gaugeProps.map((m) => m.key).toSet();
 
-      expect(basicGaugeProps.length, lessThan(advancedGaugeProps.length));
-      expect(advancedGaugeProps.length,
-          lessThanOrEqualTo(expertGaugeProps.length));
-
-      // Verify safe basic knobs
-      final basicKeys = basicGaugeProps.map((m) => m.key).toSet();
-      expect(basicKeys.contains('min'), isTrue);
-      expect(basicKeys.contains('max'), isTrue);
-      expect(basicKeys.contains('label'), isTrue);
-
-      // The value binding itself is never gated (what a widget displays
-      // isn't an "advanced" concept) — only cosmetic/advanced knobs are.
-      expect(basicKeys.contains('value'), isTrue);
-      // The gauge's ring geometry (sweep/start angle, arc width, needle
-      // style) is basic too — "customize the layout" is core, not advanced;
-      // fine-detail cosmetics like shadows/letter-spacing still gate.
-      expect(basicKeys.contains('sweepAngle'), isTrue);
-      expect(basicKeys.contains('shadowBlur'), isFalse);
+      expect(keys.contains('min'), isTrue);
+      expect(keys.contains('max'), isTrue);
+      expect(keys.contains('label'), isTrue);
+      expect(keys.contains('value'), isTrue);
+      expect(keys.contains('sweepAngle'), isTrue);
+      expect(keys.contains('shadowBlur'), isTrue);
     });
 
     testWidgets(

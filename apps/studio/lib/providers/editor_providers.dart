@@ -58,14 +58,6 @@ final editorModeProvider = StateProvider<EditorMode>((ref) {
   return EditorMode.template;
 });
 
-/// The active capability level (gates which props/handles are visible).
-///
-/// Tracks the persisted [SettingsService] default and updates live whenever
-/// it changes (e.g. from the Settings screen) — no restart needed.
-final capabilityLevelProvider = StateProvider<CapabilityLevel>((ref) {
-  return ref.watch(settingsServiceProvider).capabilityLevel;
-});
-
 /// Whether the current document has unsaved changes.
 final isDirtyProvider = StateProvider<bool>((ref) {
   return false;

@@ -7,8 +7,6 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:dashboard_model/dashboard_model.dart';
-
 import 'graph_model.dart';
 
 /// The result of evaluating a node: a map of output-socket-id → value.
@@ -35,7 +33,6 @@ class NodeKindDef {
   final List<Socket> inputs;
   final List<Socket> outputs;
   final EvaluateFn evaluate;
-  final CapabilityLevel level;
 
   const NodeKindDef({
     required this.kind,
@@ -43,7 +40,6 @@ class NodeKindDef {
     required this.inputs,
     required this.outputs,
     required this.evaluate,
-    this.level = CapabilityLevel.expert,
   });
 }
 
@@ -51,7 +47,6 @@ class NodeKindDef {
 final telemetryNode = NodeKindDef(
   kind: 'telemetry',
   displayName: 'Telemetry',
-  level: CapabilityLevel.expert,
   inputs: const [],
   outputs: const [Socket(id: 'value', label: 'Value', type: SocketType.any)],
   evaluate: (ctx) {
@@ -66,7 +61,6 @@ final telemetryNode = NodeKindDef(
 final literalNode = NodeKindDef(
   kind: 'literal',
   displayName: 'Constant',
-  level: CapabilityLevel.expert,
   inputs: const [Socket(id: 'value', label: 'Value', type: SocketType.any)],
   outputs: const [Socket(id: 'value', label: 'Value', type: SocketType.any)],
   evaluate: (ctx) => {'value': ctx.inputs['value']},
@@ -76,7 +70,6 @@ final literalNode = NodeKindDef(
 final mathNode = NodeKindDef(
   kind: 'math',
   displayName: 'Math',
-  level: CapabilityLevel.expert,
   inputs: const [
     Socket(id: 'a', label: 'A', type: SocketType.number),
     Socket(id: 'b', label: 'B', type: SocketType.number),
@@ -106,7 +99,6 @@ final mathNode = NodeKindDef(
 final compareNode = NodeKindDef(
   kind: 'compare',
   displayName: 'Compare',
-  level: CapabilityLevel.expert,
   inputs: const [
     Socket(id: 'a', label: 'A', type: SocketType.any),
     Socket(id: 'b', label: 'B', type: SocketType.any),
@@ -138,7 +130,6 @@ final compareNode = NodeKindDef(
 final conditionalNode = NodeKindDef(
   kind: 'conditional',
   displayName: 'If/Else',
-  level: CapabilityLevel.expert,
   inputs: const [
     Socket(id: 'condition', label: 'Cond', type: SocketType.boolean),
     Socket(id: 'trueValue', label: 'If true', type: SocketType.any),
@@ -157,7 +148,6 @@ final conditionalNode = NodeKindDef(
 final clampNode = NodeKindDef(
   kind: 'clamp',
   displayName: 'Clamp',
-  level: CapabilityLevel.expert,
   inputs: const [
     Socket(id: 'value', label: 'Value', type: SocketType.number),
     Socket(id: 'min', label: 'Min', type: SocketType.number),
@@ -178,7 +168,6 @@ final clampNode = NodeKindDef(
 final mapRangeNode = NodeKindDef(
   kind: 'mapRange',
   displayName: 'Map Range',
-  level: CapabilityLevel.expert,
   inputs: const [
     Socket(id: 'value', label: 'Value', type: SocketType.number),
     Socket(id: 'inMin', label: 'In min', type: SocketType.number),
@@ -206,7 +195,6 @@ final mapRangeNode = NodeKindDef(
 final outputNode = NodeKindDef(
   kind: 'output',
   displayName: 'Output',
-  level: CapabilityLevel.expert,
   inputs: const [Socket(id: 'value', label: 'Value', type: SocketType.any)],
   outputs: const [],
   evaluate: (ctx) => const {},

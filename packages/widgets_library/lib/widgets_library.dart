@@ -68,12 +68,10 @@ export 'widgets/web_widget.dart';
 /// Metadata for a built-in widget kind.
 class WidgetKind {
   final String id;
-  final CapabilityLevel level;
   final Widget Function(ResolvedProperties) render;
 
   const WidgetKind({
     required this.id,
-    required this.level,
     required this.render,
   });
 }
@@ -82,117 +80,94 @@ class WidgetKind {
 final Map<String, WidgetKind> builtInWidgets = {
   'text': WidgetKind(
     id: 'text',
-    level: CapabilityLevel.basic,
     render: (p) => TextWidget(properties: p),
   ),
   'bar': WidgetKind(
     id: 'bar',
-    level: CapabilityLevel.basic,
     render: (p) => BarWidget(properties: p),
   ),
   'gauge': WidgetKind(
     id: 'gauge',
-    level: CapabilityLevel.basic,
     render: (p) => GaugeWidget(properties: p),
   ),
   'status': WidgetKind(
     id: 'status',
-    level: CapabilityLevel.basic,
     render: (p) => StatusWidget(properties: p),
   ),
   'chart': WidgetKind(
     id: 'chart',
-    level: CapabilityLevel.advanced,
     render: (p) => ChartWidget(properties: p),
   ),
   'image': WidgetKind(
     id: 'image',
-    level: CapabilityLevel.basic,
     render: (p) => ImageWidget(properties: p),
   ),
   'web': WidgetKind(
     id: 'web',
-    level: CapabilityLevel.advanced,
     render: (p) => WebWidget(properties: p),
   ),
   'paint': WidgetKind(
     id: 'paint',
-    level: CapabilityLevel.expert,
     render: (p) => PaintWidget(properties: p),
   ),
   'digitalspeed': WidgetKind(
     id: 'digitalspeed',
-    level: CapabilityLevel.basic,
     render: (p) => DigitalSpeedWidget(properties: p),
   ),
   'music': WidgetKind(
     id: 'music',
-    level: CapabilityLevel.basic,
     render: (p) => MusicWidget(properties: p),
   ),
   'tripstats': WidgetKind(
     id: 'tripstats',
-    level: CapabilityLevel.basic,
     render: (p) => TripStatsWidget(properties: p),
   ),
   'power': WidgetKind(
     id: 'power',
-    level: CapabilityLevel.basic,
     render: (p) => PowerWidget(properties: p),
   ),
   'warnings': WidgetKind(
     id: 'warnings',
-    level: CapabilityLevel.basic,
     render: (p) => WarningsWidget(properties: p),
   ),
   'minigauge': WidgetKind(
     id: 'minigauge',
-    level: CapabilityLevel.basic,
     render: (p) => MiniGaugeWidget(properties: p),
   ),
   'appgrid': WidgetKind(
     id: 'appgrid',
-    level: CapabilityLevel.basic,
     render: (p) => AppGridWidget(properties: p),
   ),
   'statusbar': WidgetKind(
     id: 'statusbar',
-    level: CapabilityLevel.basic,
     render: (p) => StatusBarWidget(properties: p),
   ),
   'climate': WidgetKind(
     id: 'climate',
-    level: CapabilityLevel.basic,
     render: (p) => ClimateWidget(properties: p),
   ),
   'car_viz': WidgetKind(
     id: 'car_viz',
-    level: CapabilityLevel.advanced,
     render: (p) => CarVizWidget(properties: p),
   ),
   'map': WidgetKind(
     id: 'map',
-    level: CapabilityLevel.advanced,
     render: (p) => MapWidget(properties: p),
   ),
   'gear_selector': WidgetKind(
     id: 'gear_selector',
-    level: CapabilityLevel.basic,
     render: (p) => GearSelectorWidget(properties: p),
   ),
   'gps': WidgetKind(
     id: 'gps',
-    level: CapabilityLevel.basic,
     render: (p) => GpsWidget(properties: p),
   ),
   'battery_range': WidgetKind(
     id: 'battery_range',
-    level: CapabilityLevel.basic,
     render: (p) => BatteryRangeWidget(properties: p),
   ),
   'power_flow': WidgetKind(
     id: 'power_flow',
-    level: CapabilityLevel.basic,
     render: (p) => PowerFlowWidget(properties: p),
   ),
 };

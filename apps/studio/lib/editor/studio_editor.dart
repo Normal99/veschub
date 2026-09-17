@@ -175,32 +175,6 @@ class StudioEditor extends ConsumerWidget {
                       ref.read(editorModeProvider.notifier).state = s.first,
                 ),
                 const SizedBox(width: 16),
-                if (mode == EditorMode.canvas) ...[
-                  const Icon(Icons.tune, size: 16),
-                  const SizedBox(width: 6),
-                  Tooltip(
-                    message: 'How many property options are shown per widget. '
-                        'Advanced/Expert unlock more layout and cosmetic '
-                        'controls.',
-                    child: DropdownButton<CapabilityLevel>(
-                      value: ref.watch(capabilityLevelProvider),
-                      underline: const SizedBox.shrink(),
-                      items: CapabilityLevel.values
-                          .map((l) => DropdownMenuItem(
-                                value: l,
-                                child: Text(
-                                  l.name[0].toUpperCase() + l.name.substring(1),
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ))
-                          .toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        ref.read(settingsServiceProvider).setCapabilityLevel(v);
-                      },
-                    ),
-                  ),
-                ],
               ],
             ),
           ),

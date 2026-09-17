@@ -1,13 +1,14 @@
-/// Starter dashboard templates for Template (Basic) mode.
+/// Starter dashboard templates for Template mode.
 ///
 /// A [DashboardTemplate] is a pre-built [DashboardDocument] plus editable
-/// "knobs" — a restricted set of properties a Basic user may tweak (colours,
-/// units, limits). Advanced/Expert editing is done in Canvas/Flow mode instead.
+/// "knobs" — a restricted set of properties tweakable right in the template
+/// gallery (colours, units, limits). Full editing is done in Canvas/Flow
+/// mode instead.
 library;
 
 import 'package:dashboard_model/dashboard_model.dart';
 
-/// A single editable knob exposed to Basic-mode users.
+/// A single editable knob exposed in Template mode.
 class TemplateKnob {
   /// The widget id this knob targets (matches a [WidgetInstance.id]).
   final String widgetId;
@@ -47,7 +48,6 @@ class DashboardTemplate {
   final String name;
   final String description;
   final String category;
-  final CapabilityLevel level;
 
   /// The base document. Knob edits are applied on top of this.
   final DashboardDocument document;
@@ -60,7 +60,6 @@ class DashboardTemplate {
     required this.name,
     required this.description,
     this.category = '',
-    required this.level,
     required this.document,
     required this.knobs,
   });

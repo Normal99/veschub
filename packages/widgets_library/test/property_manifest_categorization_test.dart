@@ -1,4 +1,3 @@
-import 'package:dashboard_model/dashboard_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widgets_library/widgets_library.dart';
 
@@ -148,24 +147,20 @@ void main() {
   });
 
   group('Tier 2: Property Categorization Boundary & Corner Cases', () {
-    test('T2.1: categorizedProperties filters properties by CapabilityLevel',
-        () {
-      final basicGauge =
-          categorizedProperties('gauge', level: CapabilityLevel.basic);
-      final basicBindings =
-          basicGauge[PropertyCategory.dataBindings]!.map((m) => m.key).toSet();
-      final basicVisuals =
-          basicGauge[PropertyCategory.visuals]!.map((m) => m.key).toSet();
+    test(
+        'T2.1: categorizedProperties returns every property — there is no '
+        'capability-level gating', () {
+      final gauge = categorizedProperties('gauge');
+      final bindings =
+          gauge[PropertyCategory.dataBindings]!.map((m) => m.key).toSet();
+      final visuals =
+          gauge[PropertyCategory.visuals]!.map((m) => m.key).toSet();
+      final layout =
+          gauge[PropertyCategory.layoutAndSpacing]!.map((m) => m.key).toSet();
 
-      // min/max are in dataBindings (they define the data range)
-      expect(basicBindings, containsAll(['min', 'max']));
-      // Ring geometry (sweepAngle) is core customization, basic now — but
-      // fine-detail cosmetics like shadowBlur still filter out at basic.
-      expect(basicVisuals.contains('sweepAngle'), isTrue);
-      final basicLayout = basicGauge[PropertyCategory.layoutAndSpacing]!
-          .map((m) => m.key)
-          .toSet();
-      expect(basicLayout.contains('shadowBlur'), isFalse);
+      expect(bindings, containsAll(['min', 'max']));
+      expect(visuals.contains('sweepAngle'), isTrue);
+      expect(layout.contains('shadowBlur'), isTrue);
     });
 
     test(

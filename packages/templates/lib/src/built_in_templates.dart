@@ -25,7 +25,6 @@ class Templates {
     name: 'Minimal',
     description: 'One large gauge — speed/RPM at a glance.',
     category: 'Starter',
-    level: CapabilityLevel.basic,
     document: DashboardDocument(
       name: 'Minimal',
       canvas: CanvasSize(width: 800, height: 480),
@@ -83,7 +82,6 @@ class Templates {
     name: 'Performance',
     description: 'RPM, duty, voltage and a live current chart.',
     category: 'Starter',
-    level: CapabilityLevel.basic,
     document: DashboardDocument(
       name: 'Performance',
       canvas: CanvasSize(width: 1280, height: 720),
@@ -198,7 +196,6 @@ class Templates {
     name: 'Commuter',
     description: 'Speed, battery, temps and fault status for daily rides.',
     category: 'Starter',
-    level: CapabilityLevel.basic,
     document: DashboardDocument(
       name: 'Commuter',
       canvas: CanvasSize(width: 1280, height: 480),
@@ -314,7 +311,6 @@ class Templates {
     description:
         'Full instrumentation — RPM, duty, dual temps, current, fault.',
     category: 'Starter',
-    level: CapabilityLevel.basic,
     document: DashboardDocument(
       name: 'Off-Road',
       canvas: CanvasSize(width: 1280, height: 720),

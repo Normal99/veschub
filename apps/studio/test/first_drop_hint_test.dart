@@ -31,7 +31,6 @@ void main() {
         (tester) async {
       SharedPreferences.setMockInitialValues({
         'settings.onboardingDone': true,
-        'settings.capabilityLevel': 'advanced',
       });
       await _bootIntoCanvas(tester);
 
@@ -42,7 +41,6 @@ void main() {
         (tester) async {
       SharedPreferences.setMockInitialValues({
         'settings.onboardingDone': true,
-        'settings.capabilityLevel': 'advanced',
       });
       await _bootIntoCanvas(tester);
       expect(find.text(_hintText), findsOneWidget);
@@ -72,7 +70,6 @@ void main() {
         (tester) async {
       SharedPreferences.setMockInitialValues({
         'settings.onboardingDone': true,
-        'settings.capabilityLevel': 'advanced',
         'settings.canvasHintDismissed': true,
       });
       await _bootIntoCanvas(tester);

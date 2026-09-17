@@ -51,8 +51,8 @@ void main() {
   });
 
   group('paint widget registration', () {
-    test('is registered at Expert level', () {
-      expect(builtInWidgets['paint']?.level, CapabilityLevel.expert);
+    test('is registered in builtInWidgets', () {
+      expect(builtInWidgets['paint'], isNotNull);
     });
 
     test('has a property manifest', () {

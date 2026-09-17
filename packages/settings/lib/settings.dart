@@ -2,8 +2,8 @@
 ///
 /// Wraps `shared_preferences` in a [ChangeNotifier] so Riverpod/the UI can
 /// react to changes. Settings are intentionally small and app-agnostic: the
-/// default capability level, the theme mode, and the preferred connection
-/// transport. App-specific preferences belong in the app, not here.
+/// theme mode and the preferred connection transport. App-specific
+/// preferences belong in the app, not here.
 library;
 
 import 'dart:convert';
@@ -13,8 +13,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:dashboard_model/dashboard_model.dart';
 
 /// Preferred connection transport for the dashboard runtime.
 enum TransportPreference { ble, usb, auto }
@@ -47,7 +45,6 @@ enum ThemePreference { system, light, dark }
 class SettingsService extends ChangeNotifier {
   SettingsService();
 
-  static const _keyCapability = 'settings.capabilityLevel';
   static const _keyTheme = 'settings.themeMode';
   static const _keyTransport = 'settings.transport';
   static const _keyOnboardingDone = 'settings.onboardingDone';
@@ -58,7 +55,6 @@ class SettingsService extends ChangeNotifier {
 
   SharedPreferences? _prefs;
 
-  CapabilityLevel _capability = CapabilityLevel.basic;
   ThemePreference _theme = ThemePreference.system;
   TransportPreference _transport = TransportPreference.auto;
   bool _onboardingDone = false;
@@ -66,9 +62,6 @@ class SettingsService extends ChangeNotifier {
   bool _autoConnect = true;
   int _dataRate = 10;
   List<CustomFontEntry> _customFonts = [];
-
-  /// Default capability level shown on first launch of the studio.
-  CapabilityLevel get capabilityLevel => _capability;
 
   /// Theme mode preference.
   ThemePreference get themeMode => _theme;
@@ -103,7 +96,6 @@ class SettingsService extends ChangeNotifier {
   /// values are read, then notifies listeners so dependents rebuild.
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
-    _capability = _decodeCapability(_prefs!.getString(_keyCapability));
     _theme = _decodeTheme(_prefs!.getString(_keyTheme));
     _transport = _decodeTransport(_prefs!.getString(_keyTransport));
     _onboardingDone = _prefs!.getBool(_keyOnboardingDone) ?? false;
@@ -115,12 +107,6 @@ class SettingsService extends ChangeNotifier {
         .map((raw) =>
             CustomFontEntry.fromJson(jsonDecode(raw) as Map<String, dynamic>))
         .toList();
-    notifyListeners();
-  }
-
-  Future<void> setCapabilityLevel(CapabilityLevel level) async {
-    _capability = level;
-    await _prefs?.setString(_keyCapability, level.name);
     notifyListeners();
   }
 
@@ -189,14 +175,6 @@ class SettingsService extends ChangeNotifier {
       _keyCustomFonts,
       _customFonts.map((f) => jsonEncode(f.toJson())).toList(),
     );
-  }
-
-  static CapabilityLevel _decodeCapability(String? raw) {
-    if (raw == null) return CapabilityLevel.basic;
-    for (final l in CapabilityLevel.values) {
-      if (l.name == raw) return l;
-    }
-    return CapabilityLevel.basic;
   }
 
   static ThemePreference _decodeTheme(String? raw) {

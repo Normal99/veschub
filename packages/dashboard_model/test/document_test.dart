@@ -16,7 +16,6 @@ void main() {
               'max': Binding.literal(value: 30000),
               'value': Binding.telemetry(key: 'erpm'),
             },
-            level: CapabilityLevel.advanced,
           ),
         ],
       );
@@ -31,7 +30,6 @@ void main() {
       final w = decoded.widgets.single;
       expect(w.id, 'w1');
       expect(w.kind, 'gauge');
-      expect(w.level, CapabilityLevel.advanced);
       expect(w.properties['value'], isA<TelemetryBinding>());
       expect((w.properties['value'] as TelemetryBinding).key, 'erpm');
       expect(w.properties['max'], isA<LiteralBinding>());
@@ -88,23 +86,6 @@ void main() {
       final migrated = migrate({'name': 'no version field'});
       expect(migrated['version'], kCurrentDocumentVersion);
       expect(migrated['description'], '');
-    });
-  });
-
-  group('CapabilityLevel', () {
-    test('includes respects ordering', () {
-      expect(CapabilityLevel.expert.includes(CapabilityLevel.basic), isTrue);
-      expect(CapabilityLevel.basic.includes(CapabilityLevel.expert), isFalse);
-      expect(
-        CapabilityLevel.advanced.includes(CapabilityLevel.advanced),
-        isTrue,
-      );
-    });
-
-    test('defaultEditorMode maps levels to modes', () {
-      expect(CapabilityLevel.basic.defaultEditorMode, EditorMode.template);
-      expect(CapabilityLevel.advanced.defaultEditorMode, EditorMode.canvas);
-      expect(CapabilityLevel.expert.defaultEditorMode, EditorMode.flow);
     });
   });
 }

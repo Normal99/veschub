@@ -12,16 +12,6 @@ void main() {
       );
     });
 
-    test('all templates are Basic level', () {
-      for (final t in builtInTemplates) {
-        expect(
-          t.level,
-          CapabilityLevel.basic,
-          reason: '${t.id} should be basic',
-        );
-      }
-    });
-
     test('every knob targets an existing widget', () {
       for (final t in builtInTemplates) {
         final widgetIds = t.document.widgets.map((w) => w.id).toSet();

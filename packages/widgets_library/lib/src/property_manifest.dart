@@ -1,12 +1,7 @@
-/// Per-property capability-level metadata for the inspector.
-///
-/// The studio inspector consults this to decide which properties to reveal at
-/// the user's chosen level. Basic mode shows only "safe" knobs (colour, label,
-/// limits); Advanced adds layout/bindings; Expert exposes everything including
-/// raw transform values and graph bindings.
+/// Per-property metadata for the inspector: label, category, numeric
+/// bounds, and (for fixed-vocabulary strings) the picker options to show.
+/// Every property is always visible — there is no capability-level gating.
 library;
-
-import 'package:dashboard_model/dashboard_model.dart';
 
 /// Categories for grouping widget properties in the property inspector.
 enum PropertyCategory {
@@ -40,7 +35,6 @@ class EnumOption {
 /// Metadata for a single widget property.
 class PropertyMeta {
   final String key;
-  final CapabilityLevel minLevel;
   final String label;
   final bool safe;
   final PropertyCategory category;
@@ -56,7 +50,6 @@ class PropertyMeta {
 
   const PropertyMeta({
     required this.key,
-    required this.minLevel,
     required this.label,
     this.safe = false,
     this.category = PropertyCategory.visuals,
@@ -104,58 +97,44 @@ class WidgetManifest {
 
   List<PropertyMeta> get properties => allProperties(kind);
 
-  Map<PropertyCategory, List<PropertyMeta>> propertiesByCategory(
-          {CapabilityLevel? level}) =>
-      _groupPropertiesByCategory(kind, level: level);
-
   Map<PropertyCategory, List<PropertyMeta>> get categorizedProperties =>
-      propertiesByCategory();
+      _groupPropertiesByCategory(kind);
 
-  List<PropertyMeta> getPropertiesByCategory(PropertyCategory category,
-          {CapabilityLevel? level}) =>
-      (_groupPropertiesByCategory(kind, level: level)[category] ??
-          const <PropertyMeta>[]);
+  List<PropertyMeta> getPropertiesByCategory(PropertyCategory category) =>
+      (_groupPropertiesByCategory(kind)[category] ?? const <PropertyMeta>[]);
 }
 
 const List<PropertyMeta> _gauge = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'min',
-      minLevel: CapabilityLevel.basic,
       label: 'Minimum',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'max',
-      minLevel: CapabilityLevel.basic,
       label: 'Maximum',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'tickCount',
-      minLevel: CapabilityLevel.basic,
       label: 'Ticks',
       category: PropertyCategory.visuals,
       min: 2,
@@ -163,7 +142,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'sweepAngle',
-      minLevel: CapabilityLevel.basic,
       label: 'Sweep',
       category: PropertyCategory.visuals,
       min: 10,
@@ -171,7 +149,6 @@ const List<PropertyMeta> _gauge = [
       step: 5),
   PropertyMeta(
       key: 'startAngle',
-      minLevel: CapabilityLevel.basic,
       label: 'Start angle',
       category: PropertyCategory.visuals,
       min: 0,
@@ -179,7 +156,6 @@ const List<PropertyMeta> _gauge = [
       step: 5),
   PropertyMeta(
       key: 'arcWidth',
-      minLevel: CapabilityLevel.basic,
       label: 'Arc width',
       category: PropertyCategory.visuals,
       min: 1,
@@ -187,7 +163,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'needleStyle',
-      minLevel: CapabilityLevel.basic,
       label: 'Needle',
       category: PropertyCategory.visuals,
       options: [
@@ -196,52 +171,42 @@ const List<PropertyMeta> _gauge = [
       ]),
   PropertyMeta(
       key: 'showCenterText',
-      minLevel: CapabilityLevel.basic,
       label: 'Center text',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'centerValue',
-      minLevel: CapabilityLevel.basic,
       label: 'Center value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'centerUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Center unit',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'subLabel',
-      minLevel: CapabilityLevel.basic,
       label: 'Sub-label',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showTickLabels',
-      minLevel: CapabilityLevel.basic,
       label: 'Tick labels',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'innerValue',
-      minLevel: CapabilityLevel.basic,
       label: 'Inner value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'innerMin',
-      minLevel: CapabilityLevel.basic,
       label: 'Inner min',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'innerMax',
-      minLevel: CapabilityLevel.basic,
       label: 'Inner max',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'innerColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Inner colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'innerArcWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Inner arc',
       category: PropertyCategory.visuals,
       min: 1,
@@ -249,22 +214,18 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'redlineStart',
-      minLevel: CapabilityLevel.basic,
       label: 'Redline',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'redlineColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Redline colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -272,7 +233,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       category: PropertyCategory.fontsAndColors,
       min: 8,
@@ -280,19 +240,16 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -300,7 +257,6 @@ const List<PropertyMeta> _gauge = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -308,17 +264,14 @@ const List<PropertyMeta> _gauge = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -326,7 +279,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -334,7 +286,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -342,7 +293,6 @@ const List<PropertyMeta> _gauge = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -350,7 +300,6 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       category: PropertyCategory.layoutAndSpacing,
       min: 50,
@@ -358,7 +307,6 @@ const List<PropertyMeta> _gauge = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       category: PropertyCategory.layoutAndSpacing,
       min: 50,
@@ -366,7 +314,6 @@ const List<PropertyMeta> _gauge = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       category: PropertyCategory.layoutAndSpacing),
 ];
@@ -374,30 +321,25 @@ const List<PropertyMeta> _gauge = [
 const List<PropertyMeta> _bar = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'min',
-      minLevel: CapabilityLevel.basic,
       label: 'Minimum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'max',
-      minLevel: CapabilityLevel.basic,
       label: 'Maximum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'orientation',
-      minLevel: CapabilityLevel.advanced,
       label: 'Orientation',
       category: PropertyCategory.visuals,
       options: [
@@ -406,29 +348,24 @@ const List<PropertyMeta> _bar = [
       ]),
   PropertyMeta(
       key: 'showValue',
-      minLevel: CapabilityLevel.basic,
       label: 'Show value',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'gradient',
-      minLevel: CapabilityLevel.advanced,
       label: 'Gradient fill',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'gradientColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Gradient colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -436,7 +373,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'barRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Bar fill radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -444,7 +380,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -453,7 +388,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -461,17 +395,14 @@ const List<PropertyMeta> _bar = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -479,7 +410,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -487,7 +417,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -495,7 +424,6 @@ const List<PropertyMeta> _bar = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -504,7 +432,6 @@ const List<PropertyMeta> _bar = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -513,7 +440,6 @@ const List<PropertyMeta> _bar = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -522,7 +448,6 @@ const List<PropertyMeta> _bar = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -531,36 +456,30 @@ const List<PropertyMeta> _bar = [
 const List<PropertyMeta> _text = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -568,7 +487,6 @@ const List<PropertyMeta> _text = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -577,19 +495,16 @@ const List<PropertyMeta> _text = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -597,7 +512,6 @@ const List<PropertyMeta> _text = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -605,17 +519,14 @@ const List<PropertyMeta> _text = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -623,7 +534,6 @@ const List<PropertyMeta> _text = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -631,7 +541,6 @@ const List<PropertyMeta> _text = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -639,7 +548,6 @@ const List<PropertyMeta> _text = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -648,7 +556,6 @@ const List<PropertyMeta> _text = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -657,7 +564,6 @@ const List<PropertyMeta> _text = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -666,7 +572,6 @@ const List<PropertyMeta> _text = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -675,29 +580,24 @@ const List<PropertyMeta> _text = [
 const List<PropertyMeta> _status = [
   PropertyMeta(
       key: 'fault',
-      minLevel: CapabilityLevel.basic,
       label: 'Fault binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'State text',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -705,7 +605,6 @@ const List<PropertyMeta> _status = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -714,19 +613,16 @@ const List<PropertyMeta> _status = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -734,7 +630,6 @@ const List<PropertyMeta> _status = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -742,17 +637,14 @@ const List<PropertyMeta> _status = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -760,7 +652,6 @@ const List<PropertyMeta> _status = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -768,7 +659,6 @@ const List<PropertyMeta> _status = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -776,7 +666,6 @@ const List<PropertyMeta> _status = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -785,7 +674,6 @@ const List<PropertyMeta> _status = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -794,7 +682,6 @@ const List<PropertyMeta> _status = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -803,7 +690,6 @@ const List<PropertyMeta> _status = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -812,24 +698,20 @@ const List<PropertyMeta> _status = [
 const List<PropertyMeta> _chart = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'min',
-      minLevel: CapabilityLevel.basic,
       label: 'Y minimum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'max',
-      minLevel: CapabilityLevel.basic,
       label: 'Y maximum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'window',
-      minLevel: CapabilityLevel.advanced,
       label: 'Sample window',
       category: PropertyCategory.visuals,
       min: 10,
@@ -837,25 +719,21 @@ const List<PropertyMeta> _chart = [
       step: 10),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'lineWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Line width',
       category: PropertyCategory.visuals,
       min: 0.5,
@@ -863,39 +741,32 @@ const List<PropertyMeta> _chart = [
       step: 0.5),
   PropertyMeta(
       key: 'showGrid',
-      minLevel: CapabilityLevel.basic,
       label: 'Show grid',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'gridColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Grid colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'smoothCurve',
-      minLevel: CapabilityLevel.advanced,
       label: 'Smooth curve',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'fillArea',
-      minLevel: CapabilityLevel.advanced,
       label: 'Fill area',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'fillColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Fill colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -903,7 +774,6 @@ const List<PropertyMeta> _chart = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -912,19 +782,16 @@ const List<PropertyMeta> _chart = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -932,7 +799,6 @@ const List<PropertyMeta> _chart = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -940,17 +806,14 @@ const List<PropertyMeta> _chart = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -958,7 +821,6 @@ const List<PropertyMeta> _chart = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -966,7 +828,6 @@ const List<PropertyMeta> _chart = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -974,7 +835,6 @@ const List<PropertyMeta> _chart = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -983,7 +843,6 @@ const List<PropertyMeta> _chart = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -992,7 +851,6 @@ const List<PropertyMeta> _chart = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1001,7 +859,6 @@ const List<PropertyMeta> _chart = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -1010,13 +867,11 @@ const List<PropertyMeta> _chart = [
 const List<PropertyMeta> _image = [
   PropertyMeta(
       key: 'src',
-      minLevel: CapabilityLevel.basic,
       label: 'Image source',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'fit',
-      minLevel: CapabilityLevel.basic,
       label: 'Fit mode',
       category: PropertyCategory.visuals,
       options: [
@@ -1029,13 +884,11 @@ const List<PropertyMeta> _image = [
       ]),
   PropertyMeta(
       key: 'tint',
-      minLevel: CapabilityLevel.basic,
       label: 'Tint',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1043,7 +896,6 @@ const List<PropertyMeta> _image = [
       step: 0.05),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1051,7 +903,6 @@ const List<PropertyMeta> _image = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1059,17 +910,14 @@ const List<PropertyMeta> _image = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1077,7 +925,6 @@ const List<PropertyMeta> _image = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -1085,7 +932,6 @@ const List<PropertyMeta> _image = [
       step: 1),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1094,7 +940,6 @@ const List<PropertyMeta> _image = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1103,7 +948,6 @@ const List<PropertyMeta> _image = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1115,30 +959,25 @@ const List<PropertyMeta> _image = [
 const List<PropertyMeta> _web = [
   PropertyMeta(
       key: 'url',
-      minLevel: CapabilityLevel.basic,
       label: 'URL',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'title',
-      minLevel: CapabilityLevel.basic,
       label: 'Title',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'js',
-      minLevel: CapabilityLevel.advanced,
       label: 'JavaScript enabled',
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1146,7 +985,6 @@ const List<PropertyMeta> _web = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1154,17 +992,14 @@ const List<PropertyMeta> _web = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1172,7 +1007,6 @@ const List<PropertyMeta> _web = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -1180,7 +1014,6 @@ const List<PropertyMeta> _web = [
       step: 1),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1189,7 +1022,6 @@ const List<PropertyMeta> _web = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1198,7 +1030,6 @@ const List<PropertyMeta> _web = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1207,7 +1038,6 @@ const List<PropertyMeta> _web = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -1216,7 +1046,6 @@ const List<PropertyMeta> _web = [
 const List<PropertyMeta> _paint = [
   PropertyMeta(
       key: 'program',
-      minLevel: CapabilityLevel.expert,
       label: 'Paint program (DSL)',
       category: PropertyCategory.visuals),
 ];
@@ -1224,65 +1053,54 @@ const List<PropertyMeta> _paint = [
 const List<PropertyMeta> _digitalspeed = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'sourceUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Source unit',
       category: PropertyCategory.dataBindings,
       options: _speedUnitOptions),
   PropertyMeta(
       key: 'displayUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Display unit',
       safe: true,
       category: PropertyCategory.dataBindings,
       options: _speedDisplayUnitOptions),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'showUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Show unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'subLabel',
-      minLevel: CapabilityLevel.basic,
       label: 'Sub-label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'subValue',
-      minLevel: CapabilityLevel.basic,
       label: 'Sub-value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1290,7 +1108,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -1299,19 +1116,16 @@ const List<PropertyMeta> _digitalspeed = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -1319,7 +1133,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1327,17 +1140,14 @@ const List<PropertyMeta> _digitalspeed = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1345,7 +1155,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -1353,7 +1162,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1361,7 +1169,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1370,7 +1177,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1379,7 +1185,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1388,7 +1193,6 @@ const List<PropertyMeta> _digitalspeed = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -1397,62 +1201,51 @@ const List<PropertyMeta> _digitalspeed = [
 const List<PropertyMeta> _music = [
   PropertyMeta(
       key: 'title',
-      minLevel: CapabilityLevel.basic,
       label: 'Track title',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'artist',
-      minLevel: CapabilityLevel.basic,
       label: 'Artist',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'album',
-      minLevel: CapabilityLevel.basic,
       label: 'Album',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'progress',
-      minLevel: CapabilityLevel.basic,
       label: 'Progress (s)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'duration',
-      minLevel: CapabilityLevel.basic,
       label: 'Duration (s)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'showControls',
-      minLevel: CapabilityLevel.basic,
       label: 'Show controls',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'albumColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Album art colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1460,7 +1253,6 @@ const List<PropertyMeta> _music = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -1469,19 +1261,16 @@ const List<PropertyMeta> _music = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -1489,7 +1278,6 @@ const List<PropertyMeta> _music = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1497,17 +1285,14 @@ const List<PropertyMeta> _music = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1515,7 +1300,6 @@ const List<PropertyMeta> _music = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -1523,7 +1307,6 @@ const List<PropertyMeta> _music = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1531,7 +1314,6 @@ const List<PropertyMeta> _music = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1540,7 +1322,6 @@ const List<PropertyMeta> _music = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1549,7 +1330,6 @@ const List<PropertyMeta> _music = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1558,7 +1338,6 @@ const List<PropertyMeta> _music = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -1567,75 +1346,62 @@ const List<PropertyMeta> _music = [
 const List<PropertyMeta> _tripstats = [
   PropertyMeta(
       key: 'label1',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 1 label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value1',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 1 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit1',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 1 unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'label2',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 2 label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value2',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 2 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit2',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 2 unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'label3',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 3 label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value3',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 3 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit3',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 3 unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'label4',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 4 label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'value4',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 4 value',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit4',
-      minLevel: CapabilityLevel.basic,
       label: 'Stat 4 unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'layoutStyle',
-      minLevel: CapabilityLevel.basic,
       label: 'Layout style',
       safe: true,
       category: PropertyCategory.visuals,
@@ -1646,124 +1412,102 @@ const List<PropertyMeta> _tripstats = [
       ]),
   PropertyMeta(
       key: 'section1Header',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Header',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit1_1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Unit 1',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit1_2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Unit 2',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section1Val3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit1_3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 1 Unit 3',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Header',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Header',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit2_1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Unit 1',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit2_2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Unit 2',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section2Val3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit2_3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 2 Unit 3',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Header',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Header',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 1',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit3_1',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Unit 1',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 2',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit3_2',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Unit 2',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'section3Val3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Value 3',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit3_3',
-      minLevel: CapabilityLevel.basic,
       label: 'Section 3 Unit 3',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'columns',
-      minLevel: CapabilityLevel.basic,
       label: 'Columns',
       safe: true,
       category: PropertyCategory.visuals,
@@ -1772,24 +1516,20 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1797,7 +1537,6 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -1806,19 +1545,16 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -1826,7 +1562,6 @@ const List<PropertyMeta> _tripstats = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1834,17 +1569,14 @@ const List<PropertyMeta> _tripstats = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1852,7 +1584,6 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -1860,7 +1591,6 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1868,7 +1598,6 @@ const List<PropertyMeta> _tripstats = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1877,7 +1606,6 @@ const List<PropertyMeta> _tripstats = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1886,7 +1614,6 @@ const List<PropertyMeta> _tripstats = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -1895,7 +1622,6 @@ const List<PropertyMeta> _tripstats = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -1904,63 +1630,52 @@ const List<PropertyMeta> _tripstats = [
 const List<PropertyMeta> _power = [
   PropertyMeta(
       key: 'power',
-      minLevel: CapabilityLevel.basic,
       label: 'Power binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'maxPower',
-      minLevel: CapabilityLevel.basic,
       label: 'Max power',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'regen',
-      minLevel: CapabilityLevel.basic,
       label: 'Regen binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'maxRegen',
-      minLevel: CapabilityLevel.basic,
       label: 'Max regen',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Power colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'regenColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Regen colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'showBars',
-      minLevel: CapabilityLevel.basic,
       label: 'Show bars',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -1968,7 +1683,6 @@ const List<PropertyMeta> _power = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -1977,19 +1691,16 @@ const List<PropertyMeta> _power = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -1997,7 +1708,6 @@ const List<PropertyMeta> _power = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2005,17 +1715,14 @@ const List<PropertyMeta> _power = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2023,7 +1730,6 @@ const List<PropertyMeta> _power = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2031,7 +1737,6 @@ const List<PropertyMeta> _power = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2039,7 +1744,6 @@ const List<PropertyMeta> _power = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2048,7 +1752,6 @@ const List<PropertyMeta> _power = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2057,7 +1760,6 @@ const List<PropertyMeta> _power = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2066,7 +1768,6 @@ const List<PropertyMeta> _power = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2075,46 +1776,38 @@ const List<PropertyMeta> _power = [
 const List<PropertyMeta> _warnings = [
   PropertyMeta(
       key: 'activeWarnings',
-      minLevel: CapabilityLevel.basic,
       label: 'Active warnings',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Error colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'warningColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Warning colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'infoColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Info colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'iconSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Icon size',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showLabels',
-      minLevel: CapabilityLevel.basic,
       label: 'Show labels',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2122,7 +1815,6 @@ const List<PropertyMeta> _warnings = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2130,17 +1822,14 @@ const List<PropertyMeta> _warnings = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2148,7 +1837,6 @@ const List<PropertyMeta> _warnings = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2156,7 +1844,6 @@ const List<PropertyMeta> _warnings = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2164,7 +1851,6 @@ const List<PropertyMeta> _warnings = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2173,7 +1859,6 @@ const List<PropertyMeta> _warnings = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2182,7 +1867,6 @@ const List<PropertyMeta> _warnings = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2191,7 +1875,6 @@ const List<PropertyMeta> _warnings = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2200,49 +1883,41 @@ const List<PropertyMeta> _warnings = [
 const List<PropertyMeta> _minigauge = [
   PropertyMeta(
       key: 'value',
-      minLevel: CapabilityLevel.basic,
       label: 'Value binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'min',
-      minLevel: CapabilityLevel.basic,
       label: 'Minimum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'max',
-      minLevel: CapabilityLevel.basic,
       label: 'Maximum',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'sourceUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Source temperature unit',
       category: PropertyCategory.dataBindings,
       options: _temperatureUnitOptions),
   PropertyMeta(
       key: 'displayUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Display temperature unit',
       safe: true,
       category: PropertyCategory.dataBindings,
       options: _temperatureDisplayUnitOptions),
   PropertyMeta(
       key: 'icon',
-      minLevel: CapabilityLevel.basic,
       label: 'Icon',
       safe: true,
       category: PropertyCategory.visuals,
@@ -2256,7 +1931,6 @@ const List<PropertyMeta> _minigauge = [
       ]),
   PropertyMeta(
       key: 'style',
-      minLevel: CapabilityLevel.basic,
       label: 'Style',
       safe: true,
       category: PropertyCategory.visuals,
@@ -2266,7 +1940,6 @@ const List<PropertyMeta> _minigauge = [
       ]),
   PropertyMeta(
       key: 'orientation',
-      minLevel: CapabilityLevel.advanced,
       label: 'Orientation',
       category: PropertyCategory.visuals,
       options: [
@@ -2275,24 +1948,20 @@ const List<PropertyMeta> _minigauge = [
       ]),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2300,7 +1969,6 @@ const List<PropertyMeta> _minigauge = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -2309,19 +1977,16 @@ const List<PropertyMeta> _minigauge = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -2329,7 +1994,6 @@ const List<PropertyMeta> _minigauge = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2337,17 +2001,14 @@ const List<PropertyMeta> _minigauge = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2355,7 +2016,6 @@ const List<PropertyMeta> _minigauge = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2363,7 +2023,6 @@ const List<PropertyMeta> _minigauge = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2371,7 +2030,6 @@ const List<PropertyMeta> _minigauge = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2380,7 +2038,6 @@ const List<PropertyMeta> _minigauge = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2389,7 +2046,6 @@ const List<PropertyMeta> _minigauge = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2398,7 +2054,6 @@ const List<PropertyMeta> _minigauge = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2407,13 +2062,11 @@ const List<PropertyMeta> _minigauge = [
 const List<PropertyMeta> _appgrid = [
   PropertyMeta(
       key: 'apps',
-      minLevel: CapabilityLevel.basic,
       label: 'Apps list',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'columns',
-      minLevel: CapabilityLevel.basic,
       label: 'Columns',
       safe: true,
       category: PropertyCategory.visuals,
@@ -2422,36 +2075,30 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'iconSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Icon size',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showLabels',
-      minLevel: CapabilityLevel.basic,
       label: 'Show labels',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2459,7 +2106,6 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -2468,7 +2114,6 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2476,17 +2121,14 @@ const List<PropertyMeta> _appgrid = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2494,7 +2136,6 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2502,7 +2143,6 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2510,7 +2150,6 @@ const List<PropertyMeta> _appgrid = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2519,7 +2158,6 @@ const List<PropertyMeta> _appgrid = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2528,7 +2166,6 @@ const List<PropertyMeta> _appgrid = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2537,7 +2174,6 @@ const List<PropertyMeta> _appgrid = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2546,58 +2182,48 @@ const List<PropertyMeta> _appgrid = [
 const List<PropertyMeta> _statusbar = [
   PropertyMeta(
       key: 'time',
-      minLevel: CapabilityLevel.basic,
       label: 'Time',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'battery',
-      minLevel: CapabilityLevel.basic,
       label: 'Battery level',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'signal',
-      minLevel: CapabilityLevel.basic,
       label: 'Signal level',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'showTime',
-      minLevel: CapabilityLevel.basic,
       label: 'Show time',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showBattery',
-      minLevel: CapabilityLevel.basic,
       label: 'Show battery',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showSignal',
-      minLevel: CapabilityLevel.basic,
       label: 'Show signal',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2605,7 +2231,6 @@ const List<PropertyMeta> _statusbar = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -2614,19 +2239,16 @@ const List<PropertyMeta> _statusbar = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -2634,7 +2256,6 @@ const List<PropertyMeta> _statusbar = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2642,17 +2263,14 @@ const List<PropertyMeta> _statusbar = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2660,7 +2278,6 @@ const List<PropertyMeta> _statusbar = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2668,7 +2285,6 @@ const List<PropertyMeta> _statusbar = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2676,7 +2292,6 @@ const List<PropertyMeta> _statusbar = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2685,7 +2300,6 @@ const List<PropertyMeta> _statusbar = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2694,7 +2308,6 @@ const List<PropertyMeta> _statusbar = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2703,7 +2316,6 @@ const List<PropertyMeta> _statusbar = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2712,22 +2324,18 @@ const List<PropertyMeta> _statusbar = [
 const List<PropertyMeta> _climate = [
   PropertyMeta(
       key: 'temperature',
-      minLevel: CapabilityLevel.basic,
       label: 'Temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'targetTemp',
-      minLevel: CapabilityLevel.basic,
       label: 'Target temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'fanSpeed',
-      minLevel: CapabilityLevel.basic,
       label: 'Fan speed',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'mode',
-      minLevel: CapabilityLevel.basic,
       label: 'Mode',
       safe: true,
       category: PropertyCategory.visuals,
@@ -2739,30 +2347,25 @@ const List<PropertyMeta> _climate = [
       ]),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2770,7 +2373,6 @@ const List<PropertyMeta> _climate = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -2779,19 +2381,16 @@ const List<PropertyMeta> _climate = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -2799,7 +2398,6 @@ const List<PropertyMeta> _climate = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2807,17 +2405,14 @@ const List<PropertyMeta> _climate = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2825,7 +2420,6 @@ const List<PropertyMeta> _climate = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -2833,7 +2427,6 @@ const List<PropertyMeta> _climate = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2841,7 +2434,6 @@ const List<PropertyMeta> _climate = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2850,7 +2442,6 @@ const List<PropertyMeta> _climate = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2859,7 +2450,6 @@ const List<PropertyMeta> _climate = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -2868,7 +2458,6 @@ const List<PropertyMeta> _climate = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -2877,69 +2466,57 @@ const List<PropertyMeta> _climate = [
 const List<PropertyMeta> _car_viz = [
   PropertyMeta(
       key: 'laneLeft',
-      minLevel: CapabilityLevel.basic,
       label: 'Left lane warning',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'laneRight',
-      minLevel: CapabilityLevel.basic,
       label: 'Right lane warning',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'carAhead',
-      minLevel: CapabilityLevel.basic,
       label: 'Car ahead',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'doorLeft',
-      minLevel: CapabilityLevel.basic,
       label: 'Left door open',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'doorRight',
-      minLevel: CapabilityLevel.basic,
       label: 'Right door open',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'showRing',
-      minLevel: CapabilityLevel.basic,
       label: 'Show Pod Ring',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showLabels',
-      minLevel: CapabilityLevel.basic,
       label: 'Show Pod Labels',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -2948,19 +2525,16 @@ const List<PropertyMeta> _car_viz = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -2968,7 +2542,6 @@ const List<PropertyMeta> _car_viz = [
       step: 0.5),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2976,7 +2549,6 @@ const List<PropertyMeta> _car_viz = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -2984,17 +2556,14 @@ const List<PropertyMeta> _car_viz = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3002,7 +2571,6 @@ const List<PropertyMeta> _car_viz = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3010,7 +2578,6 @@ const List<PropertyMeta> _car_viz = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3018,7 +2585,6 @@ const List<PropertyMeta> _car_viz = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3027,7 +2593,6 @@ const List<PropertyMeta> _car_viz = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3036,7 +2601,6 @@ const List<PropertyMeta> _car_viz = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3045,7 +2609,6 @@ const List<PropertyMeta> _car_viz = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -3054,34 +2617,28 @@ const List<PropertyMeta> _car_viz = [
 const List<PropertyMeta> _map = [
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'eta',
-      minLevel: CapabilityLevel.basic,
       label: 'ETA',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'distance',
-      minLevel: CapabilityLevel.basic,
       label: 'Distance',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'nextTurn',
-      minLevel: CapabilityLevel.basic,
       label: 'Next turn',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'showMapGraphic',
-      minLevel: CapabilityLevel.basic,
       label: 'Show map graphic',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'mapStyle',
-      minLevel: CapabilityLevel.basic,
       label: 'Map style',
       safe: true,
       category: PropertyCategory.visuals,
@@ -3092,17 +2649,14 @@ const List<PropertyMeta> _map = [
       ]),
   PropertyMeta(
       key: 'lat',
-      minLevel: CapabilityLevel.basic,
       label: 'Latitude',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lon',
-      minLevel: CapabilityLevel.basic,
       label: 'Longitude',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'zoom',
-      minLevel: CapabilityLevel.advanced,
       label: 'Zoom level',
       category: PropertyCategory.visuals,
       min: 1,
@@ -3110,29 +2664,24 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'heading',
-      minLevel: CapabilityLevel.basic,
       label: 'Heading',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3140,7 +2689,6 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3148,17 +2696,14 @@ const List<PropertyMeta> _map = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3166,7 +2711,6 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3174,7 +2718,6 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3182,7 +2725,6 @@ const List<PropertyMeta> _map = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3191,7 +2733,6 @@ const List<PropertyMeta> _map = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3200,7 +2741,6 @@ const List<PropertyMeta> _map = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3209,7 +2749,6 @@ const List<PropertyMeta> _map = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -3218,50 +2757,41 @@ const List<PropertyMeta> _map = [
 const List<PropertyMeta> _gps = [
   PropertyMeta(
       key: 'speed',
-      minLevel: CapabilityLevel.basic,
       label: 'Speed binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'altitude',
-      minLevel: CapabilityLevel.basic,
       label: 'Altitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lat',
-      minLevel: CapabilityLevel.basic,
       label: 'Latitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'lon',
-      minLevel: CapabilityLevel.basic,
       label: 'Longitude binding',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Speed unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showCoordinates',
-      minLevel: CapabilityLevel.basic,
       label: 'Show coordinates',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.advanced,
       label: 'Accent colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -3270,30 +2800,25 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3301,7 +2826,6 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3309,17 +2833,14 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3327,7 +2848,6 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3335,7 +2855,6 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3344,7 +2863,6 @@ const List<PropertyMeta> _gps = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.visuals,
       min: 0,
@@ -3355,43 +2873,36 @@ const List<PropertyMeta> _gps = [
 const List<PropertyMeta> _gear_selector = [
   PropertyMeta(
       key: 'currentGear',
-      minLevel: CapabilityLevel.basic,
       label: 'Current gear',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'gears',
-      minLevel: CapabilityLevel.basic,
       label: 'Gear list',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'activeColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Active colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'inactiveColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Inactive colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3399,7 +2910,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -3408,19 +2918,16 @@ const List<PropertyMeta> _gear_selector = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -3428,7 +2935,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3436,17 +2942,14 @@ const List<PropertyMeta> _gear_selector = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3454,7 +2957,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3462,7 +2964,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3470,7 +2971,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3479,7 +2979,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3488,7 +2987,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3497,7 +2995,6 @@ const List<PropertyMeta> _gear_selector = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -3506,70 +3003,58 @@ const List<PropertyMeta> _gear_selector = [
 const List<PropertyMeta> _battery_range = [
   PropertyMeta(
       key: 'batteryLevel',
-      minLevel: CapabilityLevel.basic,
       label: 'Battery level (0-1)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'range',
-      minLevel: CapabilityLevel.basic,
       label: 'Range',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'temperature',
-      minLevel: CapabilityLevel.basic,
       label: 'Temperature',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Bar colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'textColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Text colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accentColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Accent colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'showRange',
-      minLevel: CapabilityLevel.basic,
       label: 'Show range',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showTemperature',
-      minLevel: CapabilityLevel.basic,
       label: 'Show temperature',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'unit',
-      minLevel: CapabilityLevel.basic,
       label: 'Range unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'tempUnit',
-      minLevel: CapabilityLevel.basic,
       label: 'Temp unit',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3577,7 +3062,6 @@ const List<PropertyMeta> _battery_range = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -3586,19 +3070,16 @@ const List<PropertyMeta> _battery_range = [
       step: 1),
   PropertyMeta(
       key: 'fontFamily',
-      minLevel: CapabilityLevel.basic,
       label: 'Font family',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'fontWeight',
-      minLevel: CapabilityLevel.basic,
       label: 'Font weight',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'letterSpacing',
-      minLevel: CapabilityLevel.advanced,
       label: 'Letter spacing',
       category: PropertyCategory.fontsAndColors,
       min: -2,
@@ -3606,7 +3087,6 @@ const List<PropertyMeta> _battery_range = [
       step: 0.5),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3614,17 +3094,14 @@ const List<PropertyMeta> _battery_range = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3632,7 +3109,6 @@ const List<PropertyMeta> _battery_range = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3640,7 +3116,6 @@ const List<PropertyMeta> _battery_range = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3648,7 +3123,6 @@ const List<PropertyMeta> _battery_range = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3657,7 +3131,6 @@ const List<PropertyMeta> _battery_range = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3666,7 +3139,6 @@ const List<PropertyMeta> _battery_range = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3675,7 +3147,6 @@ const List<PropertyMeta> _battery_range = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -3684,36 +3155,30 @@ const List<PropertyMeta> _battery_range = [
 const List<PropertyMeta> _power_flow = [
   PropertyMeta(
       key: 'power',
-      minLevel: CapabilityLevel.basic,
       label: 'Power',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'maxPower',
-      minLevel: CapabilityLevel.basic,
       label: 'Max power',
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'color',
-      minLevel: CapabilityLevel.basic,
       label: 'Bar colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
-      minLevel: CapabilityLevel.basic,
       label: 'Accent colour',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'label',
-      minLevel: CapabilityLevel.basic,
       label: 'Label',
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'barWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Bar width',
       category: PropertyCategory.visuals,
       min: 1,
@@ -3721,7 +3186,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'barHeight',
-      minLevel: CapabilityLevel.advanced,
       label: 'Bar height',
       category: PropertyCategory.visuals,
       min: 1,
@@ -3729,13 +3193,11 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'backgroundColor',
-      minLevel: CapabilityLevel.basic,
       label: 'Background',
       safe: true,
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'borderRadius',
-      minLevel: CapabilityLevel.advanced,
       label: 'Corner radius',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3743,7 +3205,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'fontSize',
-      minLevel: CapabilityLevel.basic,
       label: 'Font size',
       safe: true,
       category: PropertyCategory.fontsAndColors,
@@ -3752,7 +3213,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'borderWidth',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border width',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3760,17 +3220,14 @@ const List<PropertyMeta> _power_flow = [
       step: 0.5),
   PropertyMeta(
       key: 'borderColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Border colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowColor',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow colour',
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'shadowBlur',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow blur',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3778,7 +3235,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'shadowOffsetY',
-      minLevel: CapabilityLevel.advanced,
       label: 'Shadow offset Y',
       category: PropertyCategory.layoutAndSpacing,
       min: -20,
@@ -3786,7 +3242,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'opacity',
-      minLevel: CapabilityLevel.advanced,
       label: 'Opacity',
       category: PropertyCategory.layoutAndSpacing,
       min: 0,
@@ -3794,7 +3249,6 @@ const List<PropertyMeta> _power_flow = [
       step: 0.05),
   PropertyMeta(
       key: 'padding',
-      minLevel: CapabilityLevel.basic,
       label: 'Padding',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3803,7 +3257,6 @@ const List<PropertyMeta> _power_flow = [
       step: 1),
   PropertyMeta(
       key: 'width',
-      minLevel: CapabilityLevel.basic,
       label: 'Width',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3812,7 +3265,6 @@ const List<PropertyMeta> _power_flow = [
       step: 10),
   PropertyMeta(
       key: 'height',
-      minLevel: CapabilityLevel.basic,
       label: 'Height',
       safe: true,
       category: PropertyCategory.layoutAndSpacing,
@@ -3821,7 +3273,6 @@ const List<PropertyMeta> _power_flow = [
       step: 10),
   PropertyMeta(
       key: 'visible',
-      minLevel: CapabilityLevel.basic,
       label: 'Visible',
       safe: true,
       category: PropertyCategory.layoutAndSpacing),
@@ -3853,22 +3304,14 @@ const Map<String, List<PropertyMeta>> propertyManifest = {
   'power_flow': _power_flow,
 };
 
-List<PropertyMeta> visibleProperties(String widgetKind, CapabilityLevel level) {
-  final manifest = propertyManifest[widgetKind] ?? const <PropertyMeta>[];
-  return manifest.where((m) => level.includes(m.minLevel)).toList();
-}
-
 List<PropertyMeta> allProperties(String widgetKind) {
   return (propertyManifest[widgetKind] ?? const <PropertyMeta>[]).toList();
 }
 
 Map<PropertyCategory, List<PropertyMeta>> _groupPropertiesByCategory(
-  String widgetKind, {
-  CapabilityLevel? level,
-}) {
-  final props = level != null
-      ? visibleProperties(widgetKind, level)
-      : allProperties(widgetKind);
+  String widgetKind,
+) {
+  final props = allProperties(widgetKind);
   final map = <PropertyCategory, List<PropertyMeta>>{
     for (final cat in PropertyCategory.values) cat: [],
   };
@@ -3879,25 +3322,17 @@ Map<PropertyCategory, List<PropertyMeta>> _groupPropertiesByCategory(
 }
 
 Map<PropertyCategory, List<PropertyMeta>> categorizedProperties(
-  String widgetKind, {
-  CapabilityLevel? level,
-}) =>
-    _groupPropertiesByCategory(widgetKind, level: level);
+        String widgetKind) =>
+    _groupPropertiesByCategory(widgetKind);
 
 Map<PropertyCategory, List<PropertyMeta>> propertiesByCategory(
-  String widgetKind, {
-  CapabilityLevel? level,
-}) =>
-    _groupPropertiesByCategory(widgetKind, level: level);
+        String widgetKind) =>
+    _groupPropertiesByCategory(widgetKind);
 
 List<PropertyMeta> getPropertiesByCategory(
   String widgetKind,
-  PropertyCategory category, {
-  CapabilityLevel? level,
-}) {
-  return (_groupPropertiesByCategory(widgetKind, level: level)[category] ??
+  PropertyCategory category,
+) {
+  return (_groupPropertiesByCategory(widgetKind)[category] ??
       const <PropertyMeta>[]);
 }
-
-bool transformsUnlockedAt(CapabilityLevel level) =>
-    level.index >= CapabilityLevel.advanced.index;

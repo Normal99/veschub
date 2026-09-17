@@ -9,7 +9,6 @@ library;
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'binding.dart';
-import 'capability.dart';
 
 part 'document.freezed.dart';
 part 'document.g.dart';
@@ -44,11 +43,6 @@ class WidgetInstance with _$WidgetInstance {
     @Default(<String, Binding>{})
     @BindingMapConverter()
     Map<String, Binding> properties,
-
-    /// Minimum capability level required to edit this widget.
-    @JsonKey(name: 'level')
-    @Default(CapabilityLevel.basic)
-    CapabilityLevel level,
   }) = _WidgetInstance;
 
   factory WidgetInstance.fromJson(Map<String, dynamic> json) =>

@@ -1,4 +1,3 @@
-import 'package:dashboard_model/dashboard_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:widgets_library/widgets_library.dart';
 
@@ -17,45 +16,18 @@ void main() {
     'gear_selector',
   ];
 
-  group('visibleProperties', () {
-    test(
-        'Basic level shows only safe props for gauge, plus the value '
-        'binding itself (what a widget displays is never gated — only its '
-        'cosmetic/advanced knobs are)', () {
-      final visible = visibleProperties('gauge', CapabilityLevel.basic);
-      final keys = visible.map((m) => m.key).toSet();
+  group('allProperties', () {
+    test('gauge exposes its value binding alongside cosmetic properties', () {
+      final all = allProperties('gauge');
+      final keys = all.map((m) => m.key).toSet();
       expect(
-          keys, containsAll(['value', 'min', 'max', 'label', 'unit', 'color']));
-      expect(keys, isNot(contains('accent')));
-    });
-
-    test('Advanced reveals value binding + accent', () {
-      final visible = visibleProperties('gauge', CapabilityLevel.advanced);
-      final keys = visible.map((m) => m.key).toSet();
-      expect(keys, containsAll(['value', 'accent', 'min', 'max']));
-    });
-
-    test('Expert includes everything Advanced does', () {
-      final advanced = visibleProperties('chart', CapabilityLevel.advanced);
-      final expert = visibleProperties('chart', CapabilityLevel.expert);
-      final advKeys = advanced.map((m) => m.key).toSet();
-      final expKeys = expert.map((m) => m.key).toSet();
-      expect(expKeys.containsAll(advKeys), isTrue);
+          keys,
+          containsAll(
+              ['value', 'min', 'max', 'label', 'unit', 'color', 'accent']));
     });
 
     test('unknown kind returns empty list', () {
-      expect(visibleProperties('nonsense', CapabilityLevel.expert), isEmpty);
-    });
-  });
-
-  group('transformsUnlockedAt', () {
-    test('Basic locks transforms', () {
-      expect(transformsUnlockedAt(CapabilityLevel.basic), isFalse);
-    });
-
-    test('Advanced and Expert unlock transforms', () {
-      expect(transformsUnlockedAt(CapabilityLevel.advanced), isTrue);
-      expect(transformsUnlockedAt(CapabilityLevel.expert), isTrue);
+      expect(allProperties('nonsense'), isEmpty);
     });
   });
 
@@ -147,12 +119,10 @@ void main() {
       final doorLeftMeta =
           allProperties('car_viz').firstWhere((m) => m.key == 'doorLeft');
       expect(doorLeftMeta.category, PropertyCategory.dataBindings);
-      expect(doorLeftMeta.minLevel, CapabilityLevel.basic);
 
       final doorRightMeta =
           allProperties('car_viz').firstWhere((m) => m.key == 'doorRight');
       expect(doorRightMeta.category, PropertyCategory.dataBindings);
-      expect(doorRightMeta.minLevel, CapabilityLevel.basic);
 
       final showRingMeta =
           allProperties('car_viz').firstWhere((m) => m.key == 'showRing');
@@ -180,15 +150,6 @@ void main() {
 
       final catGrouped = categorizedProperties('gauge');
       expect(catGrouped.length, PropertyCategory.values.length);
-    });
-
-    test('filters by capability level when specified', () {
-      final basicGrouped =
-          propertiesByCategory('gauge', level: CapabilityLevel.basic);
-      final basicTotalCount =
-          basicGrouped.values.fold<int>(0, (sum, list) => sum + list.length);
-      expect(basicTotalCount,
-          visibleProperties('gauge', CapabilityLevel.basic).length);
     });
 
     test('returns empty lists for unknown widget kind', () {
@@ -219,8 +180,6 @@ void main() {
     test('WidgetManifest.forKind creates valid manifest instance', () {
       final manifest = WidgetManifest.forKind('bar');
       expect(manifest.kind, 'bar');
-      expect(manifest.propertiesByCategory().keys,
-          containsAll(PropertyCategory.values));
       expect(manifest.categorizedProperties.keys,
           containsAll(PropertyCategory.values));
       expect(manifest.getPropertiesByCategory(PropertyCategory.dataBindings),

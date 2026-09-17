@@ -14,7 +14,6 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({
       'settings.onboardingDone': true,
-      'settings.capabilityLevel': 'advanced',
     });
   });
 
@@ -69,8 +68,6 @@ void main() {
           },
         ),
       );
-      container.read(capabilityLevelProvider.notifier).state =
-          CapabilityLevel.expert;
       container.read(sceneModelProvider.notifier).add(node);
       container.read(selectionModelProvider.notifier).set('test_gauge');
       await tester.pumpAndSettle();

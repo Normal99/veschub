@@ -52,7 +52,6 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({
       'settings.onboardingDone': true,
-      'settings.capabilityLevel': 'advanced',
     });
   });
 
@@ -183,7 +182,6 @@ void main() {
     // packages/settings/test/settings_test.dart's custom-font tests.
     SharedPreferences.setMockInitialValues({
       'settings.onboardingDone': true,
-      'settings.capabilityLevel': 'advanced',
       'settings.customFonts': [
         '{"family":"My Custom Font","filePath":"/tmp/my_custom_font.ttf"}',
       ],

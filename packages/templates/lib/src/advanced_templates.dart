@@ -22,7 +22,6 @@ DashboardTemplate _makeAdvancedTemplate({
     name: name,
     description: description,
     category: 'Advanced Dashboard Templates',
-    level: CapabilityLevel.advanced,
     document: DashboardDocument.fromJson(migrated),
     knobs: const [],
   );

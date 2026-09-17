@@ -96,11 +96,7 @@ class _PropertiesInspector extends ConsumerWidget {
               const SizedBox(height: 4),
               _PositionFields(node: node),
               const Divider(),
-              ..._PropertiesInspector._buildProperties(
-                node,
-                widget,
-                level: ref.watch(capabilityLevelProvider),
-              ),
+              ..._PropertiesInspector._buildProperties(node, widget),
             ],
           ],
         ),
@@ -110,10 +106,9 @@ class _PropertiesInspector extends ConsumerWidget {
 
   static List<Widget> _buildProperties(
     CanvasNode node,
-    WidgetInstance widget, {
-    CapabilityLevel level = CapabilityLevel.expert,
-  }) {
-    final categorized = categorizedProperties(widget.kind, level: level);
+    WidgetInstance widget,
+  ) {
+    final categorized = categorizedProperties(widget.kind);
     final entries = Map<String, Binding>.from(widget.properties);
     final result = <Widget>[];
 
@@ -416,7 +411,6 @@ class _BindingField extends ConsumerWidget {
       (m) => m.key == name,
       orElse: () => PropertyMeta(
         key: name,
-        minLevel: CapabilityLevel.basic,
         label: name,
         category: PropertyCategory.visuals,
       ),

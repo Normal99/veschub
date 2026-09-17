@@ -1,7 +1,7 @@
-/// Settings screen for the studio: theme, default capability level.
+/// Settings screen for the studio: theme, custom fonts.
 ///
 /// Backed by the shared [SettingsService]; changes persist immediately and
-/// notify listeners (the app reacts to theme/level changes live).
+/// notify listeners (the app reacts to theme changes live).
 library;
 
 import 'package:dashboard_model/dashboard_model.dart';
@@ -36,26 +36,6 @@ class StudioSettingsScreen extends ConsumerWidget {
                     value: ThemePreference.dark, child: Text('Dark')),
               ],
               onChanged: (v) => v == null ? null : settings.setThemeMode(v),
-            ),
-          ),
-          const _SectionHeader('Editor'),
-          ListTile(
-            leading: const Icon(Icons.speed),
-            title: const Text('Default capability level'),
-            subtitle: const Text(
-              'Controls how many property options are shown per widget. '
-              'Applies immediately.',
-            ),
-            trailing: DropdownButton<CapabilityLevel>(
-              value: settings.capabilityLevel,
-              items: CapabilityLevel.values
-                  .map((l) => DropdownMenuItem(
-                        value: l,
-                        child: Text(_capitalize(l.name)),
-                      ))
-                  .toList(),
-              onChanged: (v) =>
-                  v == null ? null : settings.setCapabilityLevel(v),
             ),
           ),
           const _SectionHeader('Custom Fonts'),
@@ -117,6 +97,3 @@ class _SectionHeader extends StatelessWidget {
     );
   }
 }
-
-String _capitalize(String s) =>
-    s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
