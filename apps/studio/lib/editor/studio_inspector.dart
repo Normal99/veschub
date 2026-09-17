@@ -6,7 +6,19 @@ class _PropertiesInspector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scene = ref.read(sceneModelProvider);
+    // Must be watch, not read: this widget is `const`, so a parent rebuild
+    // alone (e.g. the top-level commandStackProvider watch in
+    // StudioEditor) never reaches this element — Flutter skips rebuilding
+    // an unchanged const widget instance entirely. Without watching the
+    // scene directly, every property edit (slider drag, text field commit,
+    // picker selection) commits correctly to the model — the canvas
+    // preview reflects it immediately, since it watches the scene too —
+    // but this inspector keeps showing stale props from whenever it was
+    // last rebuilt for an unrelated reason (e.g. selection changing).
+    // Sliders make this the most visible: with no local state of their
+    // own, a dragged Slider's displayed position is purely derived from
+    // this stale `widget.value`, so it never appears to move at all.
+    final scene = ref.watch(sceneModelProvider);
     final selection = ref.watch(selectionModelProvider);
 
     if (selection.isEmpty) {
