@@ -701,6 +701,52 @@ to assert the new always-visible behavior rather than deleted outright.
 
 ---
 
+## Backspace inside property fields was globally swallowed (2026-09-17)
+
+User report: "Moving the sliders they dont change and dont save themselves
+in the state they are slided too also i cant change the values properly
+and cant backspace on the values either."
+
+Reproduced live in the user's own running dashboard, then isolated in a
+widget test rather than guessed at:
+- **Slider dragging**: tested in isolation (drag a Ticks slider, read the
+  committed value back from `sceneModelProvider`) and it persisted
+  correctly, both before and after the fix below. No slider-specific bug
+  found — most likely explained by the text-field bug below making the
+  whole control feel broken, or a live drag missing the slider's hit area.
+  Flagging this rather than claiming it's fixed when no root cause was
+  found for it specifically.
+- **FIXED — backspace did nothing inside any property text field**: root
+  cause was `CanvasKeyboardShortcuts` (`apps/studio/lib/editor/
+  keyboard_shortcuts.dart`), which binds Delete/Backspace via
+  `CallbackShortcuts` to delete the selected canvas widget, guarded by a
+  `_typing()` check so it wouldn't fire while a text field has focus. The
+  guard worked — Backspace no longer deleted the whole widget while
+  typing — but `CallbackShortcuts` consumes a matching key event the
+  instant its activator matches, *regardless* of what the bound callback
+  actually does, including a no-op. So the keystroke never reached the
+  focused field's own backspace/delete-character handling either: not
+  "safely ignored," just silently swallowed. Net effect verified via test:
+  typing "105" into a numeric field and pressing Backspace left the field
+  showing "105", unchanged.
+  Fixed by omitting the Delete/Backspace bindings entirely while a text
+  field has focus, rather than guarding the callback — the keystroke is
+  then never claimed by the shortcut system and falls through to normal
+  text editing. `CallbackShortcuts`' binding map is static per build, so
+  `CanvasKeyboardShortcuts` became a stateful widget that listens to
+  `FocusManager` and rebuilds on every focus change to keep the map
+  current. Verified via the same test: the field now reads "10" after the
+  same keystroke.
+  Along the way, found and fixed a real gap in the *existing* regression
+  test for this exact class of bug (`keyboard_shortcuts_test.dart`,
+  originally added when Backspace used to delete the whole widget): it
+  only asserted the widget wasn't deleted, never that the keystroke
+  actually edited the text — exactly the blind spot that let this ship.
+  Strengthened it, and added `slider_property_test.dart` covering the
+  numeric-field case specifically.
+
+---
+
 ## Milestone 1: Studio MVP ✅
 
 - [x] Drag-drop widgets onto canvas
