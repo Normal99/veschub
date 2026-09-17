@@ -113,6 +113,9 @@ class _WidgetPalette extends ConsumerStatefulWidget {
         },
       ),
       (
+        // Near-full ring, thin precision arc, dense ticks — a classic
+        // "instrument cluster" speedometer look, distinct from the other
+        // presets in geometry, not just colour.
         name: 'BMW Amber',
         icon: Icons.directions_car,
         props: {
@@ -120,10 +123,10 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'min': L(0),
           'max': L(260),
           'needleStyle': L('needle'),
-          'sweepAngle': L(270),
-          'startAngle': L(135),
-          'tickCount': L(13),
-          'arcWidth': L(8),
+          'sweepAngle': L(300),
+          'startAngle': L(120),
+          'tickCount': L(20),
+          'arcWidth': L(5),
           'color': L(0xFFFFFFFF),
           'accent': L(0xFFFFA500),
           'label': L('km/h'),
@@ -137,6 +140,10 @@ class _WidgetPalette extends ConsumerStatefulWidget {
         },
       ),
       (
+        // The one preset using the gauge's inner-ring feature: a second,
+        // smaller ring showing motor duty cycle alongside the main RPM
+        // needle — a layered dual-readout look, not achievable by just
+        // recolouring another preset.
         name: 'Audi Sport',
         icon: Icons.auto_awesome,
         props: {
@@ -155,6 +162,11 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'centerValue': T('erpm'),
           'centerUnit': L('rpm'),
           'showTickLabels': L(true),
+          'innerValue': T('duty'),
+          'innerMin': L(0),
+          'innerMax': L(1),
+          'innerColor': L(0xFF4488FF),
+          'innerArcWidth': L(4),
           'redlineStart': L(0.82),
           'redlineColor': L(0xFFFF0000),
           'fontSize': L(48),
@@ -164,6 +176,9 @@ class _WidgetPalette extends ConsumerStatefulWidget {
         },
       ),
       (
+        // Nearly-complete circle, thick bold arc, sparse heavy ticks — a
+        // big, chunky centred tach, the geometric opposite of BMW's thin
+        // dense ring above.
         name: 'Porsche Green',
         icon: Icons.sports_motorsports,
         props: {
@@ -171,10 +186,10 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'min': L(0),
           'max': L(340),
           'needleStyle': L('needle'),
-          'sweepAngle': L(270),
-          'startAngle': L(135),
-          'tickCount': L(12),
-          'arcWidth': L(8),
+          'sweepAngle': L(310),
+          'startAngle': L(115),
+          'tickCount': L(8),
+          'arcWidth': L(14),
           'color': L(0xFF00CC66),
           'accent': L(0xFF888888),
           'label': L('mph'),
@@ -182,6 +197,8 @@ class _WidgetPalette extends ConsumerStatefulWidget {
           'centerValue': T('speed'),
           'centerUnit': L('mph'),
           'showTickLabels': L(true),
+          'redlineStart': L(0.88),
+          'redlineColor': L(0xFFFF3333),
           'fontSize': L(56),
           'padding': L(16),
           'width': L(320),

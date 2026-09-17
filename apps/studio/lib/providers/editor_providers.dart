@@ -60,9 +60,8 @@ final editorModeProvider = StateProvider<EditorMode>((ref) {
 
 /// The active capability level (gates which props/handles are visible).
 ///
-/// Seeded from the persisted [SettingsService] default on launch; the toolbar
-/// selector overrides it for the session without persisting. Changing the
-/// persisted default in Settings only takes effect on the next app launch.
+/// Tracks the persisted [SettingsService] default and updates live whenever
+/// it changes (e.g. from the Settings screen) — no restart needed.
 final capabilityLevelProvider = StateProvider<CapabilityLevel>((ref) {
   return ref.watch(settingsServiceProvider).capabilityLevel;
 });

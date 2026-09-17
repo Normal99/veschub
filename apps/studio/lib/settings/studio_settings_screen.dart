@@ -43,7 +43,8 @@ class StudioSettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.speed),
             title: const Text('Default capability level'),
             subtitle: const Text(
-              'Applied on the next studio launch.',
+              'Controls how many property options are shown per widget. '
+              'Applies immediately.',
             ),
             trailing: DropdownButton<CapabilityLevel>(
               value: settings.capabilityLevel,

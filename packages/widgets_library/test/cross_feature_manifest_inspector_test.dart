@@ -161,7 +161,11 @@ void main() {
       // The value binding itself is never gated (what a widget displays
       // isn't an "advanced" concept) — only cosmetic/advanced knobs are.
       expect(basicKeys.contains('value'), isTrue);
-      expect(basicKeys.contains('sweepAngle'), isFalse);
+      // The gauge's ring geometry (sweep/start angle, arc width, needle
+      // style) is basic too — "customize the layout" is core, not advanced;
+      // fine-detail cosmetics like shadows/letter-spacing still gate.
+      expect(basicKeys.contains('sweepAngle'), isTrue);
+      expect(basicKeys.contains('shadowBlur'), isFalse);
     });
 
     testWidgets(

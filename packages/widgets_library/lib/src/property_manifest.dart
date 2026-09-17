@@ -155,7 +155,7 @@ const List<PropertyMeta> _gauge = [
       category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'tickCount',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Ticks',
       category: PropertyCategory.visuals,
       min: 2,
@@ -163,7 +163,7 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'sweepAngle',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Sweep',
       category: PropertyCategory.visuals,
       min: 10,
@@ -171,7 +171,7 @@ const List<PropertyMeta> _gauge = [
       step: 5),
   PropertyMeta(
       key: 'startAngle',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Start angle',
       category: PropertyCategory.visuals,
       min: 0,
@@ -179,7 +179,7 @@ const List<PropertyMeta> _gauge = [
       step: 5),
   PropertyMeta(
       key: 'arcWidth',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Arc width',
       category: PropertyCategory.visuals,
       min: 1,
@@ -187,7 +187,7 @@ const List<PropertyMeta> _gauge = [
       step: 1),
   PropertyMeta(
       key: 'needleStyle',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Needle',
       category: PropertyCategory.visuals,
       options: [
@@ -1016,9 +1016,17 @@ const List<PropertyMeta> _image = [
       category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'fit',
-      minLevel: CapabilityLevel.advanced,
+      minLevel: CapabilityLevel.basic,
       label: 'Fit mode',
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Contain', value: 'contain'),
+        EnumOption(label: 'Cover', value: 'cover'),
+        EnumOption(label: 'Fill', value: 'fill'),
+        EnumOption(label: 'Fit width', value: 'fitWidth'),
+        EnumOption(label: 'Fit height', value: 'fitHeight'),
+        EnumOption(label: 'None', value: 'none'),
+      ]),
   PropertyMeta(
       key: 'tint',
       minLevel: CapabilityLevel.basic,
@@ -1630,7 +1638,12 @@ const List<PropertyMeta> _tripstats = [
       minLevel: CapabilityLevel.basic,
       label: 'Layout style',
       safe: true,
-      category: PropertyCategory.visuals),
+      category: PropertyCategory.visuals,
+      options: [
+        EnumOption(label: 'Standard list', value: 'standard'),
+        EnumOption(label: '3x3 grid', value: '3x3'),
+        EnumOption(label: 'Porsche pod', value: 'porsche'),
+      ]),
   PropertyMeta(
       key: 'section1Header',
       minLevel: CapabilityLevel.basic,
