@@ -68,12 +68,25 @@ void main() {
     await tester.tap(xField);
     await tester.pumpAndSettle();
 
+    await tester.enterText(xField, '123');
+    await tester.pump();
     await tester.sendKeyEvent(LogicalKeyboardKey.backspace);
     await tester.pumpAndSettle();
 
     // The widget must still be there — backspace was consumed by the
     // focused text field, not by the canvas-level delete shortcut.
     expect(find.byType(GaugeWidget), findsOneWidget);
+
+    // And it must have actually edited the text, not just been swallowed
+    // without doing anything (CallbackShortcuts marks a matching key event
+    // "handled" the instant its activator matches, even if the bound
+    // callback no-ops while typing — so a guard alone still stops the
+    // keystroke from ever reaching the field's own delete-character
+    // handling; the fix has to omit the binding outright while typing).
+    final editedText = tester.widget<EditableText>(
+      find.descendant(of: xField, matching: find.byType(EditableText)),
+    );
+    expect(editedText.controller.text, '12');
   });
 
   testWidgets('Ctrl+Z undoes the last add', (tester) async {
