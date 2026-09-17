@@ -799,6 +799,35 @@ reactivity model being corrected.
 
 ---
 
+## Gauge tick customization (2026-09-18)
+
+User request, right after the slider fix: "I would enjoy more tick
+customizability." Previously the only tick knob was count — length (8px)
+and stroke width (2px) were hardcoded, and every tick looked identical.
+
+- [x] **Added `tickLength`/`tickWidth`**: size of the plain tick marks,
+      now sliders in Visuals like every other numeric property.
+- [x] **Added major/minor ticks**: `majorTickEvery` (0 = off, matching the
+      old look exactly; N>0 makes every Nth tick longer/thicker) plus
+      `majorTickLength`/`majorTickWidth` for their size — the small-ticks-
+      between-big-ticks pattern real speedometers/tachometers use. When
+      on, only major ticks get a value label (labelling every minor tick
+      too is unreadable at higher counts).
+- Gave the property inspector's `Slider` a stable
+  `ValueKey('slider_<propertyKey>')`. Two new properties happened to share
+  `min`/`max` with an existing one (`majorTickLength` vs `tickCount`,
+  both 2–50), which broke two tests that found sliders by matching bounds
+  alone — the right fix regardless, since matching by coincidental bounds
+  was always going to collide eventually.
+- Verified defaults reproduce the exact prior rendering when untouched
+  (`tools/dashboard_renderer`'s golden tests, unaffected by any of this,
+  confirm it) and added `gauge_widget_test.dart` covering both plain and
+  major/minor rendering plus the new manifest bounds. Live-verified: set
+  Ticks to 37 and Major tick every to 3 on a running build and got a dense
+  ring of minor ticks with bold, labelled majors at regular intervals.
+
+---
+
 ## Milestone 1: Studio MVP ✅
 
 - [x] Drag-drop widgets onto canvas
