@@ -106,29 +106,16 @@ class WidgetManifest {
 
 const List<PropertyMeta> _gauge = [
   PropertyMeta(
-      key: 'value',
-      label: 'Value',
-      category: PropertyCategory.dataBindings),
+      key: 'value', label: 'Value', category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'min',
-      label: 'Minimum',
-      category: PropertyCategory.dataBindings),
+      key: 'min', label: 'Minimum', category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'max',
-      label: 'Maximum',
-      category: PropertyCategory.dataBindings),
+      key: 'max', label: 'Maximum', category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'label',
-      label: 'Label',
-      category: PropertyCategory.visuals),
+      key: 'label', label: 'Label', category: PropertyCategory.visuals),
+  PropertyMeta(key: 'unit', label: 'Unit', category: PropertyCategory.visuals),
   PropertyMeta(
-      key: 'unit',
-      label: 'Unit',
-      category: PropertyCategory.visuals),
-  PropertyMeta(
-      key: 'color',
-      label: 'Colour',
-      category: PropertyCategory.fontsAndColors),
+      key: 'color', label: 'Colour', category: PropertyCategory.fontsAndColors),
   PropertyMeta(
       key: 'accent',
       label: 'Accent',
@@ -140,6 +127,41 @@ const List<PropertyMeta> _gauge = [
       min: 2,
       max: 50,
       step: 1),
+  PropertyMeta(
+      key: 'tickLength',
+      label: 'Tick length',
+      category: PropertyCategory.visuals,
+      min: 2,
+      max: 40,
+      step: 1),
+  PropertyMeta(
+      key: 'tickWidth',
+      label: 'Tick width',
+      category: PropertyCategory.visuals,
+      min: 0.5,
+      max: 10,
+      step: 0.5),
+  PropertyMeta(
+      key: 'majorTickEvery',
+      label: 'Major tick every',
+      category: PropertyCategory.visuals,
+      min: 0,
+      max: 20,
+      step: 1),
+  PropertyMeta(
+      key: 'majorTickLength',
+      label: 'Major tick length',
+      category: PropertyCategory.visuals,
+      min: 2,
+      max: 50,
+      step: 1),
+  PropertyMeta(
+      key: 'majorTickWidth',
+      label: 'Major tick width',
+      category: PropertyCategory.visuals,
+      min: 0.5,
+      max: 12,
+      step: 0.5),
   PropertyMeta(
       key: 'sweepAngle',
       label: 'Sweep',
@@ -182,9 +204,7 @@ const List<PropertyMeta> _gauge = [
       label: 'Center unit',
       category: PropertyCategory.visuals),
   PropertyMeta(
-      key: 'subLabel',
-      label: 'Sub-label',
-      category: PropertyCategory.visuals),
+      key: 'subLabel', label: 'Sub-label', category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'showTickLabels',
       label: 'Tick labels',
@@ -753,9 +773,7 @@ const List<PropertyMeta> _chart = [
       label: 'Smooth curve',
       category: PropertyCategory.visuals),
   PropertyMeta(
-      key: 'fillArea',
-      label: 'Fill area',
-      category: PropertyCategory.visuals),
+      key: 'fillArea', label: 'Fill area', category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'fillColor',
       label: 'Fill colour',
@@ -958,10 +976,7 @@ const List<PropertyMeta> _image = [
 
 const List<PropertyMeta> _web = [
   PropertyMeta(
-      key: 'url',
-      label: 'URL',
-      safe: true,
-      category: PropertyCategory.visuals),
+      key: 'url', label: 'URL', safe: true, category: PropertyCategory.visuals),
   PropertyMeta(
       key: 'title',
       label: 'Title',
@@ -1210,9 +1225,7 @@ const List<PropertyMeta> _music = [
       safe: true,
       category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'album',
-      label: 'Album',
-      category: PropertyCategory.dataBindings),
+      key: 'album', label: 'Album', category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'progress',
       label: 'Progress (s)',
@@ -2621,9 +2634,7 @@ const List<PropertyMeta> _map = [
       safe: true,
       category: PropertyCategory.visuals),
   PropertyMeta(
-      key: 'eta',
-      label: 'ETA',
-      category: PropertyCategory.dataBindings),
+      key: 'eta', label: 'ETA', category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'distance',
       label: 'Distance',
@@ -2648,13 +2659,9 @@ const List<PropertyMeta> _map = [
         EnumOption(label: 'Decorative (satellite look)', value: 'satellite'),
       ]),
   PropertyMeta(
-      key: 'lat',
-      label: 'Latitude',
-      category: PropertyCategory.dataBindings),
+      key: 'lat', label: 'Latitude', category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'lon',
-      label: 'Longitude',
-      category: PropertyCategory.dataBindings),
+      key: 'lon', label: 'Longitude', category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'zoom',
       label: 'Zoom level',
@@ -3006,9 +3013,7 @@ const List<PropertyMeta> _battery_range = [
       label: 'Battery level (0-1)',
       category: PropertyCategory.dataBindings),
   PropertyMeta(
-      key: 'range',
-      label: 'Range',
-      category: PropertyCategory.dataBindings),
+      key: 'range', label: 'Range', category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'temperature',
       label: 'Temperature',
@@ -3154,9 +3159,7 @@ const List<PropertyMeta> _battery_range = [
 
 const List<PropertyMeta> _power_flow = [
   PropertyMeta(
-      key: 'power',
-      label: 'Power',
-      category: PropertyCategory.dataBindings),
+      key: 'power', label: 'Power', category: PropertyCategory.dataBindings),
   PropertyMeta(
       key: 'maxPower',
       label: 'Max power',

@@ -60,8 +60,8 @@ void main() {
     await tester.tap(visualsHeader);
     await tester.pumpAndSettle();
 
-    final sliderBefore = tester.widget<Slider>(find
-        .byWidgetPredicate((w) => w is Slider && w.min == 2 && w.max == 50));
+    final sliderFinder = find.byKey(const ValueKey('slider_tickCount'));
+    final sliderBefore = tester.widget<Slider>(sliderFinder);
     expect(sliderBefore.value, 10.0);
 
     // Commit a change to the SAME property directly through the scene
@@ -78,8 +78,7 @@ void main() {
         );
     await tester.pumpAndSettle();
 
-    final sliderAfter = tester.widget<Slider>(find
-        .byWidgetPredicate((w) => w is Slider && w.min == 2 && w.max == 50));
+    final sliderAfter = tester.widget<Slider>(sliderFinder);
     expect(sliderAfter.value, 40.0);
   });
 }

@@ -184,6 +184,11 @@ class _PropertiesInspector extends ConsumerWidget {
     if (m.key == 'sweepAngle') return const Binding.literal(value: 270.0);
     if (m.key == 'startAngle') return const Binding.literal(value: 135.0);
     if (m.key == 'tickCount') return const Binding.literal(value: 10);
+    if (m.key == 'tickLength') return const Binding.literal(value: 8.0);
+    if (m.key == 'tickWidth') return const Binding.literal(value: 2.0);
+    if (m.key == 'majorTickEvery') return const Binding.literal(value: 0);
+    if (m.key == 'majorTickLength') return const Binding.literal(value: 14.0);
+    if (m.key == 'majorTickWidth') return const Binding.literal(value: 3.0);
     if (m.key == 'arcWidth') return const Binding.literal(value: 10.0);
     if (m.key == 'lineWidth') return const Binding.literal(value: 2.0);
     if (m.key == 'showGrid') return const Binding.literal(value: true);
@@ -719,6 +724,7 @@ class _LiteralEditorState extends State<_LiteralEditor> {
             children: [
               Expanded(
                 child: Slider(
+                  key: ValueKey('slider_${widget.meta!.key}'),
                   value: current,
                   min: minVal,
                   max: maxVal,

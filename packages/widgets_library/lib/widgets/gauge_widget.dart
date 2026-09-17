@@ -58,6 +58,15 @@ class GaugeWidget extends StatelessWidget {
     final arcWidth = (properties['arcWidth'] as num?)?.toDouble() ?? 10;
     final needleStyle = properties['needleStyle'] as String? ?? 'needle';
     final tickCount = (properties['tickCount'] as num?)?.toInt() ?? 10;
+    final tickLength = propDouble(properties, 'tickLength', 8.0);
+    final tickWidth = propDouble(properties, 'tickWidth', 2.0);
+    // 0 (the default) means "off" — every tick is drawn the same, matching
+    // the look before major/minor ticks existed. N>0 makes every Nth tick
+    // a longer, thicker "major" tick (e.g. a big mark every 5 with small
+    // ticks in between), the classic instrument-cluster pattern.
+    final majorTickEvery = (properties['majorTickEvery'] as num?)?.toInt() ?? 0;
+    final majorTickLength = propDouble(properties, 'majorTickLength', 14.0);
+    final majorTickWidth = propDouble(properties, 'majorTickWidth', 3.0);
 
     return applyOpacity(
       Container(
@@ -74,6 +83,11 @@ class GaugeWidget extends StatelessWidget {
               innerColor: innerColor,
               innerTrackColor: innerColor.withValues(alpha: 0.15),
               tickCount: tickCount,
+              tickLength: tickLength,
+              tickWidth: tickWidth,
+              majorTickEvery: majorTickEvery,
+              majorTickLength: majorTickLength,
+              majorTickWidth: majorTickWidth,
               sweepAngle: sweepAngle,
               startAngle: startAngle,
               arcWidth: arcWidth,
@@ -179,6 +193,11 @@ class _GaugePainter extends CustomPainter {
   final Color innerColor;
   final Color innerTrackColor;
   final int tickCount;
+  final double tickLength;
+  final double tickWidth;
+  final int majorTickEvery;
+  final double majorTickLength;
+  final double majorTickWidth;
   final double sweepAngle;
   final double startAngle;
   final double arcWidth;
@@ -208,6 +227,11 @@ class _GaugePainter extends CustomPainter {
     required this.innerColor,
     required this.innerTrackColor,
     required this.tickCount,
+    required this.tickLength,
+    required this.tickWidth,
+    required this.majorTickEvery,
+    required this.majorTickLength,
+    required this.majorTickWidth,
     required this.sweepAngle,
     required this.startAngle,
     required this.arcWidth,
@@ -278,21 +302,32 @@ class _GaugePainter extends CustomPainter {
       }
     }
 
-    final tick = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..color = accent.withValues(alpha: 0.6);
     if (tickCount > 1) {
       for (var i = 0; i <= tickCount; i++) {
+        // majorTickEvery == 0 means "off" — every tick uses the plain
+        // tickLength/tickWidth, matching the look before major ticks
+        // existed. Above 0, every Nth tick is drawn longer and thicker —
+        // the small-ticks-between-big-ticks pattern real instrument
+        // clusters use.
+        final isMajor = majorTickEvery > 0 && i % majorTickEvery == 0;
+        final length = isMajor ? majorTickLength : tickLength;
+        final tick = Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = isMajor ? majorTickWidth : tickWidth
+          ..color = accent.withValues(alpha: 0.6);
         final a = start + (full * i / tickCount);
         final outer =
             center + Offset(math.cos(a) * radius, math.sin(a) * radius);
         final inner = center +
-            Offset(math.cos(a) * (radius - 8), math.sin(a) * (radius - 8));
+            Offset(math.cos(a) * (radius - length),
+                math.sin(a) * (radius - length));
         canvas.drawLine(inner, outer, tick);
 
-        if (showTickLabels) {
-          final labelR = radius - 18;
+        // With major ticks on, only label the majors — labelling every
+        // minor tick too is unreadably dense.
+        final shouldLabel = showTickLabels && (majorTickEvery == 0 || isMajor);
+        if (shouldLabel) {
+          final labelR = radius - length - 10;
           final lp =
               center + Offset(math.cos(a) * labelR, math.sin(a) * labelR);
           final v = min + (max - min) * i / tickCount;

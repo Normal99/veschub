@@ -60,8 +60,7 @@ void main() {
       (tester) async {
     final container = await dropAndSelectGauge(tester);
 
-    final slider =
-        find.byWidgetPredicate((w) => w is Slider && w.min == 2 && w.max == 50);
+    final slider = find.byKey(const ValueKey('slider_tickCount'));
     await tester.ensureVisible(slider);
     await tester.pumpAndSettle();
     expect(slider, findsOneWidget);
