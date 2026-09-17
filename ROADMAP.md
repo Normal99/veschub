@@ -580,17 +580,76 @@ UI — "USERS DONT SIT ON JSON FILES."
       editor in the inspector. Regression test
       (`literal_editor_typing_test.dart`) verifies both the submit path and
       the blur path independently.
-- [ ] Full audit of every widget kind's properties for remaining cryptic/
-      unpickable values beyond the 10 already fixed in the picker pass
-      above.
-- [ ] Assess whether named car-brand gauge presets are structurally distinct
-      or cosmetic-only recolors; decide on a fix.
-- [ ] Investigate gauge ring/arc layout customization (user specifically
-      wants control over "where the ring encapsulates") — what's possible
-      today via `sweepAngle`/`startAngle`/`arcWidth` vs. what's missing.
-- [ ] Address "no overview, not intuitive" at the whole-program level.
-- [ ] Central deliverable: an honest, evidence-based answer to "can a user
-      build any dashboard entirely through the UI, no JSON required?"
+- [x] **Full property audit** (read all 23 widget kinds in
+      `property_manifest.dart`, cross-checked each fixed-vocabulary string
+      against the widget's actual rendering code): found two more raw-string
+      properties with no picker — `image.fit` (`contain`/`cover`/`fill`/
+      `fitWidth`/`fitHeight`/`none`) and `tripstats.layoutStyle`
+      (`standard`/`3x3`/`porsche`) — both now have `options:` pickers, same
+      pattern as the 10 fixed earlier. Also found a genuinely bigger gap,
+      not a quick picker fix: `appgrid.apps` is a comma-separated mini-DSL
+      (`name` or `name:label`, ~20 hardcoded internal codenames like
+      `nav`/`sms`/`obd`) typed into one plain text field — exactly the
+      "hand-edit a DSL string" problem this whole audit exists to catch.
+      **Not yet fixed** — needs a real chip-style list-builder widget (add/
+      remove app, pick name from a list, optional custom label), not a
+      dropdown. Tracked as follow-up work below.
+- [x] **FIXED — gauge ring/arc layout wasn't actually customizable**: the
+      renderer already fully supports arbitrary ring geometry
+      (`sweepAngle`/`startAngle`/`arcWidth`/`tickCount`/`needleStyle`, each
+      with a proper slider), but every one of them required
+      `CapabilityLevel.advanced` — invisible at the `basic` level every
+      fresh session starts at, same root-cause shape as the Data Bindings
+      bug two entries up. Promoted all five to `basic`. Also found and
+      fixed: the Settings screen's capability-level dropdown claimed a
+      change "applies on the next studio launch" — verified via a live
+      widget-test probe that this was simply false, it already applies
+      immediately in the same session. Fixed the misleading text, and
+      added a live Basic/Advanced/Expert dropdown directly in the Canvas
+      toolbar so the level (and what it unlocks) doesn't require a trip to
+      Settings to see or change. Verified live end-to-end: dropped a bare
+      gauge at Basic, confirmed Sweep/Ticks were already visible in
+      Visuals without switching levels; switched the toolbar dropdown to
+      Expert and watched it apply with no restart.
+- [x] **FIXED — car-brand gauge presets were cosmetic-only recolors**:
+      confirmed the complaint by reading the actual preset definitions —
+      BMW Amber, Audi Sport, and Porsche Green all used the identical
+      `sweepAngle: 270, startAngle: 135, needleStyle: 'needle'` geometry,
+      differing only in colour, tick count, and label. Redesigned each with
+      real structural differences: BMW is now a thin (arcWidth 5), dense-
+      tick (20), near-full ring (300°/120°) — a precision-instrument look;
+      Porsche is a thick (arcWidth 14), sparse-tick (8) near-full ring
+      (310°/115°) — a bold, chunky tach; Audi keeps the classic 3/4 sweep
+      but is the one preset using the gauge's previously-dead inner-ring
+      feature, showing motor duty cycle as a second concentric ring
+      alongside the main RPM needle. Verified live: all three rendered
+      side-by-side are now visually and geometrically distinct, not
+      recolors of one shape.
+- [~] **"No overview, not intuitive" at the whole-program level**: partially
+      addressed as a side effect of the fixes above (capability level is
+      now visible and live-editable from the canvas toolbar instead of
+      hidden in Settings with wrong copy), but the broader complaint —
+      no onboarding/tour, 20+ widget kinds with no guided starting point
+      beyond the template gallery — is a real, larger design question this
+      pass didn't have scope to fully resolve. Not claiming this is done.
+
+**Answering the central question — can a user build any dashboard entirely
+through the UI, no JSON required?** Yes, with one known exception. Every
+data-binding value, every fixed-vocabulary property, and now the gauge's
+ring geometry are reachable through real pickers/sliders in the inspector,
+verified live rather than assumed. The one remaining place that still
+requires typing a structured value into a text field is `appgrid.apps` —
+tracked above, not yet fixed. Everything else audited this pass (23 widget
+kinds, every property in `property_manifest.dart`, every named preset) is
+either already UI-only or was fixed to be during this pass.
+
+### Follow-up work (not done this pass)
+- [ ] `appgrid.apps`: replace the comma-separated DSL text field with a
+      real list-builder (chip list, add/remove, name picker + optional
+      label per entry).
+- [ ] Broader onboarding/overview pass — a guided first-run path beyond the
+      template gallery, given 20+ widget kinds and three editor modes
+      (Template/Canvas/Flow) with no explanation of when to use which.
 
 ---
 
