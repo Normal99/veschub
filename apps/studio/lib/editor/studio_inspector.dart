@@ -615,6 +615,7 @@ class _LiteralEditor extends StatefulWidget {
 
 class _LiteralEditorState extends State<_LiteralEditor> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
   bool _isColor = false;
 
   @override
@@ -622,6 +623,13 @@ class _LiteralEditorState extends State<_LiteralEditor> {
     super.initState();
     _isColor = widget.value is int && (widget.value as int) > 0xFF000000;
     _controller = TextEditingController(text: _format(widget.value));
+    // Commit on blur/submit only, not per keystroke: committing on every
+    // keystroke round-trips through didUpdateWidget, which can overwrite
+    // _controller.text mid-typing and silently drop a just-typed space.
+    _focusNode = FocusNode()
+      ..addListener(() {
+        if (!_focusNode.hasFocus) _apply(_controller.text);
+      });
   }
 
   String _format(Object v) {
@@ -651,6 +659,7 @@ class _LiteralEditorState extends State<_LiteralEditor> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -734,9 +743,9 @@ class _LiteralEditorState extends State<_LiteralEditor> {
           ),
           TextFormField(
             controller: _controller,
+            focusNode: _focusNode,
             style: const TextStyle(fontSize: 12),
             decoration: const InputDecoration(isDense: true),
-            onChanged: (s) => _apply(s),
             onFieldSubmitted: (s) => _apply(s),
           ),
         ],
@@ -748,9 +757,9 @@ class _LiteralEditorState extends State<_LiteralEditor> {
         Expanded(
           child: TextFormField(
             controller: _controller,
+            focusNode: _focusNode,
             style: const TextStyle(fontSize: 12),
             decoration: const InputDecoration(isDense: true),
-            onChanged: (s) => _apply(s),
             onFieldSubmitted: (s) => _apply(s),
           ),
         ),
